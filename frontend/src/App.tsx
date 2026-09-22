@@ -12,19 +12,31 @@ type LobbyMessage = {
 // The engine's serialized GameState. Only the fields the UI actually reads
 // are named; everything else passes through as unknown for the raw-JSON view.
 type BidBoxItem = { kind: string; ref: number | string; bids: Record<string, number> };
-type MinorState = { director_player_id: string | null; floated: boolean; treasury: number };
+type MinorState = {
+  director_player_id: string | null;
+  floated: boolean;
+  treasury: number;
+  trains: string[];
+};
 type MajorState = {
   director_player_id: string | null;
   floated: boolean;
   treasury: number;
   share_price: number | null;
+  trains: string[];
+  shares_in_bank_pool: number;
+  shares_in_treasury: number;
 };
 type EngineState = {
   phase: number;
   round_type: "stock" | "operating";
   active_player_id: string | null;
   player_order: string[];
-  players: Record<string, { name: string; cash: number; loans: number }>;
+  players: Record<
+    string,
+    { name: string; cash: number; loans: number; shares: Record<string, number>; concessions: string[] }
+  >;
+  bank: { cash: number; train_pool: Record<string, number> };
   concession_bid_boxes: (BidBoxItem | null)[];
   minor_bid_boxes: (BidBoxItem | null)[];
   private_bid_boxes: (BidBoxItem | null)[];
@@ -32,6 +44,8 @@ type EngineState = {
   majors: Record<string, MajorState>;
   operating_order: string[];
   current_company_index: number;
+  operating_round_index: number;
+  stock_rounds_completed: number;
   game_over: boolean;
   log: string[];
   [key: string]: unknown;
@@ -62,6 +76,18 @@ function App() {
   const [showRaw, setShowRaw] = useState(false);
   const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({});
   const [dividendChoice, setDividendChoice] = useState("withhold");
+  const [activeTab, setActiveTab] = useState<"bid" | "stocks" | "operate" | "players">("bid");
+  const [convertPrice, setConvertPrice] = useState<Record<string, string>>({});
+  const [buyCompanyId, setBuyCompanyId] = useState("");
+  const [buySource, setBuySource] = useState<"bank" | "treasury">("bank");
+  const [sellCompanyId, setSellCompanyId] = useState("");
+  const [sellCount, setSellCount] = useState("1");
+  const [includeTileLay, setIncludeTileLay] = useState(false);
+  const [tileHexId, setTileHexId] = useState("");
+  const [tileId, setTileId] = useState("");
+  const [tileRotation, setTileRotation] = useState("0");
+  const [includeBuyTrain, setIncludeBuyTrain] = useState(false);
+  const [buyTrainCode, setBuyTrainCode] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
   // Guards the bot auto-pass effect against re-sending for the same turn
   // (effects can re-run before the resulting state broadcast arrives).
@@ -221,10 +247,52 @@ function App() {
     send({ type: "bid", bids: [{ kind, box_index: boxIndex, amount }] });
   }
 
+  function sendConvertConcession(abbr: string) {
+    const priceStr = convertPrice[abbr] ?? "";
+    const startPrice = parseInt(priceStr, 10);
+    if (!startPrice || startPrice <= 0) {
+      setError("Enter a starting share price first.");
+      return;
+    }
+    send({ type: "convert_concession", abbr, start_price: startPrice });
+  }
+
+  function sendBuyShare() {
+    if (!buyCompanyId) {
+      setError("Pick a company to buy into first.");
+      return;
+    }
+    send({ type: "buy_share", company_id: buyCompanyId, source: buySource });
+  }
+
+  function sendSellShares() {
+    const count = parseInt(sellCount, 10);
+    if (!sellCompanyId || !count || count <= 0) {
+      setError("Pick a company and a positive count to sell first.");
+      return;
+    }
+    send({ type: "sell_shares", company_id: sellCompanyId, count });
+  }
+
   function sendOperate() {
     const cid = activeCompanyId();
     if (!cid) return;
-    send({ type: "operate", company_id: cid, dividend_choice: dividendChoice });
+    const action: Record<string, unknown> = { type: "operate", company_id: cid, dividend_choice: dividendChoice };
+    if (includeTileLay) {
+      if (!tileHexId || !tileId) {
+        setError("Enter both a hex id and a tile id for the tile lay, or uncheck it.");
+        return;
+      }
+      action.tile_lay = { hex_id: tileHexId, tile_id: tileId, rotation: parseInt(tileRotation, 10) || 0 };
+    }
+    if (includeBuyTrain) {
+      if (!buyTrainCode) {
+        setError("Pick a train to buy, or uncheck it.");
+        return;
+      }
+      action.buy_train = buyTrainCode;
+    }
+    send(action);
   }
 
   function nameFor(engineId: string | null): string {
@@ -300,9 +368,34 @@ function App() {
           {gameState.game_over && <p className="game-over">Game over.</p>}
           {error && <p className="error">{error}</p>}
 
-          {gameState.round_type === "stock" && (
+          <div className="tab-bar">
+            {(
+              [
+                ["bid", "Bidding & Concessions"],
+                ["stocks", "Trade Stocks"],
+                ["operate", "Operate Trains"],
+                ["players", "Players & Log"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                className={`tab-btn${activeTab === key ? " active" : ""}`}
+                onClick={() => setActiveTab(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === "bid" && (
             <div className="panel">
               <h3>Bid</h3>
+              {gameState.round_type !== "stock" && (
+                <p className="hint">
+                  Not currently a stock round - shown read-only. Bidding boxes are how initial
+                  concessions, minors, and privates are auctioned off (rule 4.10).
+                </p>
+              )}
               {(["concession", "minor", "private"] as const).map((kind) => {
                 const boxes =
                   kind === "concession"
@@ -328,32 +421,181 @@ function App() {
                             type="number"
                             step={5}
                             placeholder="amount"
+                            disabled={gameState.round_type !== "stock"}
                             value={bidAmounts[`${kind}-${i}`] ?? ""}
                             onChange={(e) =>
                               setBidAmounts({ ...bidAmounts, [`${kind}-${i}`]: e.target.value })
                             }
                           />
-                          <button onClick={() => sendBid(kind, i)}>Bid</button>
+                          <button onClick={() => sendBid(kind, i)} disabled={gameState.round_type !== "stock"}>
+                            Bid
+                          </button>
                         </div>
                       ) : null
                     )}
                   </div>
                 );
               })}
-              <button onClick={sendPass} className="pass-btn">
+              <button onClick={sendPass} className="pass-btn" disabled={gameState.round_type !== "stock"}>
                 Pass
               </button>
+
+              <h3>Convert a won concession into a company</h3>
+              {gameState.round_type !== "stock" ? (
+                <p className="hint">Only available during a stock round.</p>
+              ) : (gameState.players[gameState.active_player_id ?? ""]?.concessions ?? []).length === 0 ? (
+                <p className="hint">The player on turn holds no unconverted concessions.</p>
+              ) : (
+                (gameState.players[gameState.active_player_id ?? ""]?.concessions ?? []).map((abbr) => (
+                  <div className="bid-box" key={abbr}>
+                    <span>{abbr}</span>
+                    <input
+                      type="number"
+                      step={5}
+                      placeholder="starting share price"
+                      value={convertPrice[abbr] ?? ""}
+                      onChange={(e) => setConvertPrice({ ...convertPrice, [abbr]: e.target.value })}
+                    />
+                    <button onClick={() => sendConvertConcession(abbr)}>Convert & float</button>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
-          {gameState.round_type === "operating" && (
+          {activeTab === "stocks" && (
             <div className="panel">
-              <h3>Operate {activeCompanyId()}</h3>
+              <h3>Trade Stocks (major companies)</h3>
+              {gameState.round_type !== "stock" && (
+                <p className="hint">
+                  Buying/selling only happens during a stock round - shown read-only for now.
+                </p>
+              )}
+              <table>
+                <thead>
+                  <tr>
+                    <th>Company</th>
+                    <th>Floated</th>
+                    <th>Price</th>
+                    <th>Bank pool</th>
+                    <th>Treasury</th>
+                    <th>Director</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(gameState.majors).map(([abbr, m]) => (
+                    <tr key={abbr}>
+                      <td>{abbr}</td>
+                      <td>{m.floated ? "yes" : "no"}</td>
+                      <td>{m.share_price != null ? `£${m.share_price}` : "-"}</td>
+                      <td>{m.shares_in_bank_pool}</td>
+                      <td>{m.shares_in_treasury}</td>
+                      <td>{nameFor(m.director_player_id)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <h4>Buy a share</h4>
+              <div className="bid-box">
+                <select value={buyCompanyId} onChange={(e) => setBuyCompanyId(e.target.value)}>
+                  <option value="">- pick a company -</option>
+                  {Object.entries(gameState.majors)
+                    .filter(([, m]) => m.floated)
+                    .map(([abbr]) => (
+                      <option key={abbr} value={abbr}>
+                        {abbr}
+                      </option>
+                    ))}
+                </select>
+                <select value={buySource} onChange={(e) => setBuySource(e.target.value as "bank" | "treasury")}>
+                  <option value="bank">from bank pool</option>
+                  <option value="treasury">from company treasury</option>
+                </select>
+                <button onClick={sendBuyShare} disabled={gameState.round_type !== "stock"}>
+                  Buy
+                </button>
+              </div>
+
+              <h4>Sell shares (player on turn's holdings)</h4>
               <p className="hint">
-                Runs first-turn housekeeping, checks destination, runs any owned trains, and pays
-                the dividend choice below. (Tile-laying isn't in this quick UI yet - use the raw
-                action JSON via a WebSocket client if you need it.)
+                {Object.entries(gameState.players[gameState.active_player_id ?? ""]?.shares ?? {})
+                  .filter(([, n]) => n > 0)
+                  .map(([abbr, n]) => `${abbr}: ${n}`)
+                  .join(", ") || "No shares held."}
               </p>
+              <div className="bid-box">
+                <select value={sellCompanyId} onChange={(e) => setSellCompanyId(e.target.value)}>
+                  <option value="">- pick a company -</option>
+                  {Object.entries(gameState.players[gameState.active_player_id ?? ""]?.shares ?? {})
+                    .filter(([, n]) => n > 0)
+                    .map(([abbr]) => (
+                      <option key={abbr} value={abbr}>
+                        {abbr}
+                      </option>
+                    ))}
+                </select>
+                <input
+                  type="number"
+                  min={1}
+                  value={sellCount}
+                  onChange={(e) => setSellCount(e.target.value)}
+                  style={{ width: 60 }}
+                />
+                <button onClick={sendSellShares} disabled={gameState.round_type !== "stock"}>
+                  Sell
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "operate" && (
+            <div className="panel">
+              <h3>Operate {gameState.round_type === "operating" ? activeCompanyId() : ""}</h3>
+              {gameState.round_type !== "operating" ? (
+                <p className="hint">Not currently an operating round - shown read-only.</p>
+              ) : (
+                <p className="hint">
+                  Runs first-turn housekeeping, an optional tile lay, checks destination
+                  connection (majors), runs owned trains, pays the dividend choice, and an
+                  optional train purchase - all as one turn-ending action (rule 5.1-5.14).
+                </p>
+              )}
+
+              <label className="hint">
+                <input
+                  type="checkbox"
+                  checked={includeTileLay}
+                  onChange={(e) => setIncludeTileLay(e.target.checked)}
+                />{" "}
+                Lay a tile
+              </label>
+              {includeTileLay && (
+                <div className="bid-box">
+                  <input
+                    placeholder="hex id (e.g. K9)"
+                    value={tileHexId}
+                    onChange={(e) => setTileHexId(e.target.value)}
+                    style={{ width: 100 }}
+                  />
+                  <input
+                    placeholder="tile id (e.g. 9)"
+                    value={tileId}
+                    onChange={(e) => setTileId(e.target.value)}
+                    style={{ width: 90 }}
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    max={5}
+                    placeholder="rotation 0-5"
+                    value={tileRotation}
+                    onChange={(e) => setTileRotation(e.target.value)}
+                    style={{ width: 100 }}
+                  />
+                </div>
+              )}
+
               <label>
                 Dividend:{" "}
                 <select value={dividendChoice} onChange={(e) => setDividendChoice(e.target.value)}>
@@ -362,52 +604,89 @@ function App() {
                   <option value="full">Full</option>
                 </select>
               </label>
+
               <div>
-                <button onClick={sendOperate}>Operate</button>
-                <button onClick={sendPass} className="pass-btn">
+                <label className="hint">
+                  <input
+                    type="checkbox"
+                    checked={includeBuyTrain}
+                    onChange={(e) => setIncludeBuyTrain(e.target.checked)}
+                  />{" "}
+                  Buy a train from the bank
+                </label>
+                {includeBuyTrain && (
+                  <select value={buyTrainCode} onChange={(e) => setBuyTrainCode(e.target.value)}>
+                    <option value="">- pick a train -</option>
+                    {Object.entries(gameState.bank.train_pool)
+                      .filter(([, count]) => count > 0)
+                      .map(([code, count]) => (
+                        <option key={code} value={code}>
+                          {code}-train (£, {count} left)
+                        </option>
+                      ))}
+                  </select>
+                )}
+              </div>
+
+              <div>
+                <button onClick={sendOperate} disabled={gameState.round_type !== "operating"}>
+                  Operate
+                </button>
+                <button onClick={sendPass} className="pass-btn" disabled={gameState.round_type !== "operating"}>
                   Pass
                 </button>
               </div>
             </div>
           )}
 
-          <div className="players-panel">
-            <h3>Players</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Cash</th>
-                  <th>Loans</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gameState.player_order.map((pid) => (
-                  <tr key={pid}>
-                    <td>{gameState.players[pid]?.name}</td>
-                    <td>£{gameState.players[pid]?.cash}</td>
-                    <td>£{gameState.players[pid]?.loans}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {activeTab === "players" && (
+            <>
+              <div className="players-panel">
+                <h3>Players</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Cash</th>
+                      <th>Loans</th>
+                      <th>Shares</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gameState.player_order.map((pid) => (
+                      <tr key={pid}>
+                        <td>{gameState.players[pid]?.name}</td>
+                        <td>£{gameState.players[pid]?.cash}</td>
+                        <td>£{gameState.players[pid]?.loans}</td>
+                        <td>
+                          {Object.entries(gameState.players[pid]?.shares ?? {})
+                            .filter(([, n]) => n > 0)
+                            .map(([abbr, n]) => `${abbr}:${n}`)
+                            .join(", ") || "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          {gameState.log.length > 0 && (
-            <div className="log-panel">
-              <h3>Log</h3>
-              <ul>
-                {gameState.log.slice(-10).map((line, i) => (
-                  <li key={i}>{line}</li>
-                ))}
-              </ul>
-            </div>
+              {gameState.log.length > 0 && (
+                <div className="log-panel">
+                  <h3>Log</h3>
+                  <ul>
+                    {gameState.log.slice(-10).map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <button className="raw-toggle" onClick={() => setShowRaw(!showRaw)}>
+                {showRaw ? "Hide" : "Show"} raw state
+              </button>
+              {showRaw && <pre>{JSON.stringify(gameState, null, 2)}</pre>}
+            </>
           )}
-
-          <button className="raw-toggle" onClick={() => setShowRaw(!showRaw)}>
-            {showRaw ? "Hide" : "Show"} raw state
-          </button>
-          {showRaw && <pre>{JSON.stringify(gameState, null, 2)}</pre>}
         </div>
       )}
     </div>
