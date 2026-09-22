@@ -15,6 +15,7 @@ from .board import BoardState, TileLayError, apply_tile_lay, validate_tile_lay
 from .models import GameState
 from .network import hex_neighbors_via_track
 from .routes import run_trains
+from .scoring import check_game_end_triggers
 from .stock_positions import place_token
 
 
@@ -226,3 +227,4 @@ def _move_price(state: GameState, company_id: str, steps: int) -> None:
         row, col = candidate
         remaining -= 1
     place_token(state, company_id, row, col)
+    check_game_end_triggers(state)  # catch the moment a token reaches £700, not just turn-end

@@ -50,6 +50,14 @@ def start_operating_round_set(state: GameState) -> None:
     state.round_type = RoundType.OPERATING
     state.operating_rounds_this_set = phase.operating_rounds_per_stock_round
     state.operating_round_index = 0
+
+    if state.end_trigger_pending == "next_or":
+        # Rule 10.1.1: a trigger that fired during a stock round means the
+        # game ends after exactly one more OR - cap this set to one, and
+        # once it finishes treat it like the "end after this set" case.
+        state.operating_rounds_this_set = 1
+        state.end_trigger_pending = "or_set_end"
+
     start_operating_round(state)
 
 
@@ -69,8 +77,17 @@ def advance_company(state: GameState) -> None:
 
 
 def _advance_operating_round_set(state: GameState) -> None:
+    if state.end_trigger_pending == "or_end":
+        state.game_over = True
+        state.log.append("Game over: share price reached £700 during an operating round (rule 10.1.1).")
+        return
+
     state.operating_round_index += 1
     if state.operating_round_index >= state.operating_rounds_this_set:
+        if state.end_trigger_pending == "or_set_end":
+            state.game_over = True
+            state.log.append("Game over: end-of-operating-round-set trigger reached (rule 10.1.1).")
+            return
         start_stock_round(state)
     else:
         start_operating_round(state)

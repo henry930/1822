@@ -22,6 +22,7 @@ from .operating import (
     run_trains_for_company,
 )
 from .round_manager import active_company_id, advance_company, advance_stock_player, end_stock_round
+from .scoring import check_game_end_triggers
 from .shares import ShareError, buy_share, sell_shares
 from .trains import TrainError, buy_train_from_bank
 
@@ -50,6 +51,7 @@ def apply_action(state: GameState, player_id: str, action: dict) -> GameState:
     else:
         raise ActionError(f"Unknown action type: {action_type!r}")
 
+    check_game_end_triggers(state)
     return state
 
 

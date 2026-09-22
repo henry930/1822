@@ -157,7 +157,13 @@ class GameState:
     current_company_index: int = 0
 
     game_over: bool = False
-    game_over_at_end_of_current_set: bool = False  # rule 10.1.1: deferred end triggers
+    # rule 10.1: deferred end triggers. None, or one of:
+    #   "or_end"     - stock reached game-end value during an OR: end after that one OR
+    #   "or_set_end" - bank emptied during an OR: end after the current OR set finishes
+    #   "next_or"    - stock reached game-end value, or bank emptied, during a SR:
+    #                  end after exactly one more OR (resolved into "or_set_end" with
+    #                  operating_rounds_this_set forced to 1 once that OR set starts)
+    end_trigger_pending: str | None = None
     log: list[str] = field(default_factory=list)
 
     board: BoardState = field(default_factory=new_board_state)
