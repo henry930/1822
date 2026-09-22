@@ -32,9 +32,12 @@ def test_stock_round_only_ends_after_a_full_lap_of_consecutive_passes():
     apply_action(state, p2, {"type": "pass"})
     state.any_sale_this_stock_round = True  # simulate p3 having bought something earlier
     apply_action(state, p3, {"type": "pass"})
-    # Only 3 consecutive passes total but round should have ended (not game_over,
-    # since a sale occurred this SR) and moved into an operating round set.
-    assert state.round_type == RoundType.OPERATING
+    # Only 3 consecutive passes total but the round should have ended (not
+    # game_over, since a sale occurred this SR). Nothing floated in this
+    # test, so the resulting (empty) operating round set auto-skips
+    # straight back to a new stock round rather than stalling.
+    assert state.stock_rounds_completed == 1
+    assert state.round_type == RoundType.STOCK
 
 
 def test_wrong_player_cannot_act_out_of_turn():
@@ -71,6 +74,17 @@ def test_operating_round_set_uses_phase_locked_or_count_and_returns_to_stock():
 
     apply_action(state, director, {"type": "pass"})  # company turn -> advance
     assert state.round_type == RoundType.STOCK  # only company was M1, set had 1 OR
+
+
+def test_empty_operating_round_set_auto_skips_back_to_stock_round():
+    """No minors/majors floated -> operating_order is empty. Without the
+    auto-skip, the round would stall forever in OPERATING with no company
+    to act for (found while manually testing the frontend, where the
+    'Operate'/'Pass' buttons had nothing valid to send)."""
+    state = _game()
+    start_operating_round_set(state)
+    assert state.round_type == RoundType.STOCK
+    assert active_company_id(state) is None
 
 
 def test_operating_round_set_runs_two_ors_from_phase_2_onward():

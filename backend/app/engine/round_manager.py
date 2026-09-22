@@ -64,9 +64,13 @@ def start_operating_round_set(state: GameState) -> None:
 def start_operating_round(state: GameState) -> None:
     """(Re-)computes company turn order for a single OR within the current
     set - recomputed each OR since share prices (and hence order) can move
-    between ORs in the same set."""
+    between ORs in the same set. If nothing has floated yet, there's no one
+    to act - skip straight past this OR (and, via the same path, past the
+    rest of an all-empty set) rather than stalling with no valid action."""
     state.operating_order = compute_operating_order(state)
     state.current_company_index = 0
+    if not state.operating_order:
+        _advance_operating_round_set(state)
 
 
 def advance_company(state: GameState) -> None:

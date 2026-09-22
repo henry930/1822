@@ -1,5 +1,5 @@
 .app {
-  max-width: 720px;
+  max-width: 860px;
   margin: 0 auto;
   padding: 24px;
   text-align: left;
@@ -13,6 +13,10 @@
   align-items: flex-start;
 }
 
+.solo-row {
+  margin-top: 8px;
+}
+
 .error {
   color: #c0392b;
 }
@@ -24,4 +28,97 @@
   border-radius: 6px;
   overflow: auto;
   max-height: 70vh;
+}
+
+.status-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: #f0f0f0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.acting-as {
+  margin-left: auto;
+  font-weight: 600;
+  color: #2c6e49;
+}
+
+.game-over {
+  font-weight: 700;
+  color: #c0392b;
+}
+
+.panel {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.panel h3 {
+  margin-top: 0;
+}
+
+.hint {
+  font-size: 12px;
+  color: #666;
+}
+
+.bid-kind h4 {
+  margin-bottom: 4px;
+  text-transform: capitalize;
+}
+
+.bid-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.bid-box .bids {
+  color: #555;
+  flex: 1;
+}
+
+.bid-box input {
+  width: 80px;
+}
+
+.pass-btn {
+  margin-top: 10px;
+  background: #eee;
+}
+
+.players-panel table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.players-panel th,
+.players-panel td {
+  text-align: left;
+  padding: 4px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.log-panel ul {
+  font-size: 13px;
+  color: #444;
+  padding-left: 18px;
+}
+
+.raw-toggle {
+  margin: 12px 0;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
 }
