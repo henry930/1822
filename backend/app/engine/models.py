@@ -87,6 +87,7 @@ class MajorCompanyState:
     tokens_on_map: list[str] = field(default_factory=list)  # hex ids with a station token
     shares_in_treasury: int = 0     # count of 10% certs (director's cert = 2) held by company
     shares_in_bank_pool: int = 0
+    has_operated: bool = False      # rule 4.4.1: shares can't be sold until the company's first OR
 
 
 @dataclass
@@ -141,6 +142,9 @@ class GameState:
     stock_rounds_completed: int = 0
     any_sale_this_stock_round: bool = False
     bids_this_turn: int = 0  # rule 4.10.5: up to 3 bid placements/moves per stock-round turn
+    # rule 4.5.5: can't buy a company's stock in the same SR turn-cycle you sold it in.
+    # Reset at the start of each stock round; player_id -> set of company_ids sold this SR.
+    sold_this_round: dict[str, set[str]] = field(default_factory=dict)
 
     # Operating-round-set sequencing (rule 5.2). operating_rounds_this_set is
     # captured from the phase table at the *start* of the OR set, per rule

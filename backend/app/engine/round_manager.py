@@ -16,6 +16,7 @@ def start_stock_round(state: GameState) -> None:
     state.any_sale_this_stock_round = False
     state.active_player_id = state.priority_deal_player_id
     state.bids_this_turn = 0
+    state.sold_this_round = {}
 
 
 def advance_stock_player(state: GameState) -> None:
