@@ -347,6 +347,22 @@ export default function MapTab({
   const pendingOptions = pendingTileId ? reportByTile.get(pendingTileId) ?? [] : [];
   const pendingCurrent = pendingOptions.find((o) => o.rotation === pendingRotation);
 
+  // Explicit, visible reason the Place button is disabled - every prior fix
+  // for "the button is disabled" was blind guessing without being able to
+  // see the actual failing condition. This makes the real cause impossible
+  // to miss instead of guessing again.
+  function placeDisabledReason(): string | null {
+    if (!inGame) return "Not in a game.";
+    if (!canQueueLay) return "Not currently an operating round.";
+    if (placing) return "A placement is already in progress.";
+    if (!pendingTileId) return "No tile selected.";
+    if (!pendingOptions.length) return "No legality data loaded for this tile yet (still loading, or the fetch failed - see any error above).";
+    if (!pendingCurrent) return `No legality data for rotation ${pendingRotation} specifically.`;
+    if (!pendingCurrent.valid) return `Rotation ${pendingRotation} is invalid: ${pendingCurrent.reason}`;
+    return null;
+  }
+  const placeDisabled = placeDisabledReason();
+
   function pickTile(tileId: string) {
     setPendingTileId(tileId);
     const opts = reportByTile.get(tileId) ?? [];
@@ -669,7 +685,8 @@ export default function MapTab({
 
                     <button
                       className="place-tile-btn"
-                      disabled={!pendingCurrent?.valid || !inGame || !canQueueLay || placing}
+                      disabled={placeDisabled !== null}
+                      title={placeDisabled ?? "Place this tile"}
                       onClick={() => {
                         if (!selectedHexId || !pendingTileId) return;
                         setPlaceConfirmed(null);
@@ -680,6 +697,7 @@ export default function MapTab({
                     >
                       {placing ? "Placing..." : "Place tile"}
                     </button>
+                    {placeDisabled && <p className="hint place-disabled-reason">Can't place yet: {placeDisabled}</p>}
                     <button
                       disabled={!pendingCurrent?.valid || !inGame || !canQueueLay}
                       onClick={() => {

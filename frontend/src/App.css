@@ -392,6 +392,12 @@ label.hint {
   font-weight: 600;
 }
 
+.place-disabled-reason {
+  color: #b45309;
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+
 .open-picker-btn {
   display: block;
   margin: 10px 0;
