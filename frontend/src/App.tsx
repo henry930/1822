@@ -63,6 +63,9 @@ function App() {
   const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({});
   const [dividendChoice, setDividendChoice] = useState("withhold");
   const wsRef = useRef<WebSocket | null>(null);
+  // Guards the bot auto-pass effect against re-sending for the same turn
+  // (effects can re-run before the resulting state broadcast arrives).
+  const lastAutoPassedFor = useRef<string | null>(null);
 
   // Single-connection mode (normal multiplayer: one browser = one player)
   useEffect(() => {
@@ -72,6 +75,37 @@ function App() {
     wsRef.current = ws;
     return () => ws.close();
   }, [roomId, playerId, seats.length]);
+
+  // Solo mode: only seat 0 ("Player 1") is the human; seats 1 and 2 always
+  // just pass, so you never have to click for them. This keeps the real
+  // 3-player rules intact (1822 requires >=3) while playing solo.
+  const isBotSeat = (s: Seat) => seats.length > 1 && s !== seats[0];
+
+  useEffect(() => {
+    if (seats.length === 0 || !gameState) return;
+    const acting = activeSeat();
+    if (!acting || !isBotSeat(acting)) return;
+
+    const activeEngineId =
+      gameState.round_type === "operating" ? activeCompanyDirector() : gameState.active_player_id;
+    const signature = `${gameState.round_type}:${activeEngineId}:${gameState.current_company_index}:${gameState.operating_round_index}:${gameState.stock_rounds_completed}`;
+    if (lastAutoPassedFor.current === signature) return;
+
+    // Marking lastAutoPassedFor only happens once the pass is actually
+    // sent, not when the timer is merely scheduled: React 18 StrictMode
+    // double-invokes effects in dev (mount -> cleanup -> mount), and the
+    // cleanup below cancels the first invocation's timer. If the ref were
+    // set eagerly here, that cancelled timer would still "count" as sent,
+    // and the second invocation's guard would skip scheduling a real one -
+    // leaving nothing pending and the bot stuck forever.
+    const timer = setTimeout(() => {
+      if (lastAutoPassedFor.current === signature) return;
+      lastAutoPassedFor.current = signature;
+      acting.ws.send(JSON.stringify({ type: "pass" }));
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState, seats]);
 
   function handleMessage(raw: string) {
     const msg = JSON.parse(raw) as LobbyMessage | StateMessage | ErrorMessage;
@@ -117,8 +151,9 @@ function App() {
     }
   }
 
-  // Hotseat: one browser plays all 3 seats by opening a connection per
-  // player and always acting through whichever seat is currently on turn.
+  // Solo: one browser opens a connection per seat (engine still needs 3
+  // players), but only seat 0 is driven by the human - seats 1 and 2 are
+  // auto-passed by the effect above whenever it's their turn.
   async function handleSoloGame() {
     setError(null);
     try {
@@ -218,7 +253,7 @@ function App() {
             <button onClick={handleJoin}>Join room</button>
           </div>
           <div className="solo-row">
-            <button onClick={handleSoloGame}>Start solo game (hotseat, 3 players, this browser)</button>
+            <button onClick={handleSoloGame}>Start solo game (you vs 2 auto-passing bots)</button>
           </div>
           {error && <p className="error">{error}</p>}
         </div>
