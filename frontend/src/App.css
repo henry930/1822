@@ -391,6 +391,122 @@ label.hint {
   font-weight: 600;
 }
 
+.open-picker-btn {
+  display: block;
+  margin: 10px 0;
+  background: #2c6e49;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
+.tile-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.tile-modal {
+  background: #fff;
+  border-radius: 10px;
+  width: min(1100px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.tile-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.tile-modal-header h3 {
+  margin: 0;
+}
+
+.tile-modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px 8px;
+}
+
+.tile-modal-body {
+  display: flex;
+  gap: 28px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.tile-modal-palette {
+  flex: 1;
+  min-width: 320px;
+}
+
+.modal-tile-palette-row {
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.modal-tile-swatch {
+  width: 64px;
+  height: 64px;
+}
+
+.tile-modal-preview-col {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.tile-modal-preview {
+  width: 280px;
+  height: 280px;
+  align-self: center;
+}
+
+.tile-modal-preview img {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.15s;
+}
+
+.rotation-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.modal-rotation-picker {
+  justify-content: center;
+}
+
+.modal-rotation-picker .rotation-swatch {
+  width: 38px;
+  height: 38px;
+  font-size: 15px;
+}
+
+.tile-modal-preview-col .place-tile-btn {
+  margin-right: 0;
+  padding: 10px 14px;
+  font-size: 15px;
+}
+
 .rotation-picker {
   display: flex;
   gap: 4px;

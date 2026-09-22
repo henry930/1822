@@ -118,6 +118,8 @@ export default function MapTab({
     null
   );
   const [placeConfirmed, setPlaceConfirmed] = useState<string | null>(null);
+  const [placing, setPlacing] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [report, setReport] = useState<TileLayOption[] | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -137,16 +139,39 @@ export default function MapTab({
   // now, fetched once per hex/room/company-kind change - re-derived from the
   // real engine validator server-side, so it can never drift out of sync
   // with what actually happens when Operate is clicked.
-  useEffect(() => {
+  //
+  // Real bug found here: placing a tile that ends the operating round (e.g.
+  // the only company in that OR set) flips App.tsx's `companyKind` prop
+  // (minor -> major, since "operating" is no longer true) the instant the
+  // placement succeeds. That's a dependency of this effect, so it fired
+  // again right on the success render and reset pendingTileId to null -
+  // collapsing the whole tile-picker UI (Place button, rotation picker, the
+  // just-earned confirmation message) at the exact moment of success. From
+  // the user's side that looked exactly like "the Place button doesn't
+  // work". Guard against it: don't wipe the picker while a placement is
+  // in flight or was just confirmed - the modal auto-closes shortly after
+  // a confirmed placement anyway, so there's nothing useful to refetch for.
+  function loadReportFor(hexId: string) {
     setReport(null);
     setReportError(null);
-    setPendingTileId(null);
-    if (!selectedHexId || !roomId) return;
+    if (!roomId) return;
     setReportLoading(true);
-    fetchTileLayOptions(roomId, selectedHexId, companyKind)
+    fetchTileLayOptions(roomId, hexId, companyKind)
       .then((r) => setReport(r.report))
       .catch((e) => setReportError((e as Error).message))
       .finally(() => setReportLoading(false));
+  }
+
+  useEffect(() => {
+    if (placing || placeConfirmed) return;
+    setPendingTileId(null);
+    if (!selectedHexId) {
+      setReport(null);
+      setReportError(null);
+      return;
+    }
+    loadReportFor(selectedHexId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedHexId, roomId, companyKind]);
 
   // Confirms a "Place tile" click actually took effect: boardTiles is the
@@ -160,17 +185,48 @@ export default function MapTab({
     if (current && current.tile_id === placeAttempt.tileId && current.rotation === placeAttempt.rotation) {
       setPlaceConfirmed(`Placed tile ${placeAttempt.tileId} (rotation ${placeAttempt.rotation}) on ${placeAttempt.hexId}.`);
       setPlaceAttempt(null);
+      setPlacing(false);
     }
   }, [boardTiles, placeAttempt]);
 
   useEffect(() => {
-    if (placeAttempt && globalError) setPlaceAttempt(null);
+    if (placeAttempt && globalError) {
+      setPlaceAttempt(null);
+      setPlacing(false);
+    }
   }, [globalError, placeAttempt]);
+
+  // A placement that never resolves (no matching state update, no error -
+  // e.g. the websocket send silently failed) shouldn't leave the button
+  // stuck showing "Placing..." forever.
+  useEffect(() => {
+    if (!placing) return;
+    const timeout = setTimeout(() => {
+      setPlacing(false);
+      setPlaceAttempt((cur) => {
+        if (cur) setReportError("No response from the server - check your connection and try again.");
+        return null;
+      });
+    }, 8000);
+    return () => clearTimeout(timeout);
+  }, [placing]);
 
   useEffect(() => {
     setPlaceAttempt(null);
     setPlaceConfirmed(null);
+    setPlacing(false);
   }, [selectedHexId]);
+
+  useEffect(() => {
+    if (!placeConfirmed) return;
+    const timeout = setTimeout(() => setModalOpen(false), 1200);
+    return () => clearTimeout(timeout);
+  }, [placeConfirmed]);
+
+  function selectHex(hexId: string) {
+    setSelectedHexId(hexId);
+    setModalOpen(true);
+  }
 
   const reportByTile = useMemo(() => {
     const map = new Map<string, TileLayOption[]>();
@@ -325,7 +381,7 @@ export default function MapTab({
                     const isSelected = hexId === selectedHexId;
                     const isQueued = hexId === queuedHexId;
                     return (
-                      <g key={hexId} onClick={() => setSelectedHexId(hexId)}>
+                      <g key={hexId} onClick={() => selectHex(hexId)}>
                         <polygon
                           points={hexPoints(x, y, PHOTO_HEX_SIZE)}
                           className={`photo-hex${catalogued ? " catalogued" : ""}${
@@ -361,7 +417,7 @@ export default function MapTab({
                     <li key={r.id}>
                       <button
                         onClick={() => {
-                          setSelectedHexId(r.id);
+                          selectHex(r.id);
                           setSearch("");
                         }}
                       >
@@ -378,7 +434,7 @@ export default function MapTab({
                 <ul>
                   {placedList.map(([hexId, t]) => (
                     <li key={hexId}>
-                      <button onClick={() => setSelectedHexId(hexId)}>
+                      <button onClick={() => selectHex(hexId)}>
                         {hexId}: tile {t.tile_id} @ rotation {t.rotation}
                       </button>
                     </li>
@@ -401,7 +457,7 @@ export default function MapTab({
                 const isSelected = hex.id === selectedHexId;
                 const isQueued = hex.id === queuedHexId;
                 return (
-                  <g key={`${kind}-${hex.id}`} onClick={() => setSelectedHexId(hex.id)} className="map-hex">
+                  <g key={`${kind}-${hex.id}`} onClick={() => selectHex(hex.id)} className="map-hex">
                     <polygon
                       points={hexPoints(x, y, SIZE)}
                       fill={colorFor(kind, hex)}
@@ -470,47 +526,89 @@ export default function MapTab({
                   : "No tile placed yet on this hex."}
               </p>
 
-              {!roomId && <p className="hint">Start or join a game to see which tiles are legal here.</p>}
-              {roomId && reportLoading && <p className="hint">Checking which tiles can legally be placed here...</p>}
-              {reportError && <p className="error">{reportError}</p>}
+              <button
+                className="open-picker-btn"
+                onClick={() => {
+                  setPlaceConfirmed(null);
+                  setPendingTileId(null);
+                  setModalOpen(true);
+                  if (selectedHexId) loadReportFor(selectedHexId);
+                }}
+              >
+                Choose a tile to place here...
+              </button>
+              {placeConfirmed && <p className="place-confirmed">✓ {placeConfirmed}</p>}
+              {isQueuedNote(selectedHexId, queuedHexId)}
+            </>
+          )}
+        </div>
+      </div>
 
-              {report && (
-                <>
-                  <h4>Tiles that can be placed here ({companyKind})</h4>
-                  {(["yellow", "green", "brown", "gray"] as const).map((color) => {
-                    const placeable = grouped[color].filter((t) =>
-                      (reportByTile.get(t.id) ?? []).some((o) => o.valid)
-                    );
-                    if (placeable.length === 0) return null;
-                    return (
-                      <div key={color} className="tile-palette-row">
-                        <span className="tile-palette-label">{color}</span>
-                        {placeable.map((t) => {
-                          const url = tileUrl(t.file);
-                          return (
-                            <button
-                              key={t.id}
-                              className={`tile-swatch${pendingTileId === t.id ? " selected" : ""}`}
-                              onClick={() => pickTile(t.id)}
-                              title={`Tile ${t.id} (${t.count} in supply)`}
-                            >
-                              {url ? <img src={url} alt={t.id} /> : t.id}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-                  {(["yellow", "green", "brown", "gray"] as const).every(
-                    (color) => grouped[color].filter((t) => (reportByTile.get(t.id) ?? []).some((o) => o.valid)).length === 0
-                  ) && <p className="hint">No tile can legally be placed here right now.</p>}
-                </>
-              )}
+      {modalOpen && selectedHexId && (
+        <div className="tile-modal-backdrop" onClick={() => setModalOpen(false)}>
+          <div className="tile-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="tile-modal-header">
+              <h3>
+                {selectedHexId}
+                {selectedInfo && "name" in selectedInfo.hex ? ` - ${(selectedInfo.hex as MapCity).name}` : ""}
+              </h3>
+              <button className="tile-modal-close" onClick={() => setModalOpen(false)} aria-label="Close">
+                ✕
+              </button>
+            </div>
 
-              {pendingTileId && (
-                <>
-                  <div className="tile-preview-row">
-                    <div className="tile-preview">
+            <p className="hint">
+              {selectedPlacedTile
+                ? `Currently has tile ${selectedPlacedTile.tile_id} at rotation ${selectedPlacedTile.rotation}.`
+                : "No tile placed yet on this hex."}
+            </p>
+            {!roomId && <p className="hint">Start or join a game to see which tiles are legal here.</p>}
+            {roomId && reportLoading && <p className="hint">Checking which tiles can legally be placed here...</p>}
+            {reportError && <p className="error">{reportError}</p>}
+
+            <div className="tile-modal-body">
+              <div className="tile-modal-palette">
+                {report && (
+                  <>
+                    <h4>Tiles that can be placed here ({companyKind})</h4>
+                    {(["yellow", "green", "brown", "gray"] as const).map((color) => {
+                      const placeable = grouped[color].filter((t) =>
+                        (reportByTile.get(t.id) ?? []).some((o) => o.valid)
+                      );
+                      if (placeable.length === 0) return null;
+                      return (
+                        <div key={color} className="tile-palette-row modal-tile-palette-row">
+                          <span className="tile-palette-label">{color}</span>
+                          {placeable.map((t) => {
+                            const url = tileUrl(t.file);
+                            return (
+                              <button
+                                key={t.id}
+                                className={`tile-swatch modal-tile-swatch${
+                                  pendingTileId === t.id ? " selected" : ""
+                                }`}
+                                onClick={() => pickTile(t.id)}
+                                title={`Tile ${t.id} (${t.count} in supply)`}
+                              >
+                                {url ? <img src={url} alt={t.id} /> : t.id}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                    {(["yellow", "green", "brown", "gray"] as const).every(
+                      (color) =>
+                        grouped[color].filter((t) => (reportByTile.get(t.id) ?? []).some((o) => o.valid)).length === 0
+                    ) && <p className="hint">No tile can legally be placed here right now.</p>}
+                  </>
+                )}
+              </div>
+
+              <div className="tile-modal-preview-col">
+                {pendingTileId ? (
+                  <>
+                    <div className="tile-modal-preview">
                       {tileUrl(`tile_${pendingTileId}.svg`) && (
                         <img
                           src={tileUrl(`tile_${pendingTileId}.svg`)}
@@ -519,70 +617,74 @@ export default function MapTab({
                         />
                       )}
                     </div>
-                    <div>
-                      <p className="hint">Tile {pendingTileId}, rotation {pendingRotation}</p>
-                      <button onClick={() => setPendingRotation((r) => (r + 5) % 6)}>⟲ rotate</button>
-                      <button onClick={() => setPendingRotation((r) => (r + 1) % 6)}>⟳ rotate</button>
+                    <p className="hint" style={{ textAlign: "center" }}>
+                      Tile {pendingTileId}, rotation {pendingRotation}
+                    </p>
+                    <div className="rotation-controls">
+                      <button onClick={() => setPendingRotation((r) => (r + 5) % 6)}>⟲ Rotate</button>
+                      <button onClick={() => setPendingRotation((r) => (r + 1) % 6)}>⟳ Rotate</button>
                     </div>
-                  </div>
-                  <div className="rotation-picker">
-                    {[0, 1, 2, 3, 4, 5].map((rot) => {
-                      const opt = pendingOptions.find((o) => o.rotation === rot);
-                      return (
-                        <button
-                          key={rot}
-                          className={`rotation-swatch${opt?.valid ? " valid" : " invalid"}${
-                            pendingRotation === rot ? " selected" : ""
-                          }`}
-                          onClick={() => setPendingRotation(rot)}
-                          title={opt?.valid ? `Rotation ${rot}: valid` : opt?.reason ?? "Invalid"}
-                        >
-                          {rot}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {pendingCurrent && !pendingCurrent.valid && (
-                    <p className="error">Not valid at this rotation: {pendingCurrent.reason}</p>
-                  )}
-                  {pendingCurrent?.valid && pendingCurrent.cost ? (
-                    <p className="hint">Terrain cost: £{pendingCurrent.cost}</p>
-                  ) : null}
-                </>
-              )}
+                    <div className="rotation-picker modal-rotation-picker">
+                      {[0, 1, 2, 3, 4, 5].map((rot) => {
+                        const opt = pendingOptions.find((o) => o.rotation === rot);
+                        return (
+                          <button
+                            key={rot}
+                            className={`rotation-swatch${opt?.valid ? " valid" : " invalid"}${
+                              pendingRotation === rot ? " selected" : ""
+                            }`}
+                            onClick={() => setPendingRotation(rot)}
+                            title={opt?.valid ? `Rotation ${rot}: valid` : opt?.reason ?? "Invalid"}
+                          >
+                            {rot}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {pendingCurrent && !pendingCurrent.valid && (
+                      <p className="error">Not valid at this rotation: {pendingCurrent.reason}</p>
+                    )}
+                    {pendingCurrent?.valid && pendingCurrent.cost ? (
+                      <p className="hint">Terrain cost: £{pendingCurrent.cost}</p>
+                    ) : null}
 
-              <div>
-                <button
-                  className="place-tile-btn"
-                  disabled={!pendingTileId || !pendingCurrent?.valid || !inGame || !canQueueLay}
-                  onClick={() => {
-                    if (!selectedHexId || !pendingTileId) return;
-                    setPlaceConfirmed(null);
-                    setPlaceAttempt({ hexId: selectedHexId, tileId: pendingTileId, rotation: pendingRotation });
-                    onPlaceTile(selectedHexId, pendingTileId, pendingRotation);
-                  }}
-                >
-                  Place tile
-                </button>
-                <button
-                  disabled={!pendingTileId || !pendingCurrent?.valid || !inGame || !canQueueLay}
-                  onClick={() => {
-                    if (selectedHexId && pendingTileId) onQueueLay(selectedHexId, pendingTileId, pendingRotation);
-                  }}
-                >
-                  Queue for Operate instead (to also pick a dividend / buy a train)
-                </button>
-                {!inGame && <p className="hint">Start or join a game to lay tiles.</p>}
-                {inGame && !canQueueLay && <p className="hint">Only usable during an operating round.</p>}
-                {placeAttempt && <p className="hint">Placing tile {placeAttempt.tileId} on {placeAttempt.hexId}...</p>}
-                {placeConfirmed && <p className="place-confirmed">✓ {placeConfirmed}</p>}
-                {!placeAttempt && !placeConfirmed && globalError && <p className="error">{globalError}</p>}
-                {isQueuedNote(selectedHexId, queuedHexId)}
+                    <button
+                      className="place-tile-btn"
+                      disabled={!pendingCurrent?.valid || !inGame || !canQueueLay || placing}
+                      onClick={() => {
+                        if (!selectedHexId || !pendingTileId) return;
+                        setPlaceConfirmed(null);
+                        setPlacing(true);
+                        setPlaceAttempt({ hexId: selectedHexId, tileId: pendingTileId, rotation: pendingRotation });
+                        onPlaceTile(selectedHexId, pendingTileId, pendingRotation);
+                      }}
+                    >
+                      {placing ? "Placing..." : "Place tile"}
+                    </button>
+                    <button
+                      disabled={!pendingCurrent?.valid || !inGame || !canQueueLay}
+                      onClick={() => {
+                        if (selectedHexId && pendingTileId) {
+                          onQueueLay(selectedHexId, pendingTileId, pendingRotation);
+                          setModalOpen(false);
+                        }
+                      }}
+                    >
+                      Queue for Operate instead (to also pick a dividend / buy a train)
+                    </button>
+                    {!inGame && <p className="hint">Start or join a game to lay tiles.</p>}
+                    {inGame && !canQueueLay && <p className="hint">Only usable during an operating round.</p>}
+                    {placeConfirmed && <p className="place-confirmed">✓ {placeConfirmed}</p>}
+                    {!placing && globalError && <p className="error">{globalError}</p>}
+                  </>
+                ) : (
+                  <p className="hint">Pick a tile from the palette on the left.</p>
+                )}
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
