@@ -255,83 +255,23 @@ def render_tile(tile: Tile) -> str:
 
 
 # ---------------------------------------------------------------------------
-# The 1822 tile manifest: (id, color, count, code). Track/city codes and
-# per-tile counts are the public 1822 tile data (same numbering as the
-# open-source 18xx.games rules engine); this is what's physically printed
-# on the die-cut sheets in rail_track.jpg.
+# The 1822 tile manifest: (id, color, count, code). This is now sourced from
+# backend/app/data/tiles.py (the canonical, tested definition shared with the
+# rules engine) rather than duplicated here - edit TILE_SPECS in that module
+# and re-run this script to regenerate the SVGs/manifest.json.
 # ---------------------------------------------------------------------------
+import sys as _sys
+from pathlib import Path as _Path
+
+_REPO_ROOT = _Path(__file__).resolve().parents[5]
+_sys.path.insert(0, str(_REPO_ROOT / "backend"))
+
+from app.data.tiles import TILE_SPECS as _TILE_SPECS  # noqa: E402
+from app.data.tiles import UNLIMITED as _UNLIMITED  # noqa: E402
+
 TILES = [
-    # -- yellow --
-    ("1", "yellow", 1, "town=revenue:10;town=revenue:10;path=a:1,b:_0;path=a:_0,b:3;path=a:0,b:_1;path=a:_1,b:4"),
-    ("2", "yellow", 1, "town=revenue:10;town=revenue:10;path=a:0,b:_0;path=a:_0,b:3;path=a:1,b:_1;path=a:_1,b:2"),
-    ("3", "yellow", 6, "town=revenue:10;path=a:0,b:_0;path=a:_0,b:1"),
-    ("4", "yellow", 6, "town=revenue:10;path=a:0,b:_0;path=a:_0,b:3"),
-    ("5", "yellow", 6, "city=revenue:20;path=a:0,b:_0;path=a:1,b:_0"),
-    ("6", "yellow", 8, "city=revenue:20;path=a:0,b:_0;path=a:2,b:_0"),
-    ("7", "yellow", 999, "path=a:0,b:1"),
-    ("8", "yellow", 999, "path=a:0,b:2"),
-    ("9", "yellow", 999, "path=a:0,b:3"),
-    ("55", "yellow", 1, "town=revenue:10;town=revenue:10;path=a:0,b:_0;path=a:_0,b:3;path=a:1,b:_1;path=a:_1,b:4"),
-    ("56", "yellow", 1, "town=revenue:10;town=revenue:10;path=a:0,b:_0;path=a:_0,b:2;path=a:1,b:_1;path=a:_1,b:3"),
-    ("57", "yellow", 6, "city=revenue:20;path=a:0,b:_0;path=a:_0,b:3"),
-    ("58", "yellow", 6, "town=revenue:10;path=a:0,b:_0;path=a:_0,b:2"),
-    ("69", "yellow", 1, "town=revenue:10;town=revenue:10;path=a:0,b:_0;path=a:_0,b:3;path=a:2,b:_1;path=a:_1,b:4"),
-    # -- green --
-    ("14", "green", 6, "city=revenue:30,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("15", "green", 6, "city=revenue:30,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0"),
-    ("80", "green", 6, "junction;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0"),
-    ("81", "green", 6, "junction;path=a:0,b:_0;path=a:2,b:_0;path=a:4,b:_0"),
-    ("82", "green", 8, "junction;path=a:0,b:_0;path=a:1,b:_0;path=a:3,b:_0"),
-    ("83", "green", 8, "junction;path=a:0,b:_0;path=a:5,b:_0;path=a:3,b:_0"),
-    ("141", "green", 4, "town=revenue:10;path=a:0,b:_0;path=a:3,b:_0;path=a:1,b:_0"),
-    ("142", "green", 4, "town=revenue:10;path=a:0,b:_0;path=a:5,b:_0;path=a:3,b:_0"),
-    ("143", "green", 4, "town=revenue:10;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0"),
-    ("144", "green", 4, "town=revenue:10;path=a:0,b:_0;path=a:2,b:_0;path=a:4,b:_0"),
-    ("207", "green", 2, "city=revenue:40,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;label=Y"),
-    ("208", "green", 1, "city=revenue:40,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:3,b:_0;path=a:4,b:_0;label=Y"),
-    ("619", "green", 6, "city=revenue:30,slots:2;path=a:0,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("622", "green", 1, "city=revenue:40,slots:2;path=a:0,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;label=Y"),
-    ("405", "green", 3, "city=revenue:40,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:5,b:_0;label=T"),
-    ("X1", "green", 1, "city=revenue:30,slots:3;path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0;label=C"),
-    ("X2", "green", 2, "city=revenue:50,slots:3;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;label=BM"),
-    ("X3", "green", 1, "city=revenue:30,slots:2;path=a:1,b:_0;path=a:4,b:_0;label=S"),
-    ("X4", "green", 1, "city=revenue:0;path=a:2,b:_0;path=a:3,b:_0;path=a:5,b:_0;label=EC"),
-    ("X21", "green", 1,
-     "city=revenue:60;city=revenue:60;city=revenue:60;city=revenue:60;city=revenue:60;city=revenue:60;"
-     "path=a:0,b:_0;path=a:1,b:_1;path=a:2,b:_2;path=a:3,b:_3;path=a:4,b:_4;path=a:5,b:_5;label=L"),
-    # -- brown --
-    ("63", "brown", 8, "city=revenue:40,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:5,b:_0"),
-    ("544", "brown", 6, "junction;path=a:0,b:_0;path=a:1,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("545", "brown", 6, "junction;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0"),
-    ("546", "brown", 8, "junction;path=a:0,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("611", "brown", 4, "city=revenue:40,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("767", "brown", 4, "town=revenue:10;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0"),
-    ("768", "brown", 4, "town=revenue:10;path=a:0,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:5,b:_0"),
-    ("769", "brown", 6, "town=revenue:10;path=a:0,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("X5", "brown", 3, "city=revenue:50,slots:3;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;label=Y"),
-    ("X6", "brown", 1, "city=revenue:40,slots:3;path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0;label=C"),
-    ("X7", "brown", 2, "city=revenue:60,slots:4;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:5,b:_0;label=BM"),
-    ("X8", "brown", 1, "city=revenue:40,slots:2;path=a:1,b:_0;path=a:4,b:_0;label=S"),
-    ("X9", "brown", 1, "city=revenue:0,slots:2;path=a:2,b:_0;path=a:3,b:_0;path=a:5,b:_0;label=EC"),
-    ("X10", "brown", 3, "city=revenue:50,slots:2;path=a:0,b:_0;path=a:1,b:_0;path=a:5,b:_0;label=T"),
-    ("X22", "brown", 1,
-     "city=revenue:80;city=revenue:80;city=revenue:80;city=revenue:80;city=revenue:80;city=revenue:80;"
-     "path=a:0,b:_0;path=a:1,b:_1;path=a:2,b:_2;path=a:3,b:_3;path=a:4,b:_4;path=a:5,b:_5;label=L"),
-    # -- gray --
-    ("60", "gray", 2, "junction;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:5,b:_0"),
-    ("169", "gray", 2, "junction;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("X11", "gray", 2, "city=revenue:60,slots:3;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;label=Y"),
-    ("X12", "gray", 1, "city=revenue:60,slots:3;path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0;label=C"),
-    ("X13", "gray", 2, "city=revenue:80,slots:4;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:5,b:_0;label=BM"),
-    ("X14", "gray", 1, "city=revenue:60,slots:3;path=a:1,b:_0;path=a:4,b:_0;label=S"),
-    ("X15", "gray", 1, "city=revenue:0,slots:3;path=a:2,b:_0;path=a:3,b:_0;path=a:5,b:_0;label=EC"),
-    ("X16", "gray", 2, "city=revenue:60,slots:3;path=a:0,b:_0;path=a:1,b:_0;path=a:5,b:_0;label=T"),
-    ("X17", "gray", 2, "town=revenue:10;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:5,b:_0"),
-    ("X18", "gray", 2, "city=revenue:50,slots:3;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0"),
-    ("X19", "gray", 4, "city=revenue:50,slots:3;path=a:0,b:_0;path=a:1,b:_0;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:5,b:_0"),
-    ("X23", "gray", 1,
-     "city=revenue:100;city=revenue:100;city=revenue:100;city=revenue:100;city=revenue:100;city=revenue:100;"
-     "path=a:0,b:_0;path=a:1,b:_1;path=a:2,b:_2;path=a:3,b:_3;path=a:4,b:_4;path=a:5,b:_5;label=L"),
+    (t.id, t.color, 999 if t.count == _UNLIMITED else t.count, t.code)
+    for t in _TILE_SPECS
 ]
 
 def main():
