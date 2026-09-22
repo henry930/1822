@@ -93,3 +93,7 @@ STOCK_MARKET_CELLS: list[StockCell] = _build_cells()
 STOCK_MARKET_BY_VALUE: dict[int, list[StockCell]] = {}
 for _cell in STOCK_MARKET_CELLS:
     STOCK_MARKET_BY_VALUE.setdefault(_cell.value, []).append(_cell)
+
+STOCK_MARKET_BY_POSITION: dict[tuple[int, int], StockCell] = {
+    (c.row, c.col): c for c in STOCK_MARKET_CELLS
+}

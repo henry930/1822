@@ -127,9 +127,27 @@ class GameState:
     minor_stack: list[int] = field(default_factory=list)        # minor numbers, draw order
     private_stack: list[int] = field(default_factory=list)      # private numbers, draw order
 
-    stock_market: dict[str, int] = field(default_factory=dict)  # company_id -> price
-    stock_market_stack_order: dict[int, list[str]] = field(default_factory=dict)  # price -> [company_ids] top-first
+    # Stock market token positions: company_id -> (row, col) in
+    # app.data.stock_market's grid. The actual £ value is looked up from
+    # there, not stored redundantly - rule 1.6.2's "furthest right / topmost"
+    # tie-break needs the real cell, not just the value (many cells share a
+    # value). stock_stack[(row, col)] lists companies whose tokens are
+    # stacked on that cell, top-first.
+    stock_positions: dict[str, tuple[int, int]] = field(default_factory=dict)
+    stock_stack: dict[tuple[int, int], list[str]] = field(default_factory=dict)
 
     consecutive_passes: int = 0
+    stock_rounds_completed: int = 0
+    any_sale_this_stock_round: bool = False
+
+    # Operating-round-set sequencing (rule 5.2). operating_rounds_this_set is
+    # captured from the phase table at the *start* of the OR set, per rule
+    # 2.1.2's deferred effect (a phase change mid-set doesn't retroactively
+    # add a second OR to the set already running).
+    operating_rounds_this_set: int = 1
+    operating_order: list[str] = field(default_factory=list)
+    current_company_index: int = 0
+
     game_over: bool = False
+    game_over_at_end_of_current_set: bool = False  # rule 10.1.1: deferred end triggers
     log: list[str] = field(default_factory=list)
