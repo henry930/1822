@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>1822 — Private Company Cards (P1–P21)</title>
+<style>
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #20201d; }
+  .page { box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px; }
+  .heading { color: #f2ead9; font-size: 22px; font-weight: 700; letter-spacing: 0.3px; }
+  .grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .card { border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.35); border: 1px solid rgba(0,0,0,0.25); }
+  .card-header { color: #fff; font-size: 12px; font-weight: 700; text-align: center;
+                 padding: 5px 6px; min-height: 14px; line-height: 1.15; }
+  .card-name { padding: 6px 8px 2px 8px; font-size: 9px; font-weight: 700; color: #2a2a24;
+               line-height: 1.2; min-height: 22px; }
+  .card-body { flex-grow: 1; display: flex; align-items: center; gap: 6px; padding: 2px 8px 6px 8px; }
+  .phase-block { min-width: 34px; }
+  .label { font-size: 8px; color: #3a3a32; font-weight: 600; }
+  .phase-val { font-size: 15px; color: #1c1c18; font-weight: 800; }
+  .badge { width: 34px; height: 34px; border-radius: 50%; background: #fff;
+           border: 2px solid rgba(0,0,0,0.2); display: flex; align-items: center;
+           justify-content: center; font-size: 10px; font-weight: 800; color: #333; flex-shrink: 0; }
+  .revenue-block { flex-grow: 1; text-align: right; }
+  .revenue-val { font-size: 12px; color: #1c1c18; font-weight: 800; }
+  .freq { font-size: 8px; color: #3a3a32; font-style: italic; padding: 0 8px 4px 8px; }
+  .card-footer { background: #17170f; display: flex; align-items: center;
+                 justify-content: space-between; padding: 4px 8px; }
+  .owned { font-size: 7px; color: #e0b23c; font-weight: 700; line-height: 1.3; }
+  .owned span { background: #e0b23c; color: #17170f; padding: 1px 5px; border-radius: 3px; font-size: 7px; }
+  .number { font-size: 11px; color: #fff; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="heading">1822 &mdash; Private Companies (P1&ndash;P21)</div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const BLUE = '#2c4a7c';
+const GRAY = '#4a463f';
+const GOLD = '#d9a520';
+const TEAL = '#7fb3c9';
+const SALMON = '#e8a894';
+const OLIVE = '#c7c35a';
+const ICE = '#bcdfe6';
+
+const cards = [
+  { number: 'P1', title: '5-Train', name: 'Butterley Engineering Company', phase: '5', revenue: '£5', freq: '', badge: '5', header: BLUE, body: SALMON },
+  { number: 'P2', title: 'Remove Small Station', name: 'Middleton Railway', phase: '2', revenue: '£10', freq: 'One Time', badge: 'RS', header: GRAY, body: OLIVE },
+  { number: 'P3', title: 'Permanent 2-Train', name: 'Shrewsbury and Hereford Railway', phase: '2', revenue: '£0', freq: '', badge: '2', header: BLUE, body: SALMON },
+  { number: 'P4', title: 'Permanent 2-Train', name: 'South Devon Railway', phase: '2', revenue: '£0', freq: '', badge: '2', header: GRAY, body: SALMON },
+  { number: 'P5', title: 'English Channel', name: 'London, Chatham and Dover Railway', phase: '3', revenue: '£10', freq: 'One Time', badge: 'EC', header: GRAY, body: SALMON },
+  { number: 'P6', title: 'Mail Contract', name: 'Leeds & Selby Railway', phase: '3', revenue: '£10', freq: 'Each OR', badge: 'M', header: GOLD, body: SALMON },
+  { number: 'P7', title: 'Mail Contract', name: 'Shrewsbury and Birmingham Railway', phase: '3', revenue: '£10', freq: 'Each OR', badge: 'M', header: GOLD, body: SALMON },
+  { number: 'P8', title: 'Mountain/Hill Discount', name: 'Edinburgh and Glasgow Railway', phase: '3', revenue: '£10', freq: 'Each OR', badge: 'MH', header: GRAY, body: OLIVE },
+  { number: 'P9', title: 'Declare 2x Cash Holding', name: 'Midland and Great Northern Joint Railway', phase: '3', revenue: '£10', freq: 'Each OR', badge: '2X', header: GOLD, body: OLIVE },
+  { number: 'P10', title: 'River/Estuary Discount', name: 'Glasgow and South-Western Railway', phase: '3', revenue: '£10', freq: 'Each OR', badge: 'RE', header: GRAY, body: OLIVE },
+  { number: 'P11', title: 'Advanced Tile Lay', name: 'Bristol & Exeter Railway', phase: '2', revenue: '£10', freq: 'One Time', badge: 'AT', header: GOLD, body: OLIVE },
+  { number: 'P12', title: 'Extra Tile Lay', name: 'Leicester & Swannington Railway', phase: '3', revenue: '£10', freq: 'One Time', badge: 'ET', header: GRAY, body: OLIVE },
+  { number: 'P13', title: 'Pullman', name: 'York, Newcastle and Berwick Railway', phase: '5', revenue: '£10', freq: '', badge: 'P+', header: BLUE, body: SALMON },
+  { number: 'P14', title: 'Pullman', name: 'Kilmarnock and Troon Railway', phase: '5', revenue: '£10', freq: '', badge: 'P+', header: BLUE, body: SALMON },
+  { number: 'P15', title: '£10x Phase', name: 'Highland Railway', phase: '2', revenue: '£10x Phase', freq: 'Revenue & Treasury', badge: 'X', header: GOLD, body: OLIVE },
+  { number: 'P16', title: 'Tax Haven', name: 'Off-Shore Tax Haven', phase: 'Cannot Be Acquired', revenue: '£0', freq: '', badge: 'TH', header: TEAL, body: ICE },
+  { number: 'P17', title: 'Move Card', name: 'Lancashire Union Railway', phase: '2', revenue: '£10', freq: 'One Time', badge: '?', header: GRAY, body: SALMON },
+  { number: 'P18', title: 'Station Marker Swap', name: 'Cromford and High Peak Railway', phase: '5', revenue: '£10', freq: 'One Time', badge: 'SW', header: GOLD, body: SALMON },
+  { number: 'P19', title: 'Permanent L-Train', name: 'Avonside Engine Company', phase: '1', revenue: '£0', freq: '', badge: 'L', header: BLUE, body: SALMON },
+  { number: 'P20', title: '£5x Phase', name: 'Canterbury and Whitstable Railway', phase: '3', revenue: '£5x Phase', freq: 'Revenue & Treasury', badge: 'X', header: GOLD, body: OLIVE },
+  { number: 'P21', title: 'Grimsby/Hull Bridge', name: 'Humber Suspension Bridge Company', phase: '2', revenue: '£10', freq: '', badge: 'BR', header: GRAY, body: OLIVE },
+];
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+const grid = document.getElementById('grid');
+for (const c of cards) {
+  const freqHtml = c.freq ? `<div class="freq">${esc(c.freq)}</div>` : '';
+  grid.insertAdjacentHTML('beforeend', `
+    <div class="card" style="background:${c.body}">
+      <div class="card-header" style="background:${c.header}">${esc(c.title)}</div>
+      <div class="card-name">${esc(c.name)}</div>
+      <div class="card-body">
+        <div class="phase-block">
+          <div class="label">Phase</div>
+          <div class="phase-val">${esc(c.phase)}</div>
+        </div>
+        <div class="badge">${esc(c.badge)}</div>
+        <div class="revenue-block">
+          <div class="label">Revenue</div>
+          <div class="revenue-val">${esc(c.revenue)}</div>
+        </div>
+      </div>
+      ${freqHtml}
+      <div class="card-footer">
+        <div class="owned">PLAYER-OWNED<br><span>PRIVATE COMPANY</span></div>
+        <div class="number">${esc(c.number)}</div>
+      </div>
+    </div>
+  `);
+}
+</script>
+</body>
+</html>
