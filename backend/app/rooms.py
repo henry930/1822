@@ -13,6 +13,7 @@ from enum import Enum
 
 from fastapi import WebSocket
 
+from app.engine.actions import ActionError, apply_action
 from app.engine.models import GameState
 from app.engine.setup import new_game
 
@@ -43,6 +44,9 @@ class Room:
     started: bool = False
     state: GameState | None = None
     connections: dict[str, WebSocket] = field(default_factory=dict)
+    # lobby player_id (the uuid a client connects with) -> engine player_id
+    # ("p1".."pN", assigned by new_game in lobby_players order).
+    player_id_map: dict[str, str] = field(default_factory=dict)
 
     async def broadcast(self) -> None:
         if self.state is None:
@@ -56,6 +60,7 @@ class Room:
             payload = json.dumps({
                 "type": "state",
                 "state": json.loads(serialize_state(self.state)),
+                "player_id_map": self.player_id_map,
             })
         stale = []
         for pid, ws in self.connections.items():
@@ -66,12 +71,34 @@ class Room:
         for pid in stale:
             self.connections.pop(pid, None)
 
+    async def send_error(self, lobby_player_id: str, message: str) -> None:
+        ws = self.connections.get(lobby_player_id)
+        if ws is None:
+            return
+        try:
+            await ws.send_text(json.dumps({"type": "error", "message": message}))
+        except Exception:
+            pass
+
     def start(self) -> None:
         if self.started:
             return
         names = [p.name for p in self.lobby_players]
         self.state = new_game(game_id=self.room_id, player_names=names)
+        self.player_id_map = {
+            p.player_id: f"p{i + 1}" for i, p in enumerate(self.lobby_players)
+        }
         self.started = True
+
+    def apply_action(self, lobby_player_id: str, action: dict) -> None:
+        """Raises ActionError on an illegal action - callers should relay
+        that back to just the offending client, not broadcast it."""
+        if self.state is None:
+            raise ActionError("Game has not started.")
+        engine_player_id = self.player_id_map.get(lobby_player_id)
+        if engine_player_id is None:
+            raise ActionError("Unknown player.")
+        apply_action(self.state, engine_player_id, action)
 
 
 class RoomRegistry:

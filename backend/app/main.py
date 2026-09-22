@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import json
 import uuid
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app.engine.actions import ActionError
 from app.rooms import LobbyPlayer, registry
 
 app = FastAPI(title="1822 Game Server")
@@ -82,9 +84,21 @@ async def ws_endpoint(websocket: WebSocket, room_id: str, player_id: str):
     await room.broadcast()
     try:
         while True:
-            # v1: inbound game actions will be handled here once the rules engine
-            # exposes an apply_action(state, player_id, action) entry point.
-            await websocket.receive_text()
+            raw = await websocket.receive_text()
+            try:
+                action = json.loads(raw)
+            except json.JSONDecodeError:
+                await room.send_error(player_id, "Malformed message: expected JSON.")
+                continue
+            if not isinstance(action, dict) or "type" not in action:
+                await room.send_error(player_id, "Malformed action: expected an object with a 'type' field.")
+                continue
+            try:
+                room.apply_action(player_id, action)
+            except ActionError as e:
+                await room.send_error(player_id, str(e))
+                continue
+            await room.broadcast()
     except WebSocketDisconnect:
         room.connections.pop(player_id, None)
         for p in room.lobby_players:
