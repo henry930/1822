@@ -203,10 +203,53 @@ label.hint {
   background: #fafafa;
 }
 
+.board-photo-wrap {
+  position: relative;
+  width: 100%;
+}
+
 .board-photo {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.board-photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.photo-hex {
+  fill: transparent;
+  stroke: rgba(0, 0, 0, 0.12);
+  stroke-width: 1;
+  cursor: pointer;
+}
+
+.photo-hex:hover {
+  fill: rgba(255, 221, 0, 0.28);
+  stroke: rgba(0, 0, 0, 0.4);
+}
+
+.photo-hex.catalogued {
+  stroke: rgba(44, 110, 73, 0.35);
+}
+
+.photo-hex.placed {
+  fill: rgba(44, 110, 73, 0.12);
+}
+
+.photo-hex.selected {
+  stroke: #c0392b;
+  stroke-width: 3;
+}
+
+.photo-hex.queued {
+  stroke: #2c6e49;
+  stroke-width: 3;
 }
 
 .hex-search {

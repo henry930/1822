@@ -40,6 +40,27 @@ function hexCenter(col: number, row: number, dx: number, dy: number) {
   return { x: x + dx * COL_SPACING * 0.5, y: y + dy * ROW_SPACING * 0.5 };
 }
 
+// Calibration for the real board scan (board.jpg, 1700x2200 - see
+// assets/map/README.md for how these were measured). The board's printed
+// row numbers turned out to increment by 1 per HALF a physical hex-row
+// (odd columns only ever carry odd row numbers, even columns only ever
+// carry even ones - confirmed against 26/28 rules-confidence catalogued
+// hexes), so a hex's pixel position is a *plain* linear map of its raw
+// (col, row) - no extra odd/even column offset term needed, unlike the
+// schematic view above which treats "row" as a per-column sequential index.
+const PHOTO_X0 = 222.0;
+const PHOTO_DX = 78.05; // px per column-letter step
+const PHOTO_Y0 = 92.1;
+const PHOTO_DY = 45.23; // px per printed row-number unit
+const PHOTO_HEX_SIZE = 52; // center-to-vertex, tessellates with PHOTO_DX/DY above
+const PHOTO_IMAGE_W = 1700;
+const PHOTO_IMAGE_H = 2200;
+const PHOTO_MAX_ROW = 43;
+
+function photoHexCenter(col: number, row: number) {
+  return { x: PHOTO_X0 + col * PHOTO_DX, y: PHOTO_Y0 + row * PHOTO_DY };
+}
+
 function hexPoints(cx: number, cy: number, size: number): string {
   // Flat-top hex, matching the tile SVGs' own orientation.
   const pts = [
@@ -133,6 +154,31 @@ export default function MapTab({
     return list;
   }, [mapData]);
 
+  const hexById = useMemo(() => {
+    const map = new Map<string, HexEntry>();
+    for (const entry of allHexes) map.set(entry.hex.id, entry);
+    return map;
+  }, [allHexes]);
+
+  // Every clickable hex region on the real board scan: the printed board is
+  // a full rectangular hex grid (sea hexes included, just colored blue), and
+  // - per the calibration note above - a real hex only ever exists where the
+  // column index and row number share the same parity. This is what makes
+  // the photo view show "different hexagon regions" directly on the art,
+  // not just the ~120 named/catalogued ones.
+  const photoGrid = useMemo(() => {
+    if (!mapData) return [];
+    const list: { hexId: string; col: number; row: number }[] = [];
+    for (let col = 0; col < mapData.columns.length; col++) {
+      for (let row = 1; row <= PHOTO_MAX_ROW; row++) {
+        if (col % 2 === row % 2) {
+          list.push({ hexId: `${mapData.columns[col]}${row}`, col, row });
+        }
+      }
+    }
+    return list;
+  }, [mapData]);
+
   const bounds = useMemo(() => {
     if (allHexes.length === 0) return { minX: 0, minY: 0, maxX: 800, maxY: 600 };
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -199,12 +245,12 @@ export default function MapTab({
     <div className="panel map-panel">
       <h3>Map & Tile Placement</h3>
       <p className="hint">
-        The board on the left is the actual scanned 1822 map (map.pdf), so it looks like the
-        physical game - it isn't wired up for pixel-precise clicking yet, so pick a hex by
-        searching its id or city name below it instead. Once a hex is picked, only tiles that
-        are actually legal to lay there right now (checked live against the game's real rules -
-        phase/color, tile supply, upgrade-must-preserve-track, city label) are offered; pick a
-        rotation and "Queue" fills the same tile-lay fields the Operate tab sends.
+        The board on the left is the actual scanned 1822 map (map.pdf) with a clickable hex grid
+        overlaid on it - click any hexagon region directly on the map (or search by id/city name
+        below it) to select it. Once a hex is picked, only tiles that are actually legal to lay
+        there right now (checked live against the game's real rules - phase/color, tile supply,
+        upgrade-must-preserve-track, city label) are offered; pick a rotation and "Queue" fills
+        the same tile-lay fields the Operate tab sends.
       </p>
       {loadError && <p className="error">{loadError}</p>}
 
@@ -227,7 +273,42 @@ export default function MapTab({
         {viewMode === "photo" ? (
           <div className="board-photo-col">
             <div className="board-photo-scroll">
-              <img src={boardImageUrl} alt="1822 board map" className="board-photo" />
+              <div className="board-photo-wrap">
+                <img src={boardImageUrl} alt="1822 board map" className="board-photo" />
+                <svg
+                  className="board-photo-overlay"
+                  viewBox={`0 0 ${PHOTO_IMAGE_W} ${PHOTO_IMAGE_H}`}
+                >
+                  {photoGrid.map(({ hexId, col, row }) => {
+                    const { x, y } = photoHexCenter(col, row);
+                    const placed = boardTiles?.[hexId];
+                    const catalogued = hexById.get(hexId);
+                    const isSelected = hexId === selectedHexId;
+                    const isQueued = hexId === queuedHexId;
+                    return (
+                      <g key={hexId} onClick={() => setSelectedHexId(hexId)}>
+                        <polygon
+                          points={hexPoints(x, y, PHOTO_HEX_SIZE)}
+                          className={`photo-hex${catalogued ? " catalogued" : ""}${
+                            placed ? " placed" : ""
+                          }${isSelected ? " selected" : ""}${isQueued ? " queued" : ""}`}
+                        />
+                        {placed && tileUrl(`tile_${placed.tile_id}.svg`) && (
+                          <image
+                            href={tileUrl(`tile_${placed.tile_id}.svg`)}
+                            x={x - PHOTO_HEX_SIZE}
+                            y={y - PHOTO_HEX_SIZE}
+                            width={PHOTO_HEX_SIZE * 2}
+                            height={PHOTO_HEX_SIZE * 2}
+                            transform={`rotate(${placed.rotation * 60} ${x} ${y})`}
+                            pointerEvents="none"
+                          />
+                        )}
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
             </div>
             <div className="hex-search">
               <input
@@ -316,7 +397,7 @@ export default function MapTab({
 
         <div className="map-side-panel">
           {!selectedHexId && (
-            <p className="hint">Search for a hex above (or click one in the schematic) to inspect or lay a tile on it.</p>
+            <p className="hint">Click a hexagon on the map (or search above) to inspect or lay a tile on it.</p>
           )}
           {selectedHexId && (
             <>
