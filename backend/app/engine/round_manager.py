@@ -5,8 +5,9 @@ from __future__ import annotations
 
 from app.data.phases import PHASES_BY_NUMBER
 
+from .bidding import resolve_stock_round
 from .models import GameState, RoundType
-from .turn_order import compute_operating_order, next_priority_deal_player
+from .turn_order import compute_operating_order, reorder_players_by_cash
 
 
 def start_stock_round(state: GameState) -> None:
@@ -14,12 +15,14 @@ def start_stock_round(state: GameState) -> None:
     state.consecutive_passes = 0
     state.any_sale_this_stock_round = False
     state.active_player_id = state.priority_deal_player_id
+    state.bids_this_turn = 0
 
 
 def advance_stock_player(state: GameState) -> None:
     order = state.player_order
     idx = order.index(state.active_player_id)
     state.active_player_id = order[(idx + 1) % len(order)]
+    state.bids_this_turn = 0
 
 
 def end_stock_round(state: GameState) -> None:
@@ -30,8 +33,10 @@ def end_stock_round(state: GameState) -> None:
         state.log.append("Game over: first stock round ended with nothing sold (rule 10.1.1).")
         return
 
+    resolve_stock_round(state)
     state.stock_rounds_completed += 1
-    state.priority_deal_player_id = next_priority_deal_player(state)
+    state.player_order = reorder_players_by_cash(state)
+    state.priority_deal_player_id = state.player_order[0]
     start_operating_round_set(state)
 
 

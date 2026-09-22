@@ -33,15 +33,13 @@ def compute_operating_order(state: GameState) -> list[str]:
     return minors + majors
 
 
-def next_priority_deal_player(state: GameState) -> str:
-    """Rule 4.11.9: Player 1 (next SR's priority deal) goes to the player
-    with the most cash; ties keep their relative order from the previous
-    stock round."""
+def reorder_players_by_cash(state: GameState) -> list[str]:
+    """Rule 4.11.9: the next SR's whole turn order is reassigned by cash,
+    most to least; ties keep their relative order from the previous round."""
     prev_order = state.player_order
 
     def cash_key(pid: str):
         idx = prev_order.index(pid) if pid in prev_order else len(prev_order)
         return (-state.players[pid].cash, idx)
 
-    ranked = sorted(state.players.keys(), key=cash_key)
-    return ranked[0] if ranked else state.priority_deal_player_id
+    return sorted(state.players.keys(), key=cash_key)

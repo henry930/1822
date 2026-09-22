@@ -33,6 +33,7 @@ class Player:
     # of "MinorState.owner").
     shares: dict[str, int] = field(default_factory=dict)
     private_companies: list[int] = field(default_factory=list)  # private company numbers owned
+    concessions: list[str] = field(default_factory=list)  # major abbrs held, not yet converted
     tax_haven_shares: dict[str, int] = field(default_factory=dict)  # P16 charter holdings
 
 
@@ -139,6 +140,7 @@ class GameState:
     consecutive_passes: int = 0
     stock_rounds_completed: int = 0
     any_sale_this_stock_round: bool = False
+    bids_this_turn: int = 0  # rule 4.10.5: up to 3 bid placements/moves per stock-round turn
 
     # Operating-round-set sequencing (rule 5.2). operating_rounds_this_set is
     # captured from the phase table at the *start* of the OR set, per rule
