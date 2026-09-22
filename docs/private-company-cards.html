@@ -77,7 +77,7 @@ const grid = document.getElementById('grid');
 for (const c of cards) {
   const freqHtml = c.freq ? `<div class="freq">${esc(c.freq)}</div>` : '';
   grid.insertAdjacentHTML('beforeend', `
-    <div class="card" style="background:${c.body}">
+    <div class="card" data-id="${c.number}" style="background:${c.body}">
       <div class="card-header" style="background:${c.header}">${esc(c.title)}</div>
       <div class="card-name">${esc(c.name)}</div>
       <div class="card-body">

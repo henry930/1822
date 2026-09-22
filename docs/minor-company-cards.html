@@ -126,7 +126,7 @@ for (const c of companies) {
       <div class="special-text">${esc(c.special)}</div>
     </div>` : '';
   grid.insertAdjacentHTML('beforeend', `
-    <div class="card">
+    <div class="card" data-id="M${c.n}">
       <div class="num-col">
         <div class="num-circle">${c.n}</div>
         <div class="name">${esc(c.name)}</div>

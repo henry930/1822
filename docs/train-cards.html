@@ -68,7 +68,7 @@ for (const t of trains) {
   const upgradeHtml = t.upgrade ? `<div class="upgrade">${esc(t.upgrade)}</div>` : '';
   const badgeClass = t.badge === 'PERMANENT' ? 'permanent' : 'rust';
   grid.insertAdjacentHTML('beforeend', `
-    <div class="card">
+    <div class="card" data-id="${t.num}">
       <div class="top-row">
         <div class="num" style="color:${t.color}">${esc(t.num)}</div>
         <div class="price-block">

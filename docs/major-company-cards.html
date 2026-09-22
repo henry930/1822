@@ -63,7 +63,7 @@ const grid = document.getElementById('grid');
 for (const c of companies) {
   const rows = phaseRows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
   grid.insertAdjacentHTML('beforeend', `
-    <div class="card">
+    <div class="card" data-id="${c.abbr.replace(/&/g, '')}">
       <div class="card-header" style="background:${c.color}">${c.name} (${c.abbr})</div>
       <div class="card-sub">
         <span>Home: <b>${c.home}</b></span>
