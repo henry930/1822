@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>1822 — Minor Company Cards (M1–M30)</title>
+<style>
+  body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: #20201d; }
+  .page { box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px; }
+  .heading { color: #f2ead9; font-size: 22px; font-weight: 700; letter-spacing: 0.3px; font-family: Arial, Helvetica, sans-serif; }
+  .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .card { background: #f4efe0; border-radius: 6px; border: 2px solid #1c1c18;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.35); display: flex; padding: 8px; gap: 8px; }
+  .num-col { display: flex; flex-direction: column; align-items: center; width: 24px; flex-shrink: 0; }
+  .num-circle { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #1c1c18;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 12px; font-weight: 700; font-family: Arial, Helvetica, sans-serif; flex-shrink: 0; }
+  .name { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; font-weight: 700;
+          color: #2a2a24; margin-top: 6px; line-height: 1.15; text-align: center; }
+  .body { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .section-title { font-size: 11px; font-weight: 700; color: #1c1c18; font-family: Arial, Helvetica, sans-serif; }
+  table.trains { border-collapse: collapse; font-size: 7px; font-family: Arial, Helvetica, sans-serif; width: 100%; }
+  table.trains th, table.trains td { border: 1px solid #55524a; padding: 1px 3px; text-align: center; }
+  table.trains th { background: #e6dfc8; font-weight: 700; }
+  .float-cell { text-align: left; font-size: 6.3px; line-height: 1.15; }
+  .phase-1L { background: #f0c93a; }
+  .phase-2 { background: #f0c93a; }
+  .phase-3, .phase-4 { background: #6fae63; color: #fff; font-weight: 700; }
+  .phase-5, .phase-6 { background: #c96450; color: #fff; font-weight: 700; }
+  .phase-7, .phase-E { background: #9a968c; color: #fff; font-weight: 700; }
+  .rust-L { background: #f0c93a; font-weight: 700; }
+  .rust-2 { background: #f0c93a; font-weight: 700; }
+  .rust-3 { background: #6fae63; color: #fff; font-weight: 700; }
+  .rust-4 { background: #6fae63; color: #fff; font-weight: 700; }
+  .assets { font-size: 8px; font-family: Arial, Helvetica, sans-serif; }
+  .assets-title { font-weight: 700; margin-bottom: 1px; }
+  .ora-title { font-weight: 700; margin: 3px 0 1px 0; }
+  .ora ul { margin: 0; padding-left: 11px; }
+  .ora li { line-height: 1.35; }
+  .special { margin-top: 3px; border: 1px solid #1c1c18; border-radius: 4px; padding: 3px 4px;
+             display: flex; align-items: center; gap: 4px; background: #ece4cc; }
+  .special-badge { width: 15px; height: 15px; border-radius: 50%; background: #6fae63; color: #fff;
+                   font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .special-text { font-size: 6.3px; line-height: 1.2; }
+  .footnote { margin-top: 3px; display: flex; gap: 3px; font-size: 6.3px; line-height: 1.2; color: #2a2a24; }
+  .footnote .bang { flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="heading">1822 &mdash; Minor Companies (M1&ndash;M30)</div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const companies = [
+  { n: 1, name: 'Great North of Scotland Railway' },
+  { n: 2, name: 'Lanarkshire and Dunbartonshire Railway' },
+  { n: 3, name: 'Edinburgh and Dalkeith Railway' },
+  { n: 4, name: 'Newcastle and North Shields Railway' },
+  { n: 5, name: 'Stockton and Darlington Railway' },
+  { n: 6, name: 'Furness Railway' },
+  { n: 7, name: 'Warrington and Newton Railway' },
+  { n: 8, name: 'Manchester, Sheffield and Lincolnshire Railway' },
+  { n: 9, name: 'East Lincolnshire Railway' },
+  { n: 10, name: 'Grand Junction Railway' },
+  { n: 11, name: 'Great Northern Railway' },
+  { n: 12, name: 'Eastern Union Railway' },
+  { n: 13, name: 'Headcorn and Maidstone Junction Light Railway' },
+  { n: 14, name: 'Metropolitan Railway', special: 'Must pay £20 to place a station in any city slot in London and counts as the first turn track lay.' },
+  { n: 15, name: 'London, Tilbury and Southend Railway' },
+  { n: 16, name: 'London and Birmingham Railway' },
+  { n: 17, name: 'London and Southampton Railway' },
+  { n: 18, name: 'Somerset and Dorset Joint Railway' },
+  { n: 19, name: 'Penarth Harbour and Dock Railway' },
+  { n: 20, name: 'Monmouthshire Railway and Canal Company' },
+  { n: 21, name: 'Taff Vale Railway' },
+  { n: 22, name: 'Exeter and Crediton Railway' },
+  { n: 23, name: 'West Cornwall Railway' },
+  { n: 24, name: 'Swansea and Mumbles Railway' },
+  { n: 25, name: 'Yarmouth and Norwich Railway' },
+  { n: 26, name: 'Hull and Selby Railway' },
+  { n: 27, name: 'City of Glasgow Union Railway' },
+  { n: 28, name: 'Maryport and Carlisle Railway' },
+  { n: 29, name: 'Shropshire and Montgomeryshire Railway' },
+  { n: 30, name: 'Plymouth and Dartmoor Railway' },
+];
+
+// Standard minor-company train chart, identical on every card (rules Company Tables, p.36).
+const trainRows = [
+  { phase: '1/L', limit: '2/-', qty: '',  cost: '£60',   rust: '',  float: 'Float at £50 with £100 capital', phaseClass: 'phase-1L' },
+  { phase: '2',   limit: '',    qty: '22', cost: '£120',  rust: '',  float: 'Float between £50 and £100 with capital of 2x stock value', phaseClass: 'phase-2' },
+  { phase: '3',   limit: '2/4', qty: '9',  cost: '£200',  rust: 'L', float: 'Float between £50 and £100 with capital of total bid', phaseClass: 'phase-3', rustClass: 'rust-L' },
+  { phase: '4',   limit: '',    qty: '6',  cost: '£300',  rust: '2', float: '', phaseClass: 'phase-4', rustClass: 'rust-2' },
+  { phase: '5',   limit: '1/3', qty: '3',  cost: '£500',  rust: '',  float: '', phaseClass: 'phase-5' },
+  { phase: '6',   limit: '',    qty: '3',  cost: '£600',  rust: '3', float: '', phaseClass: 'phase-6', rustClass: 'rust-3' },
+  { phase: '7',   limit: '1/2', qty: '',   cost: '£750',  rust: '',  float: '', phaseClass: 'phase-7' },
+  { phase: 'E',   limit: '',    qty: '4',  cost: '£1000', rust: '4', float: '', phaseClass: 'phase-E', rustClass: 'rust-4' },
+];
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function trainTable() {
+  let rows = '';
+  for (const r of trainRows) {
+    rows += `<tr>
+      <td class="${r.phaseClass}">${esc(r.phase)}</td>
+      <td>${esc(r.limit)}</td>
+      <td>${esc(r.qty)}</td>
+      <td>${esc(r.cost)}</td>
+      <td class="${r.rustClass || ''}">${esc(r.rust)}</td>
+      <td class="float-cell">${esc(r.float)}</td>
+    </tr>`;
+  }
+  return `<table class="trains">
+    <tr><th>Phase</th><th>Train<br>Limit</th><th>#</th><th>Cost</th><th>Rust</th><th>Float</th></tr>
+    ${rows}
+  </table>`;
+}
+
+const grid = document.getElementById('grid');
+for (const c of companies) {
+  const specialHtml = c.special ? `
+    <div class="special">
+      <div class="special-badge">${c.n}</div>
+      <div class="special-text">${esc(c.special)}</div>
+    </div>` : '';
+  grid.insertAdjacentHTML('beforeend', `
+    <div class="card">
+      <div class="num-col">
+        <div class="num-circle">${c.n}</div>
+        <div class="name">${esc(c.name)}</div>
+      </div>
+      <div class="body">
+        <div class="section-title">Trains</div>
+        ${trainTable()}
+        <div class="assets">
+          <div class="assets-title">Assets</div>
+          <div class="ora-title">Operating Round Actions</div>
+          <div class="ora">
+            <ul>
+              <li>First Turn Housekeeping</li>
+              <li>Acquire private companies</li>
+              <li>Lay or upgrade track</li>
+              <li>Run trains</li>
+              <li>Split dividends</li>
+              <li>Buy rolling stock</li>
+            </ul>
+          </div>
+          ${specialHtml}
+          <div class="footnote"><span class="bang">&#9432;</span><span>50% certificate not available for sale. Must pay 50% dividend to company.</span></div>
+        </div>
+      </div>
+    </div>
+  `);
+}
+</script>
+</body>
+</html>
