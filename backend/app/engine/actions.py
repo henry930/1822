@@ -23,6 +23,7 @@ from .operating import (
 )
 from .round_manager import active_company_id, advance_company, advance_stock_player, end_stock_round
 from .shares import ShareError, buy_share, sell_shares
+from .trains import TrainError, buy_train_from_bank
 
 
 class ActionError(Exception):
@@ -170,7 +171,11 @@ def _apply_operate(state: GameState, player_id: str, action: dict) -> None:
 
         if revenue > 0 or kind == "minor":
             distribute_earnings(state, company_id, kind, revenue, action.get("dividend_choice", "withhold"))
-    except OperatingError as e:
+
+        buy_train = action.get("buy_train")
+        if buy_train is not None:
+            buy_train_from_bank(state, company_id, kind, buy_train)
+    except (OperatingError, TrainError) as e:
         raise ActionError(str(e)) from e
 
     advance_company(state)

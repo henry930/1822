@@ -39,12 +39,23 @@ def destination_hex_for(major_abbr: str) -> str | None:
 
 
 def first_turn_housekeeping(state: GameState, board: BoardState, company_id: str, kind: str) -> None:
-    """Rule 5.5.1: place the company's free home station token."""
+    """Rule 5.5.1: place the company's free home station token. Rule 5.5.3:
+    a minor with no train yet may (not must) buy an L-train on this first
+    turn - attempted automatically here if affordable, since a minor must
+    own a train by the end of its turn (rule 3.2.9) and this is its only
+    chance to get an L specifically."""
     if kind == "minor":
         minor = state.minors[company_id]
         if minor.home_token_placed:
             return
         minor.home_token_placed = True
+        if not minor.trains:
+            from .trains import TrainError, buy_train_from_bank
+
+            try:
+                buy_train_from_bank(state, company_id, kind, "L")
+            except TrainError:
+                pass  # no L-trains left, or can't afford one - leave for a forced purchase later
     else:
         major = state.majors[company_id]
         if major.home_token_placed:
