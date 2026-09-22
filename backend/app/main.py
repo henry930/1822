@@ -115,6 +115,28 @@ def board_map():
     return {"columns": list(HEX_COLUMNS), "cities": cities, "offboard": offboard, "terrain": terrain}
 
 
+@app.get("/rooms/{room_id}/tile_lay_options")
+def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major"):
+    """Every (tile, rotation) combination's legality for a lay on this hex
+    right now, for the room's live game state - drives the map UI's "what
+    can I place here" prompt. company_kind should be "minor" or "major"
+    (minors can never upgrade past green, rule 3.2.7); defaults to "major"
+    (the less restrictive case) when the caller doesn't know which company
+    is laying, e.g. when just browsing outside an operating round."""
+    room = registry.get(room_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.state is None:
+        raise HTTPException(status_code=400, detail="Game has not started")
+    if company_kind not in ("minor", "major"):
+        raise HTTPException(status_code=400, detail="company_kind must be 'minor' or 'major'")
+
+    from app.engine.board import tile_lay_report
+
+    report = tile_lay_report(room.state.board, room.state.phase, hex_id, company_kind)
+    return {"hex_id": hex_id, "phase": room.state.phase, "company_kind": company_kind, "report": report}
+
+
 @app.post("/rooms", response_model=CreateRoomResponse)
 def create_room():
     room = registry.create_room()

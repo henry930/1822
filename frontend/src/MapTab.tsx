@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchBoardMap, type BoardMapData, type MapCity, type MapOffboard, type MapTerrain } from "./api";
+import {
+  fetchBoardMap,
+  fetchTileLayOptions,
+  type BoardMapData,
+  type MapCity,
+  type MapOffboard,
+  type MapTerrain,
+  type TileLayOption,
+} from "./api";
 import manifestUrl from "./assets/tiles/manifest.json?url";
 import boardImageUrl from "./assets/map/board.jpg";
 
@@ -49,6 +57,8 @@ type PlacedTile = { tile_id: string; rotation: number };
 type HexEntry = { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offboard" | "terrain" };
 
 type Props = {
+  roomId: string | null;
+  companyKind: "minor" | "major";
   boardTiles: Record<string, PlacedTile> | undefined;
   inGame: boolean;
   canQueueLay: boolean;
@@ -56,7 +66,15 @@ type Props = {
   queuedHexId: string | null;
 };
 
-export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, queuedHexId }: Props) {
+export default function MapTab({
+  roomId,
+  companyKind,
+  boardTiles,
+  inGame,
+  canQueueLay,
+  onQueueLay,
+  queuedHexId,
+}: Props) {
   const [mapData, setMapData] = useState<BoardMapData | null>(null);
   const [manifest, setManifest] = useState<TileManifestEntry[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -65,6 +83,9 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
   const [pendingRotation, setPendingRotation] = useState(0);
   const [viewMode, setViewMode] = useState<"photo" | "schematic">("photo");
   const [search, setSearch] = useState("");
+  const [report, setReport] = useState<TileLayOption[] | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBoardMap()
@@ -75,6 +96,33 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
       .then(setManifest)
       .catch((e) => setLoadError((e as Error).message));
   }, []);
+
+  // Every (tile, rotation) combination's legality for the selected hex right
+  // now, fetched once per hex/room/company-kind change - re-derived from the
+  // real engine validator server-side, so it can never drift out of sync
+  // with what actually happens when Operate is clicked.
+  useEffect(() => {
+    setReport(null);
+    setReportError(null);
+    setPendingTileId(null);
+    if (!selectedHexId || !roomId) return;
+    setReportLoading(true);
+    fetchTileLayOptions(roomId, selectedHexId, companyKind)
+      .then((r) => setReport(r.report))
+      .catch((e) => setReportError((e as Error).message))
+      .finally(() => setReportLoading(false));
+  }, [selectedHexId, roomId, companyKind]);
+
+  const reportByTile = useMemo(() => {
+    const map = new Map<string, TileLayOption[]>();
+    if (!report) return map;
+    for (const opt of report) {
+      const list = map.get(opt.tile_id) ?? [];
+      list.push(opt);
+      map.set(opt.tile_id, list);
+    }
+    return map;
+  }, [report]);
 
   const allHexes: HexEntry[] = useMemo(() => {
     if (!mapData) return [];
@@ -101,12 +149,23 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
   const searchResults = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return [];
-    return allHexes
-      .filter(({ hex }) => {
-        const name = "name" in hex ? (hex as MapCity | MapOffboard).name.toLowerCase() : "";
-        return hex.id.toLowerCase().includes(q) || name.includes(q);
-      })
-      .slice(0, 20);
+    const fromCatalog = allHexes.filter(({ hex }) => {
+      const name = "name" in hex ? (hex as MapCity | MapOffboard).name.toLowerCase() : "";
+      return hex.id.toLowerCase().includes(q) || name.includes(q);
+    });
+    const results: { id: string; label: string }[] = fromCatalog.map(({ hex, kind }) => ({
+      id: hex.id,
+      label: `${hex.id} - ${"name" in hex ? (hex as MapCity | MapOffboard).name : kind}`,
+    }));
+    // Allow typing a raw hex id (e.g. "K20") that isn't in the catalogued
+    // ~120 named hexes - most of the board's several hundred hexes aren't
+    // catalogued, but the tile-lay validator works for any hex id.
+    const rawMatch = /^[A-Qa-q]{1,2}\d{1,2}$/.test(search.trim());
+    if (rawMatch && !results.some((r) => r.id.toLowerCase() === search.trim().toLowerCase())) {
+      const id = search.trim().toUpperCase();
+      results.unshift({ id, label: `${id} (uncatalogued hex)` });
+    }
+    return results.slice(0, 20);
   }, [allHexes, search]);
 
   const selectedInfo = allHexes.find(({ hex }) => hex.id === selectedHexId);
@@ -126,15 +185,26 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
 
   const placedList = Object.entries(boardTiles ?? {});
 
+  const pendingOptions = pendingTileId ? reportByTile.get(pendingTileId) ?? [] : [];
+  const pendingCurrent = pendingOptions.find((o) => o.rotation === pendingRotation);
+
+  function pickTile(tileId: string) {
+    setPendingTileId(tileId);
+    const opts = reportByTile.get(tileId) ?? [];
+    const firstValid = opts.find((o) => o.valid);
+    setPendingRotation(firstValid ? firstValid.rotation : 0);
+  }
+
   return (
     <div className="panel map-panel">
       <h3>Map & Tile Placement</h3>
       <p className="hint">
         The board on the left is the actual scanned 1822 map (map.pdf), so it looks like the
         physical game - it isn't wired up for pixel-precise clicking yet, so pick a hex by
-        searching its id or city name below it instead. Once you've picked a hex, a tile, and a
-        rotation, "Queue" fills the same tile-lay fields the Operate tab sends, so switch there
-        and click Operate during that company's turn to actually place it.
+        searching its id or city name below it instead. Once a hex is picked, only tiles that
+        are actually legal to lay there right now (checked live against the game's real rules -
+        phase/color, tile supply, upgrade-must-preserve-track, city label) are offered; pick a
+        rotation and "Queue" fills the same tile-lay fields the Operate tab sends.
       </p>
       {loadError && <p className="error">{loadError}</p>}
 
@@ -167,15 +237,15 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
               />
               {searchResults.length > 0 && (
                 <ul className="hex-search-results">
-                  {searchResults.map(({ hex, kind }) => (
-                    <li key={hex.id}>
+                  {searchResults.map((r) => (
+                    <li key={r.id}>
                       <button
                         onClick={() => {
-                          setSelectedHexId(hex.id);
+                          setSelectedHexId(r.id);
                           setSearch("");
                         }}
                       >
-                        {hex.id} - {"name" in hex ? (hex as MapCity | MapOffboard).name : kind}
+                        {r.label}
                       </button>
                     </li>
                   ))}
@@ -245,77 +315,125 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
         )}
 
         <div className="map-side-panel">
-          {!selectedInfo && <p className="hint">Search for a hex above (or click one in the schematic) to inspect or lay a tile on it.</p>}
-          {selectedInfo && (
+          {!selectedHexId && (
+            <p className="hint">Search for a hex above (or click one in the schematic) to inspect or lay a tile on it.</p>
+          )}
+          {selectedHexId && (
             <>
               <h4>
-                {selectedInfo.hex.id}
-                {"name" in selectedInfo.hex ? ` - ${(selectedInfo.hex as MapCity).name}` : ""}
+                {selectedHexId}
+                {selectedInfo && "name" in selectedInfo.hex ? ` - ${(selectedInfo.hex as MapCity).name}` : ""}
               </h4>
-              <p className="hint">
-                {selectedInfo.kind === "city" &&
-                  `${(selectedInfo.hex as MapCity).is_town ? "Town" : "City"}${
-                    (selectedInfo.hex as MapCity).label ? ` (label ${(selectedInfo.hex as MapCity).label})` : ""
-                  }`}
-                {selectedInfo.kind === "offboard" &&
-                  `Off-board area: ${(selectedInfo.hex as MapOffboard).name} (£${
-                    (selectedInfo.hex as MapOffboard).value_yellow
-                  }/£${(selectedInfo.hex as MapOffboard).value_green}/£${
-                    (selectedInfo.hex as MapOffboard).value_brown
-                  }/£${(selectedInfo.hex as MapOffboard).value_grey})`}
-                {selectedInfo.kind === "terrain" &&
-                  `Difficult terrain: ${(selectedInfo.hex as MapTerrain).terrain} (£${
-                    (selectedInfo.hex as MapTerrain).cost
-                  } to cross)`}
-              </p>
+              {selectedInfo ? (
+                <p className="hint">
+                  {selectedInfo.kind === "city" &&
+                    `${(selectedInfo.hex as MapCity).is_town ? "Town" : "City"}${
+                      (selectedInfo.hex as MapCity).label ? ` (label ${(selectedInfo.hex as MapCity).label})` : ""
+                    }`}
+                  {selectedInfo.kind === "offboard" &&
+                    `Off-board area: ${(selectedInfo.hex as MapOffboard).name} (£${
+                      (selectedInfo.hex as MapOffboard).value_yellow
+                    }/£${(selectedInfo.hex as MapOffboard).value_green}/£${
+                      (selectedInfo.hex as MapOffboard).value_brown
+                    }/£${(selectedInfo.hex as MapOffboard).value_grey})`}
+                  {selectedInfo.kind === "terrain" &&
+                    `Difficult terrain: ${(selectedInfo.hex as MapTerrain).terrain} (£${
+                      (selectedInfo.hex as MapTerrain).cost
+                    } to cross)`}
+                </p>
+              ) : (
+                <p className="hint">Not in the catalogued hex list - showing tile legality only.</p>
+              )}
               <p className="hint">
                 {selectedPlacedTile
                   ? `Currently has tile ${selectedPlacedTile.tile_id} at rotation ${selectedPlacedTile.rotation}.`
                   : "No tile placed yet on this hex."}
               </p>
 
-              <h4>Pick a tile</h4>
-              {(["yellow", "green", "brown", "gray"] as const).map((color) => (
-                <div key={color} className="tile-palette-row">
-                  <span className="tile-palette-label">{color}</span>
-                  {grouped[color].map((t) => {
-                    const url = tileUrl(t.file);
+              {!roomId && <p className="hint">Start or join a game to see which tiles are legal here.</p>}
+              {roomId && reportLoading && <p className="hint">Checking which tiles can legally be placed here...</p>}
+              {reportError && <p className="error">{reportError}</p>}
+
+              {report && (
+                <>
+                  <h4>Tiles that can be placed here ({companyKind})</h4>
+                  {(["yellow", "green", "brown", "gray"] as const).map((color) => {
+                    const placeable = grouped[color].filter((t) =>
+                      (reportByTile.get(t.id) ?? []).some((o) => o.valid)
+                    );
+                    if (placeable.length === 0) return null;
                     return (
-                      <button
-                        key={t.id}
-                        className={`tile-swatch${pendingTileId === t.id ? " selected" : ""}`}
-                        onClick={() => setPendingTileId(t.id)}
-                        title={`Tile ${t.id} (${t.count} in supply)`}
-                      >
-                        {url ? <img src={url} alt={t.id} /> : t.id}
-                      </button>
+                      <div key={color} className="tile-palette-row">
+                        <span className="tile-palette-label">{color}</span>
+                        {placeable.map((t) => {
+                          const url = tileUrl(t.file);
+                          return (
+                            <button
+                              key={t.id}
+                              className={`tile-swatch${pendingTileId === t.id ? " selected" : ""}`}
+                              onClick={() => pickTile(t.id)}
+                              title={`Tile ${t.id} (${t.count} in supply)`}
+                            >
+                              {url ? <img src={url} alt={t.id} /> : t.id}
+                            </button>
+                          );
+                        })}
+                      </div>
                     );
                   })}
-                </div>
-              ))}
+                  {(["yellow", "green", "brown", "gray"] as const).every(
+                    (color) => grouped[color].filter((t) => (reportByTile.get(t.id) ?? []).some((o) => o.valid)).length === 0
+                  ) && <p className="hint">No tile can legally be placed here right now.</p>}
+                </>
+              )}
 
               {pendingTileId && (
-                <div className="tile-preview-row">
-                  <div className="tile-preview">
-                    {tileUrl(`tile_${pendingTileId}.svg`) && (
-                      <img
-                        src={tileUrl(`tile_${pendingTileId}.svg`)}
-                        alt={pendingTileId}
-                        style={{ transform: `rotate(${pendingRotation * 60}deg)` }}
-                      />
-                    )}
+                <>
+                  <div className="tile-preview-row">
+                    <div className="tile-preview">
+                      {tileUrl(`tile_${pendingTileId}.svg`) && (
+                        <img
+                          src={tileUrl(`tile_${pendingTileId}.svg`)}
+                          alt={pendingTileId}
+                          style={{ transform: `rotate(${pendingRotation * 60}deg)` }}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <p className="hint">Tile {pendingTileId}, rotation {pendingRotation}</p>
+                      <button onClick={() => setPendingRotation((r) => (r + 5) % 6)}>⟲ rotate</button>
+                      <button onClick={() => setPendingRotation((r) => (r + 1) % 6)}>⟳ rotate</button>
+                    </div>
                   </div>
-                  <div>
-                    <p className="hint">Tile {pendingTileId}, rotation {pendingRotation}</p>
-                    <button onClick={() => setPendingRotation((r) => (r + 5) % 6)}>⟲ rotate</button>
-                    <button onClick={() => setPendingRotation((r) => (r + 1) % 6)}>⟳ rotate</button>
+                  <div className="rotation-picker">
+                    {[0, 1, 2, 3, 4, 5].map((rot) => {
+                      const opt = pendingOptions.find((o) => o.rotation === rot);
+                      return (
+                        <button
+                          key={rot}
+                          className={`rotation-swatch${opt?.valid ? " valid" : " invalid"}${
+                            pendingRotation === rot ? " selected" : ""
+                          }`}
+                          onClick={() => setPendingRotation(rot)}
+                          title={opt?.valid ? `Rotation ${rot}: valid` : opt?.reason ?? "Invalid"}
+                        >
+                          {rot}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
+                  {pendingCurrent && !pendingCurrent.valid && (
+                    <p className="error">Not valid at this rotation: {pendingCurrent.reason}</p>
+                  )}
+                  {pendingCurrent?.valid && pendingCurrent.cost ? (
+                    <p className="hint">Terrain cost: £{pendingCurrent.cost}</p>
+                  ) : null}
+                </>
               )}
 
               <div>
                 <button
-                  disabled={!pendingTileId || !inGame || !canQueueLay}
+                  disabled={!pendingTileId || !pendingCurrent?.valid || !inGame || !canQueueLay}
                   onClick={() => {
                     if (selectedHexId && pendingTileId) onQueueLay(selectedHexId, pendingTileId, pendingRotation);
                   }}

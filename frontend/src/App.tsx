@@ -557,6 +557,12 @@ function App() {
 
           {activeTab === "map" && (
             <MapTab
+              roomId={roomId}
+              companyKind={
+                gameState.round_type === "operating" && activeCompanyId() && gameState.minors[activeCompanyId()!]
+                  ? "minor"
+                  : "major"
+              }
               boardTiles={gameState.board?.tiles}
               inGame={true}
               canQueueLay={gameState.round_type === "operating"}

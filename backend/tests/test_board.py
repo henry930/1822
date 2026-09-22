@@ -5,9 +5,10 @@ from app.engine.board import (
     apply_tile_lay,
     connection_pairs,
     new_board_state,
+    tile_lay_report,
     validate_tile_lay,
 )
-from app.data.tiles import parse_tile_code, TILE_SPECS_BY_ID
+from app.data.tiles import parse_tile_code, TILE_SPECS_BY_ID, TILE_SPECS
 
 
 def _parsed(tile_id):
@@ -106,3 +107,44 @@ def test_connection_pairs_treats_city_edges_as_mutually_connected():
     assert frozenset((0, 1)) in pairs
     assert frozenset((0, 4)) in pairs
     assert frozenset((1, 3)) in pairs
+
+
+def test_tile_lay_report_covers_every_tile_and_rotation():
+    board = new_board_state()
+    report = tile_lay_report(board, phase=1, hex_id="Z1", company_kind="major")
+    assert len(report) == len(TILE_SPECS) * 6
+
+    yellow_row = next(r for r in report if r["tile_id"] == "3" and r["rotation"] == 0)
+    assert yellow_row["valid"] is True
+    assert yellow_row["cost"] == 0
+    assert yellow_row["reason"] is None
+
+    green_row = next(r for r in report if r["tile_id"] == "141" and r["rotation"] == 0)
+    assert green_row["valid"] is False
+    assert green_row["reason"]  # a human-readable reason, e.g. phase/color gating
+
+
+def test_tile_lay_report_reflects_engine_validation_exactly():
+    """The report must never disagree with validate_tile_lay itself - it's
+    built by calling it, so a mismatch here would mean the report function
+    has its own bug, not just an engine-rules question."""
+    board = new_board_state()
+    validate_tile_lay(board, phase=1, hex_id="Z1", tile_id="4", rotation=0)  # edges {0,3}
+    apply_tile_lay(board, "Z1", "4", 0)
+
+    report = tile_lay_report(board, phase=3, hex_id="Z1", company_kind="major")
+    for row in report:
+        try:
+            cost = validate_tile_lay(board, 3, "Z1", row["tile_id"], row["rotation"], "major")
+        except TileLayError as e:
+            assert row["valid"] is False
+            assert row["reason"] == str(e)
+        else:
+            assert row["valid"] is True
+            assert row["cost"] == cost
+
+
+def test_tile_lay_report_respects_minor_color_cap():
+    board = new_board_state()
+    report = tile_lay_report(board, phase=5, hex_id="Z1", company_kind="minor")
+    assert all(not r["valid"] for r in report if TILE_SPECS_BY_ID[r["tile_id"]].color in ("brown", "gray"))

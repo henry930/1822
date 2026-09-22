@@ -167,6 +167,30 @@ def validate_tile_lay(
     return cost
 
 
+def tile_lay_report(
+    board: BoardState, phase: int, hex_id: str, company_kind: str = "major",
+) -> list[dict]:
+    """Every (tile, rotation) combination's legality for a lay on this hex
+    right now, computed by literally calling validate_tile_lay for each of
+    the 61 tiles x 6 rotations - so this can never drift out of sync with
+    what an actual lay would accept or reject. Used to drive the map UI's
+    "what can I place here" prompt: one call gets the full grid so rotating
+    the tile in the UI afterwards is a free client-side lookup, no refetch."""
+    report = []
+    for spec in TILE_SPECS:
+        for rotation in range(6):
+            try:
+                cost = validate_tile_lay(board, phase, hex_id, spec.id, rotation, company_kind)
+                report.append({
+                    "tile_id": spec.id, "rotation": rotation, "valid": True, "cost": cost, "reason": None,
+                })
+            except TileLayError as e:
+                report.append({
+                    "tile_id": spec.id, "rotation": rotation, "valid": False, "cost": None, "reason": str(e),
+                })
+    return report
+
+
 def apply_tile_lay(board: BoardState, hex_id: str, tile_id: str, rotation: int) -> None:
     """Mutates the board - call only after validate_tile_lay succeeds."""
     existing = board.tiles.get(hex_id)

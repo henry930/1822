@@ -66,3 +66,31 @@ export async function fetchBoardMap(): Promise<BoardMapData> {
   if (!res.ok) throw new Error("Failed to load board map data");
   return res.json();
 }
+
+export type TileLayOption = {
+  tile_id: string;
+  rotation: number;
+  valid: boolean;
+  cost: number | null;
+  reason: string | null;
+};
+export type TileLayOptionsResponse = {
+  hex_id: string;
+  phase: number;
+  company_kind: string;
+  report: TileLayOption[];
+};
+
+export async function fetchTileLayOptions(
+  roomId: string,
+  hexId: string,
+  companyKind: "minor" | "major"
+): Promise<TileLayOptionsResponse> {
+  const url = `${API_BASE}/rooms/${roomId}/tile_lay_options?${new URLSearchParams({
+    hex_id: hexId,
+    company_kind: companyKind,
+  })}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to load tile lay options");
+  return res.json();
+}
