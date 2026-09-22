@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchBoardMap, type BoardMapData, type MapCity, type MapOffboard, type MapTerrain } from "./api";
 import manifestUrl from "./assets/tiles/manifest.json?url";
+import boardImageUrl from "./assets/map/board.jpg";
 
 type TileManifestEntry = {
   id: string;
@@ -21,7 +22,7 @@ function tileUrl(file: string): string | undefined {
   return TILE_SVG_URLS[`./assets/tiles/${file}`];
 }
 
-const SIZE = 40; // hex "radius" (center to vertex) in px
+const SIZE = 40; // hex "radius" (center to vertex) in px, schematic view only
 const COL_SPACING = SIZE * 1.5;
 const ROW_SPACING = SIZE * Math.sqrt(3);
 
@@ -45,6 +46,7 @@ function hexPoints(cx: number, cy: number, size: number): string {
 }
 
 type PlacedTile = { tile_id: string; rotation: number };
+type HexEntry = { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offboard" | "terrain" };
 
 type Props = {
   boardTiles: Record<string, PlacedTile> | undefined;
@@ -61,6 +63,8 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
   const [selectedHexId, setSelectedHexId] = useState<string | null>(null);
   const [pendingTileId, setPendingTileId] = useState<string | null>(null);
   const [pendingRotation, setPendingRotation] = useState(0);
+  const [viewMode, setViewMode] = useState<"photo" | "schematic">("photo");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchBoardMap()
@@ -72,9 +76,9 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
       .catch((e) => setLoadError((e as Error).message));
   }, []);
 
-  const allHexes = useMemo(() => {
+  const allHexes: HexEntry[] = useMemo(() => {
     if (!mapData) return [];
-    const list: { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offboard" | "terrain" }[] = [];
+    const list: HexEntry[] = [];
     for (const c of mapData.cities) list.push({ hex: c, kind: "city" });
     for (const o of mapData.offboard) list.push({ hex: o, kind: "offboard" });
     for (const t of mapData.terrain) list.push({ hex: t, kind: "terrain" });
@@ -94,6 +98,17 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
     return { minX: minX - 10, minY: minY - 10, maxX: maxX + 10, maxY: maxY + 10 };
   }, [allHexes]);
 
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return allHexes
+      .filter(({ hex }) => {
+        const name = "name" in hex ? (hex as MapCity | MapOffboard).name.toLowerCase() : "";
+        return hex.id.toLowerCase().includes(q) || name.includes(q);
+      })
+      .slice(0, 20);
+  }, [allHexes, search]);
+
   const selectedInfo = allHexes.find(({ hex }) => hex.id === selectedHexId);
   const selectedPlacedTile = selectedHexId ? boardTiles?.[selectedHexId] : undefined;
 
@@ -109,69 +124,128 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
   const grouped: Record<string, TileManifestEntry[]> = { yellow: [], green: [], brown: [], gray: [] };
   for (const t of manifest) grouped[t.color]?.push(t);
 
+  const placedList = Object.entries(boardTiles ?? {});
+
   return (
     <div className="panel map-panel">
       <h3>Map & Tile Placement</h3>
       <p className="hint">
-        Preview of the catalogued hexes (cities, towns, off-board areas, difficult terrain) -
-        not yet the full physical board (see task #12/#3). Click a hex, pick a tile and
-        rotation, then queue it - that fills the same tile-lay fields the Operate tab sends,
-        so switch there and click Operate during that company's turn to actually place it.
+        The board on the left is the actual scanned 1822 map (map.pdf), so it looks like the
+        physical game - it isn't wired up for pixel-precise clicking yet, so pick a hex by
+        searching its id or city name below it instead. Once you've picked a hex, a tile, and a
+        rotation, "Queue" fills the same tile-lay fields the Operate tab sends, so switch there
+        and click Operate during that company's turn to actually place it.
       </p>
       {loadError && <p className="error">{loadError}</p>}
 
-      <div className="map-layout">
-        <div className="hex-map-scroll">
-        <svg
-          className="hex-map-svg"
-          width={bounds.maxX - bounds.minX}
-          height={bounds.maxY - bounds.minY}
-          viewBox={`${bounds.minX} ${bounds.minY} ${bounds.maxX - bounds.minX} ${bounds.maxY - bounds.minY}`}
+      <div className="map-view-toggle">
+        <button
+          className={`tab-btn${viewMode === "photo" ? " active" : ""}`}
+          onClick={() => setViewMode("photo")}
         >
-          {allHexes.map(({ hex, kind }) => {
-            const { x, y } = hexCenter(hex.col, hex.row, hex.dx, hex.dy);
-            const placed = boardTiles?.[hex.id];
-            const isSelected = hex.id === selectedHexId;
-            const isQueued = hex.id === queuedHexId;
-            return (
-              <g
-                key={`${kind}-${hex.id}`}
-                onClick={() => setSelectedHexId(hex.id)}
-                className="map-hex"
-              >
-                <polygon
-                  points={hexPoints(x, y, SIZE)}
-                  fill={colorFor(kind, hex)}
-                  stroke={isSelected ? "#c0392b" : isQueued ? "#2c6e49" : "#333"}
-                  strokeWidth={isSelected || isQueued ? 3 : 1}
-                />
-                {placed && tileUrl(`tile_${placed.tile_id}.svg`) && (
-                  <image
-                    href={tileUrl(`tile_${placed.tile_id}.svg`)}
-                    x={x - SIZE}
-                    y={y - SIZE}
-                    width={SIZE * 2}
-                    height={SIZE * 2}
-                    transform={`rotate(${placed.rotation * 60} ${x} ${y})`}
-                    pointerEvents="none"
-                  />
-                )}
-                <text x={x} y={y + SIZE + 9} textAnchor="middle" fontSize={8} fill="#333">
-                  {hex.id}
-                </text>
-                {"name" in hex && (
-                  <text x={x} y={y + 3} textAnchor="middle" fontSize={7} fill="#111" pointerEvents="none">
-                    {(hex as MapCity | MapOffboard).name.slice(0, 10)}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </svg>
-        </div>
+          Real board scan
+        </button>
+        <button
+          className={`tab-btn${viewMode === "schematic" ? " active" : ""}`}
+          onClick={() => setViewMode("schematic")}
+        >
+          Clickable schematic
+        </button>
+      </div>
+
+      <div className="map-layout">
+        {viewMode === "photo" ? (
+          <div className="board-photo-col">
+            <div className="board-photo-scroll">
+              <img src={boardImageUrl} alt="1822 board map" className="board-photo" />
+            </div>
+            <div className="hex-search">
+              <input
+                placeholder="Find a hex by id (e.g. D35) or city name (e.g. Swansea)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {searchResults.length > 0 && (
+                <ul className="hex-search-results">
+                  {searchResults.map(({ hex, kind }) => (
+                    <li key={hex.id}>
+                      <button
+                        onClick={() => {
+                          setSelectedHexId(hex.id);
+                          setSearch("");
+                        }}
+                      >
+                        {hex.id} - {"name" in hex ? (hex as MapCity | MapOffboard).name : kind}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {placedList.length > 0 && (
+              <div className="placed-tiles-list">
+                <h4>Tiles laid so far</h4>
+                <ul>
+                  {placedList.map(([hexId, t]) => (
+                    <li key={hexId}>
+                      <button onClick={() => setSelectedHexId(hexId)}>
+                        {hexId}: tile {t.tile_id} @ rotation {t.rotation}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="hex-map-scroll">
+            <svg
+              className="hex-map-svg"
+              width={bounds.maxX - bounds.minX}
+              height={bounds.maxY - bounds.minY}
+              viewBox={`${bounds.minX} ${bounds.minY} ${bounds.maxX - bounds.minX} ${bounds.maxY - bounds.minY}`}
+            >
+              {allHexes.map(({ hex, kind }) => {
+                const { x, y } = hexCenter(hex.col, hex.row, hex.dx, hex.dy);
+                const placed = boardTiles?.[hex.id];
+                const isSelected = hex.id === selectedHexId;
+                const isQueued = hex.id === queuedHexId;
+                return (
+                  <g key={`${kind}-${hex.id}`} onClick={() => setSelectedHexId(hex.id)} className="map-hex">
+                    <polygon
+                      points={hexPoints(x, y, SIZE)}
+                      fill={colorFor(kind, hex)}
+                      stroke={isSelected ? "#c0392b" : isQueued ? "#2c6e49" : "#333"}
+                      strokeWidth={isSelected || isQueued ? 3 : 1}
+                    />
+                    {placed && tileUrl(`tile_${placed.tile_id}.svg`) && (
+                      <image
+                        href={tileUrl(`tile_${placed.tile_id}.svg`)}
+                        x={x - SIZE}
+                        y={y - SIZE}
+                        width={SIZE * 2}
+                        height={SIZE * 2}
+                        transform={`rotate(${placed.rotation * 60} ${x} ${y})`}
+                        pointerEvents="none"
+                      />
+                    )}
+                    <text x={x} y={y + SIZE + 9} textAnchor="middle" fontSize={8} fill="#333">
+                      {hex.id}
+                    </text>
+                    {"name" in hex && (
+                      <text x={x} y={y + 3} textAnchor="middle" fontSize={7} fill="#111" pointerEvents="none">
+                        {(hex as MapCity | MapOffboard).name.slice(0, 10)}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        )}
 
         <div className="map-side-panel">
-          {!selectedInfo && <p className="hint">Click a hex on the map to inspect or lay a tile on it.</p>}
+          {!selectedInfo && <p className="hint">Search for a hex above (or click one in the schematic) to inspect or lay a tile on it.</p>}
           {selectedInfo && (
             <>
               <h4>
@@ -249,9 +323,7 @@ export default function MapTab({ boardTiles, inGame, canQueueLay, onQueueLay, qu
                   Queue this tile lay for Operate
                 </button>
                 {!inGame && <p className="hint">Start or join a game to lay tiles.</p>}
-                {inGame && !canQueueLay && (
-                  <p className="hint">Only usable during an operating round.</p>
-                )}
+                {inGame && !canQueueLay && <p className="hint">Only usable during an operating round.</p>}
                 {isQueuedNote(selectedHexId, queuedHexId)}
               </div>
             </>
