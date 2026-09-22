@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoom, joinRoom, startRoom, wsUrl } from "./api";
+import MapTab from "./MapTab";
 import "./App.css";
 
 type LobbyMessage = {
@@ -48,6 +49,10 @@ type EngineState = {
   stock_rounds_completed: number;
   game_over: boolean;
   log: string[];
+  board: {
+    tiles: Record<string, { tile_id: string; rotation: number; tokens: Record<string, string> }>;
+    tile_pool: Record<string, number | null>;
+  };
   [key: string]: unknown;
 };
 
@@ -76,7 +81,7 @@ function App() {
   const [showRaw, setShowRaw] = useState(false);
   const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({});
   const [dividendChoice, setDividendChoice] = useState("withhold");
-  const [activeTab, setActiveTab] = useState<"bid" | "stocks" | "operate" | "players">("bid");
+  const [activeTab, setActiveTab] = useState<"bid" | "stocks" | "map" | "operate" | "players">("bid");
   const [convertPrice, setConvertPrice] = useState<Record<string, string>>({});
   const [buyCompanyId, setBuyCompanyId] = useState("");
   const [buySource, setBuySource] = useState<"bank" | "treasury">("bank");
@@ -373,6 +378,7 @@ function App() {
               [
                 ["bid", "Bidding & Concessions"],
                 ["stocks", "Trade Stocks"],
+                ["map", "Map & Tiles"],
                 ["operate", "Operate Trains"],
                 ["players", "Players & Log"],
               ] as const
@@ -547,6 +553,22 @@ function App() {
                 </button>
               </div>
             </div>
+          )}
+
+          {activeTab === "map" && (
+            <MapTab
+              boardTiles={gameState.board?.tiles}
+              inGame={true}
+              canQueueLay={gameState.round_type === "operating"}
+              queuedHexId={includeTileLay ? tileHexId : null}
+              onQueueLay={(hexId, tid, rotation) => {
+                setTileHexId(hexId);
+                setTileId(tid);
+                setTileRotation(String(rotation));
+                setIncludeTileLay(true);
+                setActiveTab("operate");
+              }}
+            />
           )}
 
           {activeTab === "operate" && (

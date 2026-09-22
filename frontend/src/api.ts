@@ -28,3 +28,41 @@ export function wsUrl(roomId: string, playerId: string): string {
   const base = API_BASE.replace(/^http/, "ws");
   return `${base}/ws/${roomId}/${playerId}`;
 }
+
+export type MapHex = {
+  id: string;
+  col: number;
+  row: number;
+  dx: number;
+  dy: number;
+  confidence: string;
+};
+export type MapCity = MapHex & {
+  name: string;
+  label: string | null;
+  is_town: boolean;
+  home_of_minor: number | null;
+  home_of_major: string | null;
+  destination_of_major: string | null;
+};
+export type MapOffboard = MapHex & {
+  area_id: string;
+  name: string;
+  value_yellow: number;
+  value_green: number;
+  value_brown: number;
+  value_grey: number;
+};
+export type MapTerrain = MapHex & { terrain: string; cost: number };
+export type BoardMapData = {
+  columns: string[];
+  cities: MapCity[];
+  offboard: MapOffboard[];
+  terrain: MapTerrain[];
+};
+
+export async function fetchBoardMap(): Promise<BoardMapData> {
+  const res = await fetch(`${API_BASE}/board/map`);
+  if (!res.ok) throw new Error("Failed to load board map data");
+  return res.json();
+}

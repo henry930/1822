@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import re
 import uuid
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app.data.hex_map import CITIES, HEX_COLUMNS, OFFBOARD_AREAS, TERRAIN_HEXES
 from app.engine.actions import ActionError
 from app.rooms import LobbyPlayer, registry
 
@@ -36,6 +38,81 @@ class JoinResponse(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+_COL_INDEX = {letter: i for i, letter in enumerate(HEX_COLUMNS)}
+_HEX_ID_RE = re.compile(r"^([A-Z]+)(\d+)([a-z]*)$")
+
+
+def _lenient_position(hex_id: str) -> dict | None:
+    """Best-effort (col, row) for map preview rendering - lenient about the
+    'b'-suffixed secondary-town ids (e.g. "E7b") that app.engine.hex_grid's
+    strict parser rejects. Returns None for area names that aren't real hex
+    ids at all (e.g. "Highlands", "MidWales") - callers should render those
+    via their .hexes list instead."""
+    m = _HEX_ID_RE.match(hex_id)
+    if not m:
+        return None
+    letters, digits, suffix = m.groups()
+    if letters not in _COL_INDEX:
+        return None
+    col = _COL_INDEX[letters]
+    row = int(digits)
+    # A lettered-suffix id (e.g. "E7b") is a second town sharing its base
+    # hex's coordinates - render it a full hex-step down-right so it's a
+    # distinct, clickable hex rather than overlapping its base hex. The
+    # frontend's hexCenter() multiplies dx/dy by half the column/row
+    # spacing, so 2.0 is one full hex-step (a smaller nudge, like the
+    # original 0.35, still left the two hexes close enough to overlap and
+    # steal each other's clicks - found via manual play-testing tile
+    # placement, where selecting one actually queued a lay on the other).
+    nudge = 2.0 if suffix else 0.0
+    return {"col": col, "row": row, "dx": nudge, "dy": nudge}
+
+
+@app.get("/board/map")
+def board_map():
+    """Static hex-catalog data for the map preview UI - cities, off-board
+    areas (exploded to their individual hexes), and terrain hexes, each with
+    a best-effort board position. This is reference/preview data, not a
+    routing-authoritative full hex grid (see app.engine.hex_grid's module
+    docstring) - only the ~90 named/informational hexes are catalogued."""
+    cities = []
+    for c in CITIES:
+        pos = _lenient_position(c.id)
+        if pos is None:
+            continue
+        cities.append({
+            "id": c.id, "name": c.name, "label": c.label, "is_town": c.is_town,
+            "home_of_minor": c.home_of_minor, "home_of_major": c.home_of_major,
+            "destination_of_major": c.destination_of_major, "confidence": c.confidence,
+            **pos,
+        })
+
+    offboard = []
+    for area in OFFBOARD_AREAS:
+        for hex_id in area.hexes:
+            pos = _lenient_position(hex_id)
+            if pos is None:
+                continue
+            offboard.append({
+                "id": hex_id, "area_id": area.id, "name": area.name,
+                "value_yellow": area.value_yellow, "value_green": area.value_green,
+                "value_brown": area.value_brown, "value_grey": area.value_grey,
+                "confidence": area.confidence,
+                **pos,
+            })
+
+    terrain = []
+    for t in TERRAIN_HEXES:
+        pos = _lenient_position(t.id)
+        if pos is None:
+            continue
+        terrain.append({
+            "id": t.id, "terrain": t.terrain, "cost": t.cost, "confidence": t.confidence, **pos,
+        })
+
+    return {"columns": list(HEX_COLUMNS), "cities": cities, "offboard": offboard, "terrain": terrain}
 
 
 @app.post("/rooms", response_model=CreateRoomResponse)

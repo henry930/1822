@@ -26,8 +26,26 @@ def _json_default(obj):
     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 
+def _stringify_tuple_keys(value):
+    """json.dumps rejects non-str dict keys outright (it never reaches
+    `default` for keys, only values) - GameState.stock_stack is keyed by
+    (row, col) tuples (see models.py), which crashes serialization the
+    moment a company actually floats and gets placed on the stock market
+    grid. Recursively rewrite any tuple dict key as "row,col" before
+    dumping."""
+    if isinstance(value, dict):
+        return {
+            (",".join(map(str, k)) if isinstance(k, tuple) else k): _stringify_tuple_keys(v)
+            for k, v in value.items()
+        }
+    if isinstance(value, list):
+        return [_stringify_tuple_keys(v) for v in value]
+    return value
+
+
 def serialize_state(state: GameState) -> str:
-    return json.dumps(dataclasses.asdict(state), default=_json_default)
+    data = _stringify_tuple_keys(dataclasses.asdict(state))
+    return json.dumps(data, default=_json_default)
 
 
 @dataclass
