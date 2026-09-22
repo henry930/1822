@@ -279,6 +279,20 @@ function App() {
     send({ type: "sell_shares", company_id: sellCompanyId, count });
   }
 
+  function sendPlaceTile(hexId: string, tid: string, rotation: number) {
+    const cid = activeCompanyId();
+    if (!cid) {
+      setError("No company is currently operating.");
+      return;
+    }
+    send({
+      type: "operate",
+      company_id: cid,
+      dividend_choice: "withhold",
+      tile_lay: { hex_id: hexId, tile_id: tid, rotation },
+    });
+  }
+
   function sendOperate() {
     const cid = activeCompanyId();
     if (!cid) return;
@@ -574,6 +588,8 @@ function App() {
                 setIncludeTileLay(true);
                 setActiveTab("operate");
               }}
+              onPlaceTile={sendPlaceTile}
+              globalError={error}
             />
           )}
 

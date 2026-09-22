@@ -61,6 +61,13 @@ function photoHexCenter(col: number, row: number) {
   return { x: PHOTO_X0 + col * PHOTO_DX, y: PHOTO_Y0 + row * PHOTO_DY };
 }
 
+// Every tile SVG draws its hexagon inset within a square viewBox (a small
+// margin around the hex for the stroke/labels) - the hex itself only spans
+// 200 of the viewBox's 230 units. Scale placed-tile <image> elements up by
+// this factor so the drawn hexagon fills the actual hex region instead of
+// rendering visibly smaller than it with a gap around the edges.
+const TILE_ART_SCALE = 230 / 200;
+
 function hexPoints(cx: number, cy: number, size: number): string {
   // Flat-top hex, matching the tile SVGs' own orientation.
   const pts = [
@@ -84,7 +91,9 @@ type Props = {
   inGame: boolean;
   canQueueLay: boolean;
   onQueueLay: (hexId: string, tileId: string, rotation: number) => void;
+  onPlaceTile: (hexId: string, tileId: string, rotation: number) => void;
   queuedHexId: string | null;
+  globalError: string | null;
 };
 
 export default function MapTab({
@@ -94,7 +103,9 @@ export default function MapTab({
   inGame,
   canQueueLay,
   onQueueLay,
+  onPlaceTile,
   queuedHexId,
+  globalError,
 }: Props) {
   const [mapData, setMapData] = useState<BoardMapData | null>(null);
   const [manifest, setManifest] = useState<TileManifestEntry[]>([]);
@@ -103,6 +114,10 @@ export default function MapTab({
   const [pendingTileId, setPendingTileId] = useState<string | null>(null);
   const [pendingRotation, setPendingRotation] = useState(0);
   const [viewMode, setViewMode] = useState<"photo" | "schematic">("photo");
+  const [placeAttempt, setPlaceAttempt] = useState<{ hexId: string; tileId: string; rotation: number } | null>(
+    null
+  );
+  const [placeConfirmed, setPlaceConfirmed] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [report, setReport] = useState<TileLayOption[] | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
@@ -133,6 +148,29 @@ export default function MapTab({
       .catch((e) => setReportError((e as Error).message))
       .finally(() => setReportLoading(false));
   }, [selectedHexId, roomId, companyKind]);
+
+  // Confirms a "Place tile" click actually took effect: boardTiles is the
+  // live game state, so once it shows exactly the tile/rotation we just
+  // asked for on this hex, the lay genuinely succeeded server-side (not
+  // just "the button was clicked") - and if a server error arrives instead
+  // while an attempt is pending, that's a clear failure to surface too.
+  useEffect(() => {
+    if (!placeAttempt) return;
+    const current = boardTiles?.[placeAttempt.hexId];
+    if (current && current.tile_id === placeAttempt.tileId && current.rotation === placeAttempt.rotation) {
+      setPlaceConfirmed(`Placed tile ${placeAttempt.tileId} (rotation ${placeAttempt.rotation}) on ${placeAttempt.hexId}.`);
+      setPlaceAttempt(null);
+    }
+  }, [boardTiles, placeAttempt]);
+
+  useEffect(() => {
+    if (placeAttempt && globalError) setPlaceAttempt(null);
+  }, [globalError, placeAttempt]);
+
+  useEffect(() => {
+    setPlaceAttempt(null);
+    setPlaceConfirmed(null);
+  }, [selectedHexId]);
 
   const reportByTile = useMemo(() => {
     const map = new Map<string, TileLayOption[]>();
@@ -249,8 +287,9 @@ export default function MapTab({
         overlaid on it - click any hexagon region directly on the map (or search by id/city name
         below it) to select it. Once a hex is picked, only tiles that are actually legal to lay
         there right now (checked live against the game's real rules - phase/color, tile supply,
-        upgrade-must-preserve-track, city label) are offered; pick a rotation and "Queue" fills
-        the same tile-lay fields the Operate tab sends.
+        upgrade-must-preserve-track, city label) are offered; pick a rotation and click
+        "Place tile" to lay it immediately (withholding the dividend), or "Queue for Operate
+        instead" if you also want to choose a dividend or buy a train the same turn.
       </p>
       {loadError && <p className="error">{loadError}</p>}
 
@@ -296,10 +335,10 @@ export default function MapTab({
                         {placed && tileUrl(`tile_${placed.tile_id}.svg`) && (
                           <image
                             href={tileUrl(`tile_${placed.tile_id}.svg`)}
-                            x={x - PHOTO_HEX_SIZE}
-                            y={y - PHOTO_HEX_SIZE}
-                            width={PHOTO_HEX_SIZE * 2}
-                            height={PHOTO_HEX_SIZE * 2}
+                            x={x - PHOTO_HEX_SIZE * TILE_ART_SCALE}
+                            y={y - PHOTO_HEX_SIZE * TILE_ART_SCALE}
+                            width={PHOTO_HEX_SIZE * 2 * TILE_ART_SCALE}
+                            height={PHOTO_HEX_SIZE * 2 * TILE_ART_SCALE}
                             transform={`rotate(${placed.rotation * 60} ${x} ${y})`}
                             pointerEvents="none"
                           />
@@ -372,10 +411,10 @@ export default function MapTab({
                     {placed && tileUrl(`tile_${placed.tile_id}.svg`) && (
                       <image
                         href={tileUrl(`tile_${placed.tile_id}.svg`)}
-                        x={x - SIZE}
-                        y={y - SIZE}
-                        width={SIZE * 2}
-                        height={SIZE * 2}
+                        x={x - SIZE * TILE_ART_SCALE}
+                        y={y - SIZE * TILE_ART_SCALE}
+                        width={SIZE * 2 * TILE_ART_SCALE}
+                        height={SIZE * 2 * TILE_ART_SCALE}
                         transform={`rotate(${placed.rotation * 60} ${x} ${y})`}
                         pointerEvents="none"
                       />
@@ -514,15 +553,30 @@ export default function MapTab({
 
               <div>
                 <button
+                  className="place-tile-btn"
+                  disabled={!pendingTileId || !pendingCurrent?.valid || !inGame || !canQueueLay}
+                  onClick={() => {
+                    if (!selectedHexId || !pendingTileId) return;
+                    setPlaceConfirmed(null);
+                    setPlaceAttempt({ hexId: selectedHexId, tileId: pendingTileId, rotation: pendingRotation });
+                    onPlaceTile(selectedHexId, pendingTileId, pendingRotation);
+                  }}
+                >
+                  Place tile
+                </button>
+                <button
                   disabled={!pendingTileId || !pendingCurrent?.valid || !inGame || !canQueueLay}
                   onClick={() => {
                     if (selectedHexId && pendingTileId) onQueueLay(selectedHexId, pendingTileId, pendingRotation);
                   }}
                 >
-                  Queue this tile lay for Operate
+                  Queue for Operate instead (to also pick a dividend / buy a train)
                 </button>
                 {!inGame && <p className="hint">Start or join a game to lay tiles.</p>}
                 {inGame && !canQueueLay && <p className="hint">Only usable during an operating round.</p>}
+                {placeAttempt && <p className="hint">Placing tile {placeAttempt.tileId} on {placeAttempt.hexId}...</p>}
+                {placeConfirmed && <p className="place-confirmed">✓ {placeConfirmed}</p>}
+                {!placeAttempt && !placeConfirmed && globalError && <p className="error">{globalError}</p>}
                 {isQueuedNote(selectedHexId, queuedHexId)}
               </div>
             </>

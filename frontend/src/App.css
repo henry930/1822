@@ -335,8 +335,8 @@ label.hint {
 }
 
 .tile-swatch {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -358,19 +358,37 @@ label.hint {
 .tile-preview-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin: 10px 0;
 }
 
 .tile-preview {
-  width: 70px;
-  height: 70px;
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
 }
 
 .tile-preview img {
   width: 100%;
   height: 100%;
   transition: transform 0.15s;
+}
+
+.place-tile-btn {
+  background: #2c6e49;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.place-tile-btn:disabled {
+  background: #b7cfc0;
+}
+
+.place-confirmed {
+  color: #2c6e49;
+  font-weight: 600;
 }
 
 .rotation-picker {
