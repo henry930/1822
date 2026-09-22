@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-115 -115 230 230" width="230" height="230">
+<path d="M -50.00,-86.60 L 50.00,-86.60 L 100.00,-0.00 L 50.00,86.60 L -50.00,86.60 L -100.00,0.00 Z" fill="#6FAE5D" stroke="#1a1a1a" stroke-width="3"/>
+<path d="M 0.00,-100.00 L 0.00,-52.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
+<path d="M 86.60,-50.00 L 45.03,-26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
+<path d="M 86.60,50.00 L 45.03,26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
+<path d="M 0.00,100.00 L 0.00,52.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
+<path d="M -86.60,50.00 L -45.03,26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
+<path d="M -86.60,-50.00 L -45.03,-26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
+<circle cx="0.00" cy="-52.00" r="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
+<text x="0.00" y="-46.00" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#111">60</text>
+<circle cx="45.03" cy="-26.00" r="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
+<text x="45.03" y="-20.00" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#111">60</text>
+<circle cx="45.03" cy="26.00" r="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
+<text x="45.03" y="32.00" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#111">60</text>
+<circle cx="0.00" cy="52.00" r="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
+<text x="0.00" y="58.00" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#111">60</text>
+<circle cx="-45.03" cy="26.00" r="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
+<text x="-45.03" y="32.00" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#111">60</text>
+<circle cx="-45.03" cy="-26.00" r="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
+<text x="-45.03" y="-20.00" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#111">60</text>
+<text x="0" y="-58" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#111">L</text>
+<text x="-92" y="98" font-family="Arial, sans-serif" font-size="20" fill="#333">X21</text>
+</svg>

@@ -1,0 +1,47 @@
+# Track tiles
+
+Clean vector (SVG) recreations of every distinct hex track tile from the
+physical 1822 tile sheets shown in `rail_track.jpg` (the yellow/green/brown/gray
+die-cut sheets numbered 1/4-4/4), one file per tile number
+(`tile_<id>.svg`), plus `manifest.json` listing each tile's color, per-game
+copy count, and city/label.
+
+## Why recreated instead of cropped
+
+`rail_track.jpg` is a phone photo of the sheets shot at an angle, with
+perspective distortion, glare, and shadow — cropping it directly would carry
+all of that into the game UI. Instead, `tools/gen_tiles.py` draws each tile
+from its actual track/city specification (which edges connect, city revenue
+and slot count, town dots, tile labels like `Y`/`C`/`BM`/`S`/`EC`/`L`/`T`) and
+renders it as a flat-color hex with black rail lines and white city markers,
+at any resolution.
+
+The track topology and per-tile counts are the public 1822 tile manifest
+(the same tile numbering used by the open-source 18xx.games rules engine,
+cross-checked against the photographed sheets: tile numbers, £-costs and
+revenue values printed on the sheets match). Colors/line weights follow
+standard 18xx tile-art convention (yellow -> green -> brown -> gray upgrade
+path).
+
+## Regenerating
+
+```bash
+python3 tools/gen_tiles.py
+```
+
+Rewrites every `tile_*.svg` and `manifest.json` from the tile table at the
+bottom of `tools/gen_tiles.py`. Edit that table (add/adjust a tile's code,
+color, or count) and re-run to regenerate.
+
+## Tile code format
+
+Each tile's spec string follows the 18xx convention:
+- `city=revenue:R[,slots:N]` — a city lot worth R, with N station slots (default 1).
+- `town=revenue:R` — a town (dot) lot worth R.
+- `path=a:E,b:_L` — track from hex edge `E` (0-5, clockwise from the top edge)
+  to lot index `L` (in order of appearance).
+- `path=a:E1,b:E2` — plain track directly between two edges (no city/town).
+- `junction` — a plain track crossing with no revenue location.
+- `label=X` — the tile's printed city-type label.
+
+61 distinct tiles in total: 14 yellow, 20 green, 15 brown, 12 gray.

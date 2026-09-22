@@ -1,0 +1,429 @@
+[
+  {
+    "id": "1",
+    "color": "yellow",
+    "count": 1,
+    "label": null,
+    "file": "tile_1.svg"
+  },
+  {
+    "id": "2",
+    "color": "yellow",
+    "count": 1,
+    "label": null,
+    "file": "tile_2.svg"
+  },
+  {
+    "id": "3",
+    "color": "yellow",
+    "count": 6,
+    "label": null,
+    "file": "tile_3.svg"
+  },
+  {
+    "id": "4",
+    "color": "yellow",
+    "count": 6,
+    "label": null,
+    "file": "tile_4.svg"
+  },
+  {
+    "id": "5",
+    "color": "yellow",
+    "count": 6,
+    "label": null,
+    "file": "tile_5.svg"
+  },
+  {
+    "id": "6",
+    "color": "yellow",
+    "count": 8,
+    "label": null,
+    "file": "tile_6.svg"
+  },
+  {
+    "id": "7",
+    "color": "yellow",
+    "count": "unlimited",
+    "label": null,
+    "file": "tile_7.svg"
+  },
+  {
+    "id": "8",
+    "color": "yellow",
+    "count": "unlimited",
+    "label": null,
+    "file": "tile_8.svg"
+  },
+  {
+    "id": "9",
+    "color": "yellow",
+    "count": "unlimited",
+    "label": null,
+    "file": "tile_9.svg"
+  },
+  {
+    "id": "55",
+    "color": "yellow",
+    "count": 1,
+    "label": null,
+    "file": "tile_55.svg"
+  },
+  {
+    "id": "56",
+    "color": "yellow",
+    "count": 1,
+    "label": null,
+    "file": "tile_56.svg"
+  },
+  {
+    "id": "57",
+    "color": "yellow",
+    "count": 6,
+    "label": null,
+    "file": "tile_57.svg"
+  },
+  {
+    "id": "58",
+    "color": "yellow",
+    "count": 6,
+    "label": null,
+    "file": "tile_58.svg"
+  },
+  {
+    "id": "69",
+    "color": "yellow",
+    "count": 1,
+    "label": null,
+    "file": "tile_69.svg"
+  },
+  {
+    "id": "14",
+    "color": "green",
+    "count": 6,
+    "label": null,
+    "file": "tile_14.svg"
+  },
+  {
+    "id": "15",
+    "color": "green",
+    "count": 6,
+    "label": null,
+    "file": "tile_15.svg"
+  },
+  {
+    "id": "80",
+    "color": "green",
+    "count": 6,
+    "label": null,
+    "file": "tile_80.svg"
+  },
+  {
+    "id": "81",
+    "color": "green",
+    "count": 6,
+    "label": null,
+    "file": "tile_81.svg"
+  },
+  {
+    "id": "82",
+    "color": "green",
+    "count": 8,
+    "label": null,
+    "file": "tile_82.svg"
+  },
+  {
+    "id": "83",
+    "color": "green",
+    "count": 8,
+    "label": null,
+    "file": "tile_83.svg"
+  },
+  {
+    "id": "141",
+    "color": "green",
+    "count": 4,
+    "label": null,
+    "file": "tile_141.svg"
+  },
+  {
+    "id": "142",
+    "color": "green",
+    "count": 4,
+    "label": null,
+    "file": "tile_142.svg"
+  },
+  {
+    "id": "143",
+    "color": "green",
+    "count": 4,
+    "label": null,
+    "file": "tile_143.svg"
+  },
+  {
+    "id": "144",
+    "color": "green",
+    "count": 4,
+    "label": null,
+    "file": "tile_144.svg"
+  },
+  {
+    "id": "207",
+    "color": "green",
+    "count": 2,
+    "label": "Y",
+    "file": "tile_207.svg"
+  },
+  {
+    "id": "208",
+    "color": "green",
+    "count": 1,
+    "label": "Y",
+    "file": "tile_208.svg"
+  },
+  {
+    "id": "619",
+    "color": "green",
+    "count": 6,
+    "label": null,
+    "file": "tile_619.svg"
+  },
+  {
+    "id": "622",
+    "color": "green",
+    "count": 1,
+    "label": "Y",
+    "file": "tile_622.svg"
+  },
+  {
+    "id": "405",
+    "color": "green",
+    "count": 3,
+    "label": "T",
+    "file": "tile_405.svg"
+  },
+  {
+    "id": "X1",
+    "color": "green",
+    "count": 1,
+    "label": "C",
+    "file": "tile_X1.svg"
+  },
+  {
+    "id": "X2",
+    "color": "green",
+    "count": 2,
+    "label": "BM",
+    "file": "tile_X2.svg"
+  },
+  {
+    "id": "X3",
+    "color": "green",
+    "count": 1,
+    "label": "S",
+    "file": "tile_X3.svg"
+  },
+  {
+    "id": "X4",
+    "color": "green",
+    "count": 1,
+    "label": "EC",
+    "file": "tile_X4.svg"
+  },
+  {
+    "id": "X21",
+    "color": "green",
+    "count": 1,
+    "label": "L",
+    "file": "tile_X21.svg"
+  },
+  {
+    "id": "63",
+    "color": "brown",
+    "count": 8,
+    "label": null,
+    "file": "tile_63.svg"
+  },
+  {
+    "id": "544",
+    "color": "brown",
+    "count": 6,
+    "label": null,
+    "file": "tile_544.svg"
+  },
+  {
+    "id": "545",
+    "color": "brown",
+    "count": 6,
+    "label": null,
+    "file": "tile_545.svg"
+  },
+  {
+    "id": "546",
+    "color": "brown",
+    "count": 8,
+    "label": null,
+    "file": "tile_546.svg"
+  },
+  {
+    "id": "611",
+    "color": "brown",
+    "count": 4,
+    "label": null,
+    "file": "tile_611.svg"
+  },
+  {
+    "id": "767",
+    "color": "brown",
+    "count": 4,
+    "label": null,
+    "file": "tile_767.svg"
+  },
+  {
+    "id": "768",
+    "color": "brown",
+    "count": 4,
+    "label": null,
+    "file": "tile_768.svg"
+  },
+  {
+    "id": "769",
+    "color": "brown",
+    "count": 6,
+    "label": null,
+    "file": "tile_769.svg"
+  },
+  {
+    "id": "X5",
+    "color": "brown",
+    "count": 3,
+    "label": "Y",
+    "file": "tile_X5.svg"
+  },
+  {
+    "id": "X6",
+    "color": "brown",
+    "count": 1,
+    "label": "C",
+    "file": "tile_X6.svg"
+  },
+  {
+    "id": "X7",
+    "color": "brown",
+    "count": 2,
+    "label": "BM",
+    "file": "tile_X7.svg"
+  },
+  {
+    "id": "X8",
+    "color": "brown",
+    "count": 1,
+    "label": "S",
+    "file": "tile_X8.svg"
+  },
+  {
+    "id": "X9",
+    "color": "brown",
+    "count": 1,
+    "label": "EC",
+    "file": "tile_X9.svg"
+  },
+  {
+    "id": "X10",
+    "color": "brown",
+    "count": 3,
+    "label": "T",
+    "file": "tile_X10.svg"
+  },
+  {
+    "id": "X22",
+    "color": "brown",
+    "count": 1,
+    "label": "L",
+    "file": "tile_X22.svg"
+  },
+  {
+    "id": "60",
+    "color": "gray",
+    "count": 2,
+    "label": null,
+    "file": "tile_60.svg"
+  },
+  {
+    "id": "169",
+    "color": "gray",
+    "count": 2,
+    "label": null,
+    "file": "tile_169.svg"
+  },
+  {
+    "id": "X11",
+    "color": "gray",
+    "count": 2,
+    "label": "Y",
+    "file": "tile_X11.svg"
+  },
+  {
+    "id": "X12",
+    "color": "gray",
+    "count": 1,
+    "label": "C",
+    "file": "tile_X12.svg"
+  },
+  {
+    "id": "X13",
+    "color": "gray",
+    "count": 2,
+    "label": "BM",
+    "file": "tile_X13.svg"
+  },
+  {
+    "id": "X14",
+    "color": "gray",
+    "count": 1,
+    "label": "S",
+    "file": "tile_X14.svg"
+  },
+  {
+    "id": "X15",
+    "color": "gray",
+    "count": 1,
+    "label": "EC",
+    "file": "tile_X15.svg"
+  },
+  {
+    "id": "X16",
+    "color": "gray",
+    "count": 2,
+    "label": "T",
+    "file": "tile_X16.svg"
+  },
+  {
+    "id": "X17",
+    "color": "gray",
+    "count": 2,
+    "label": null,
+    "file": "tile_X17.svg"
+  },
+  {
+    "id": "X18",
+    "color": "gray",
+    "count": 2,
+    "label": null,
+    "file": "tile_X18.svg"
+  },
+  {
+    "id": "X19",
+    "color": "gray",
+    "count": 4,
+    "label": null,
+    "file": "tile_X19.svg"
+  },
+  {
+    "id": "X23",
+    "color": "gray",
+    "count": 1,
+    "label": "L",
+    "file": "tile_X23.svg"
+  }
+]
