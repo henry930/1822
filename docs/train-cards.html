@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>1822 — Train Cards</title>
+<style>
+  body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: #17170f; }
+  .page { box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px; }
+  .heading { color: #f2ead9; font-size: 22px; font-weight: 700; letter-spacing: 0.3px; font-family: Arial, Helvetica, sans-serif; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; width: 660px; }
+  .card { background: #f7f4ea; border-radius: 16px; border: 1px solid rgba(0,0,0,0.15);
+          box-shadow: 0 3px 8px rgba(0,0,0,0.45); padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .top-row { display: flex; align-items: flex-start; justify-content: space-between; }
+  .num { font-size: 40px; font-weight: 700; font-family: Georgia, 'Times New Roman', serif; line-height: 1; }
+  .price-block { text-align: right; }
+  .price { font-size: 26px; font-weight: 700; color: #1c1c18; font-family: Arial, Helvetica, sans-serif; }
+  .upgrade { font-size: 9px; color: #b23b2e; font-weight: 700; font-family: Arial, Helvetica, sans-serif; }
+  .loco { height: 70px; display: flex; align-items: center; justify-content: center; }
+  .caption { text-align: center; font-size: 11.5px; color: #2a2a24; font-family: Arial, Helvetica, sans-serif; }
+  .badge { align-self: center; padding: 3px 14px; border-radius: 4px; font-size: 11px; font-weight: 700;
+           letter-spacing: 0.4px; color: #fff; font-family: Arial, Helvetica, sans-serif; }
+  .badge.rust { background: #7a9b3f; }
+  .badge.permanent { background: #d9a520; color: #2a2000; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="heading">1822 &mdash; Trains</div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const trains = [
+  { num: 'L', color: '#d9b520', price: '£60', upgrade: '(£80 Upgrade to 2)', name: 'Liverpool & Manchester Rocket 0-2-2 (1829)', badge: 'RUSTED BY 3', bodyColor: '#c9a53a', trim: '#f2c94c' },
+  { num: '2', color: '#2c4a7c', price: '£120', name: 'Caledonian Railway Connor Single 2-2-2 (1862)', badge: 'RUSTED BY 4', bodyColor: '#1f3556', trim: '#5c7ea6' },
+  { num: '3', color: '#4f7a3e', price: '£200', name: 'LSWR Class T9 4-4-0 (1899)', badge: 'RUSTED BY 6', bodyColor: '#4a5a2e', trim: '#7a8f4a' },
+  { num: '4', color: '#8a7a2a', price: '£300', name: 'GWR Star Class 4-6-0 (1907)', badge: 'RUSTED BY 7/E', bodyColor: '#5a4a20', trim: '#8a7a3a' },
+  { num: '5', color: '#a04a2a', price: '£500', name: 'LNWR Claughton Class 4-6-0 (1913)', badge: 'PERMANENT', bodyColor: '#2a2420', trim: '#6a5a4a' },
+  { num: '6', color: '#8a2a2a', price: '£600', name: 'LMSR Princess Coronation Class 4-6-2 (1937)', badge: 'PERMANENT', bodyColor: '#7a1f28', trim: '#c94a4a' },
+  { num: '7', color: '#3a3a3a', price: '£750', name: 'English Electric Type 3 Co-Co Diesel Electric (1960)', badge: 'PERMANENT', bodyColor: '#3a3a3a', trim: '#8a8a8a' },
+  { num: 'E', color: '#2a3a6a', price: '£1000', name: 'BR Class 90 Bo-Bo Electric (1987)', badge: 'PERMANENT', bodyColor: '#2a3a6a', trim: '#c94a4a' },
+];
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function locoSvg(t) {
+  return `<svg width="220" height="64" viewBox="0 0 220 64" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="24" width="120" height="24" rx="4" fill="${t.bodyColor}"/>
+    <rect x="18" y="14" width="46" height="14" rx="2" fill="${t.bodyColor}"/>
+    <circle cx="90" cy="16" r="10" fill="${t.trim}"/>
+    <rect x="86" y="4" width="8" height="12" fill="${t.trim}"/>
+    <circle cx="34" cy="50" r="9" fill="#222"/>
+    <circle cx="34" cy="50" r="3" fill="#999"/>
+    <circle cx="64" cy="50" r="12" fill="#222"/>
+    <circle cx="64" cy="50" r="4" fill="#999"/>
+    <circle cx="96" cy="50" r="9" fill="#222"/>
+    <circle cx="96" cy="50" r="3" fill="#999"/>
+    <rect x="126" y="28" width="70" height="18" rx="2" fill="${t.trim}" opacity="0.85"/>
+    <circle cx="142" cy="50" r="8" fill="#222"/>
+    <circle cx="180" cy="50" r="8" fill="#222"/>
+    <rect x="0" y="58" width="220" height="2" fill="#555"/>
+  </svg>`;
+}
+
+const grid = document.getElementById('grid');
+for (const t of trains) {
+  const upgradeHtml = t.upgrade ? `<div class="upgrade">${esc(t.upgrade)}</div>` : '';
+  const badgeClass = t.badge === 'PERMANENT' ? 'permanent' : 'rust';
+  grid.insertAdjacentHTML('beforeend', `
+    <div class="card">
+      <div class="top-row">
+        <div class="num" style="color:${t.color}">${esc(t.num)}</div>
+        <div class="price-block">
+          <div class="price">${esc(t.price)}</div>
+          ${upgradeHtml}
+        </div>
+      </div>
+      <div class="loco">${locoSvg(t)}</div>
+      <div class="caption">${esc(t.name)}</div>
+      <div class="badge ${badgeClass}">${esc(t.badge)}</div>
+    </div>
+  `);
+}
+</script>
+</body>
+</html>
