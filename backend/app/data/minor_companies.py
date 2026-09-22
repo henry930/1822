@@ -22,7 +22,7 @@ MINOR_COMPANIES: list[MinorCompany] = [
     MinorCompany(6, "Furness Railway", "FR", "Barrow", "G16", False),
     MinorCompany(7, "Warrington & Newton Railway", "W&NR", "Warrington", "H23", False),
     MinorCompany(8, "Manchester, Sheffield & Lincolnshire Railway", "MS&LR", "Sheffield", "K24", False),
-    MinorCompany(9, "East Lincolnshire Railway", "ELR", "Grimsby", "N29", False),
+    MinorCompany(9, "East Lincolnshire Railway", "ELR", "Grimsby", "N23", False),
     MinorCompany(10, "Grand Junction Railway", "GJR", "Birmingham", "I30", False),
     MinorCompany(11, "Great Northern Railway", "GNR", "Peterborough", "M30", False),
     MinorCompany(12, "Eastern Union Railway", "EUR", "Ipswich", "P35", False),
