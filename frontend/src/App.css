@@ -328,8 +328,9 @@ label.hint {
 }
 
 .tile-palette-label {
-  width: 50px;
-  font-size: 12px;
+  width: 65px;
+  font-size: 14px;
+  font-weight: 600;
   text-transform: capitalize;
   color: #666;
 }
@@ -415,10 +416,10 @@ label.hint {
 .tile-modal {
   background: #fff;
   border-radius: 10px;
-  width: min(1100px, 100%);
-  max-height: 90vh;
+  width: min(1500px, 100%);
+  max-height: 92vh;
   overflow-y: auto;
-  padding: 24px 28px;
+  padding: 28px 32px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -455,27 +456,27 @@ label.hint {
 }
 
 .modal-tile-palette-row {
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .modal-tile-swatch {
-  width: 64px;
-  height: 64px;
+  width: 110px;
+  height: 110px;
 }
 
 .tile-modal-preview-col {
-  width: 320px;
+  width: 420px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tile-modal-preview {
-  width: 280px;
-  height: 280px;
+  width: 380px;
+  height: 380px;
   align-self: center;
 }
 
@@ -496,13 +497,18 @@ label.hint {
 }
 
 .modal-rotation-picker .rotation-swatch {
-  width: 38px;
-  height: 38px;
-  font-size: 15px;
+  width: 52px;
+  height: 52px;
+  font-size: 18px;
 }
 
 .tile-modal-preview-col .place-tile-btn {
   margin-right: 0;
+  padding: 14px 16px;
+  font-size: 17px;
+}
+
+.tile-modal-preview-col button {
   padding: 10px 14px;
   font-size: 15px;
 }

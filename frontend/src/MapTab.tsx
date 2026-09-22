@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchBoardMap,
   fetchTileLayOptions,
@@ -162,8 +162,27 @@ export default function MapTab({
       .finally(() => setReportLoading(false));
   }
 
+  // Real bug #2, found from the same root cause: guarding on `placing` /
+  // `placeConfirmed` alone (checked above) blocked this effect for that one
+  // render, but a state setter called *inside* an effect doesn't retroactively
+  // change what other effects in that same commit already read - so this
+  // effect's own closure still saw the stale (pre-reset) placeConfirmed value
+  // too, and skipped fetching. Selecting any *other* hex afterwards still hit
+  // this same effect (same guard, same stale closure risk) and could skip
+  // fetching for hexes that were never involved in a placement at all -
+  // leaving the picker permanently empty and the Place button permanently
+  // disabled after the first successful placement. Fixed by keying the skip
+  // to whether the hex/room actually changed (tracked via a ref, which -
+  // unlike state - reads the value set just now, not last render's): only
+  // skip when they *didn't* change (this is our own placement's companyKind
+  // flip), never for an actual hex switch.
+  const lastFetchKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (placing || placeConfirmed) return;
+    const key = `${selectedHexId ?? ""}|${roomId ?? ""}`;
+    const hexOrRoomChanged = key !== lastFetchKeyRef.current;
+    lastFetchKeyRef.current = key;
+
+    if (!hexOrRoomChanged && (placing || placeConfirmed)) return;
     setPendingTileId(null);
     if (!selectedHexId) {
       setReport(null);
