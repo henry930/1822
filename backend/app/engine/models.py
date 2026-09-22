@@ -10,6 +10,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
+from .board import BoardState, new_board_state
+
 
 class RoundType(str, Enum):
     STOCK = "stock"
@@ -157,3 +159,5 @@ class GameState:
     game_over: bool = False
     game_over_at_end_of_current_set: bool = False  # rule 10.1.1: deferred end triggers
     log: list[str] = field(default_factory=list)
+
+    board: BoardState = field(default_factory=new_board_state)

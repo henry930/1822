@@ -59,7 +59,9 @@ def test_operating_order_is_minors_then_majors_by_descending_price():
 
 def test_operating_round_set_uses_phase_locked_or_count_and_returns_to_stock():
     state = _game()
+    director = state.player_order[0]
     state.minors["M1"].floated = True
+    state.minors["M1"].director_player_id = director
     place_token(state, "M1", row=9, col=4)
     start_operating_round_set(state)
 
@@ -67,20 +69,22 @@ def test_operating_round_set_uses_phase_locked_or_count_and_returns_to_stock():
     assert state.operating_rounds_this_set == 1  # phase 1 -> 1 OR per rule 2.2.2
     assert active_company_id(state) == "M1"
 
-    apply_action(state, "irrelevant", {"type": "pass"})  # company turn -> advance
+    apply_action(state, director, {"type": "pass"})  # company turn -> advance
     assert state.round_type == RoundType.STOCK  # only company was M1, set had 1 OR
 
 
 def test_operating_round_set_runs_two_ors_from_phase_2_onward():
     state = _game()
+    director = state.player_order[0]
     state.phase = 2
     state.minors["M1"].floated = True
+    state.minors["M1"].director_player_id = director
     place_token(state, "M1", row=9, col=4)
     start_operating_round_set(state)
 
     assert state.operating_rounds_this_set == 2
-    apply_action(state, "x", {"type": "pass"})  # OR1's only company finishes
+    apply_action(state, director, {"type": "pass"})  # OR1's only company finishes
     assert state.round_type == RoundType.OPERATING  # still in the set (OR2 next)
     assert state.operating_round_index == 1
-    apply_action(state, "x", {"type": "pass"})  # OR2's only company finishes
+    apply_action(state, director, {"type": "pass"})  # OR2's only company finishes
     assert state.round_type == RoundType.STOCK
