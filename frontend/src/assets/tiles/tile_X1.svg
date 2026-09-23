@@ -1,8 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-115 -115 230 230" width="230" height="230">
 <path d="M -50.00,-86.60 L 50.00,-86.60 L 100.00,-0.00 L 50.00,86.60 L -50.00,86.60 L -100.00,0.00 Z" fill="#6FAE5D" stroke="#1a1a1a" stroke-width="3"/>
-<path d="M 86.60,-50.00 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M 86.60,50.00 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M -86.60,50.00 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
+<path d="M 75.00,-43.30 L 0.00,0.00" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M 75.00,43.30 L 0.00,0.00" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M -75.00,43.30 L 0.00,0.00" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M 75.00,-43.30 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<path d="M 75.00,43.30 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<path d="M -75.00,43.30 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<circle cx="0.00" cy="0.00" r="6.50" fill="#1a1a1a"/>
 <rect x="-69.00" y="-30.00" width="138.00" height="60.00" rx="30" ry="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
 <line x1="-19.50" y1="-24.00" x2="-19.50" y2="24.00" stroke="#1a1a1a" stroke-width="2.5"/>
 <line x1="19.50" y1="-24.00" x2="19.50" y2="24.00" stroke="#1a1a1a" stroke-width="2.5"/>

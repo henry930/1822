@@ -1,12 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-115 -115 230 230" width="230" height="230">
 <path d="M -50.00,-86.60 L 50.00,-86.60 L 100.00,-0.00 L 50.00,86.60 L -50.00,86.60 L -100.00,0.00 Z" fill="#F5DD62" stroke="#1a1a1a" stroke-width="3"/>
-<path d="M 86.60,-50.00 L 45.03,26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M 0.00,100.00 L 45.03,26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M 0.00,-100.00 L -45.03,-26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M -86.60,50.00 L -45.03,-26.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<circle cx="45.03" cy="26.00" r="10" fill="#1a1a1a"/>
-<text x="67.55" y="45.00" font-family="Georgia, serif" font-size="20" text-anchor="middle" fill="#111">10</text>
-<circle cx="-45.03" cy="-26.00" r="10" fill="#1a1a1a"/>
-<text x="-67.55" y="-33.00" font-family="Georgia, serif" font-size="20" text-anchor="middle" fill="#111">10</text>
+<path d="M 75.00,-43.30 A 150.00,150.00 0 0 0 0.00,86.60" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M 75.00,-43.30 A 150.00,150.00 0 0 0 0.00,86.60" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<path d="M 0.00,-86.60 A 150.00,150.00 0 0 1 -75.00,43.30" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M 0.00,-86.60 A 150.00,150.00 0 0 1 -75.00,43.30" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<circle cx="20.10" cy="11.60" r="13" fill="#1a1a1a" stroke="white" stroke-width="3"/>
+<circle cx="-20.10" cy="-11.60" r="13" fill="#1a1a1a" stroke="white" stroke-width="3"/>
+<circle cx="58.73" cy="21.96" r="16" fill="white" stroke="#1a1a1a" stroke-width="2.5"/>
+<text x="58.73" y="27.96" font-family="Georgia, serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#111">10</text>
+<circle cx="-58.73" cy="-21.96" r="16" fill="white" stroke="#1a1a1a" stroke-width="2.5"/>
+<text x="-58.73" y="-15.96" font-family="Georgia, serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#111">10</text>
 <text x="-92" y="98" font-family="Arial, sans-serif" font-size="20" fill="#333">1</text>
 </svg>
