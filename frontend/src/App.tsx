@@ -86,6 +86,63 @@ function seatForEngineId(engineId: string | null, seatsList: Seat[], idMap: Reco
   return seatsList.find((s) => s.lobbyPlayerId === lobbyId) ?? null;
 }
 
+// A plain `new WebSocket(...)` that drops (server restart, idle timeout,
+// network blip) just goes silent forever - nothing in this app used to
+// retry, so a tab left open across a backend restart would look normal but
+// stop receiving *any* further broadcasts, including ones triggered from
+// the testing panel. Reconnects with backoff instead, and hands the caller
+// each new socket via onSocket so it can update wherever the old reference
+// was stored (a ref, or a specific seat's `ws` field in React state).
+//
+// Rooms are in-memory only (see rooms.py) - a backend restart doesn't just
+// drop the connection, it erases the room itself, and the server closes
+// the socket with code 4404 to say so. Retrying that forever would just
+// spin, so onRoomGone fires instead and retries stop - the caller should
+// clear its room/game state and tell the person to start over.
+//
+// Returns a cleanup function that stops retrying and closes the socket.
+function connectWithRetry(
+  url: string,
+  onMessage: (data: string) => void,
+  onSocket: (ws: WebSocket) => void,
+  onStatusChange?: (connected: boolean) => void,
+  onRoomGone?: () => void
+): () => void {
+  let stopped = false;
+  let attempt = 0;
+  let current: WebSocket | null = null;
+
+  function connect() {
+    if (stopped) return;
+    const ws = new WebSocket(url);
+    current = ws;
+    onSocket(ws);
+    ws.onmessage = (evt) => onMessage(evt.data);
+    ws.onopen = () => {
+      attempt = 0;
+      onStatusChange?.(true);
+    };
+    ws.onclose = (evt) => {
+      if (stopped) return;
+      if (evt.code === 4404) {
+        stopped = true;
+        onRoomGone?.();
+        return;
+      }
+      onStatusChange?.(false);
+      const delay = Math.min(1000 * 2 ** attempt, 8000);
+      attempt++;
+      setTimeout(connect, delay);
+    };
+  }
+  connect();
+
+  return () => {
+    stopped = true;
+    current?.close();
+  };
+}
+
 function App() {
   const [name, setName] = useState("");
   const [roomIdInput, setRoomIdInput] = useState("");
@@ -118,6 +175,14 @@ function App() {
   const [debugBusy, setDebugBusy] = useState(false);
   const [boardMapData, setBoardMapData] = useState<BoardMapData | null>(null);
   const [mapFocusRequest, setMapFocusRequest] = useState<{ hexId: string; nonce: number } | null>(null);
+  // Count of currently-dropped sockets (single-connection mode has at most
+  // one; solo mode has up to three seats) - >0 means at least one
+  // connection is down and connectWithRetry is trying to bring it back.
+  const [disconnectedCount, setDisconnectedCount] = useState(0);
+  // Set when the server says our room itself is gone (backend restarted -
+  // rooms are in-memory only), as opposed to just a dropped connection.
+  // Nothing can reconnect to a room that no longer exists.
+  const [roomLost, setRoomLost] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   // Mirrors gameState/playerIdMap for code that runs outside React's render
   // cycle (the "skip to operating round" fast-forward below) - reading
@@ -148,13 +213,32 @@ function App() {
     return city?.id ?? null;
   }
 
+  function handleRoomGone() {
+    setRoomLost(true);
+    setGameState(null);
+    setLobby(null);
+    setSeats([]);
+    setPlayerId(null);
+    setRoomId(null);
+  }
+
+  function handleStartOver() {
+    setRoomLost(false);
+    setError(null);
+  }
+
   // Single-connection mode (normal multiplayer: one browser = one player)
   useEffect(() => {
     if (!roomId || !playerId || seats.length > 0) return;
-    const ws = new WebSocket(wsUrl(roomId, playerId));
-    ws.onmessage = (evt) => handleMessage(evt.data);
-    wsRef.current = ws;
-    return () => ws.close();
+    return connectWithRetry(
+      wsUrl(roomId, playerId),
+      (data) => handleMessage(data),
+      (ws) => {
+        wsRef.current = ws;
+      },
+      (connected) => setDisconnectedCount((n) => Math.max(0, n + (connected ? -1 : 1))),
+      handleRoomGone
+    );
   }, [roomId, playerId, seats.length]);
 
   // Solo mode: only seat 0 ("Player 1") is the human; seats 1 and 2 always
@@ -245,9 +329,21 @@ function App() {
       const newSeats: Seat[] = [];
       for (const seatName of names) {
         const { player_id } = await joinRoom(room_id, seatName);
-        const ws = new WebSocket(wsUrl(room_id, player_id));
-        ws.onmessage = (evt) => handleMessage(evt.data);
-        newSeats.push({ lobbyPlayerId: player_id, name: seatName, ws });
+        // seat.ws is mutated in place by connectWithRetry on every
+        // (re)connect - the `seats` React state array keeps holding this
+        // same object, so later code reading seat.ws always sees the
+        // current socket without needing a setSeats round-trip.
+        const seat: Seat = { lobbyPlayerId: player_id, name: seatName, ws: null as unknown as WebSocket };
+        connectWithRetry(
+          wsUrl(room_id, player_id),
+          (data) => handleMessage(data),
+          (ws) => {
+            seat.ws = ws;
+          },
+          (connected) => setDisconnectedCount((n) => Math.max(0, n + (connected ? -1 : 1))),
+          handleRoomGone
+        );
+        newSeats.push(seat);
       }
       setRoomId(room_id);
       setSeats(newSeats);
@@ -272,9 +368,17 @@ function App() {
       const newSeats: Seat[] = [];
       for (const seatName of names) {
         const { player_id } = await joinRoom(room_id, seatName);
-        const ws = new WebSocket(wsUrl(room_id, player_id));
-        ws.onmessage = (evt) => handleMessage(evt.data);
-        newSeats.push({ lobbyPlayerId: player_id, name: seatName, ws });
+        const seat: Seat = { lobbyPlayerId: player_id, name: seatName, ws: null as unknown as WebSocket };
+        connectWithRetry(
+          wsUrl(room_id, player_id),
+          (data) => handleMessage(data),
+          (ws) => {
+            seat.ws = ws;
+          },
+          (connected) => setDisconnectedCount((n) => Math.max(0, n + (connected ? -1 : 1))),
+          handleRoomGone
+        );
+        newSeats.push(seat);
       }
       setRoomId(room_id);
       setSeats(newSeats);
@@ -481,6 +585,13 @@ function App() {
   return (
     <div className="app">
       <h1>1822</h1>
+      {roomLost && (
+        <p className="room-lost-banner">
+          Your game session was lost - the server was restarted, and rooms aren't saved across restarts. Please
+          start a new game below.{" "}
+          <button onClick={handleStartOver}>Dismiss</button>
+        </p>
+      )}
       {!roomId && (
         <div className="join-form">
           <input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -528,6 +639,12 @@ function App() {
 
       {gameState && (
         <div className="game">
+          {disconnectedCount > 0 && (
+            <p className="disconnected-banner">
+              Reconnecting to server... any actions you take right now (or updates from the testing panel) won't be
+              seen until this reconnects.
+            </p>
+          )}
           <div className="status-bar">
             <span>Phase {gameState.phase}</span>
             <span>{gameState.round_type === "stock" ? "Stock round" : "Operating round"}</span>

@@ -248,6 +248,13 @@ async def start_room(room_id: str):
 async def ws_endpoint(websocket: WebSocket, room_id: str, player_id: str):
     room = registry.get(room_id)
     if room is None:
+        # A close before accept() doesn't complete the WS handshake, so the
+        # browser only ever sees a generic code-1006 "abnormal closure" -
+        # indistinguishable from the server being unreachable at all. Accept
+        # first so the real 4404 close code actually reaches the client;
+        # otherwise a reconnect loop can never tell "server down, keep
+        # retrying" apart from "room gone, stop retrying and say so".
+        await websocket.accept()
         await websocket.close(code=4404)
         return
     await websocket.accept()
