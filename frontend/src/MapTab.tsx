@@ -533,6 +533,21 @@ export default function MapTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPlacement, report, reportLoading, placing]);
 
+  // Esc also closes the tile-picker modal itself (the "Choose a tile to
+  // place here..." popup) when it's open with nothing armed yet - the
+  // pendingPlacement case above already handles Esc once a tile's picked.
+  useEffect(() => {
+    if (!modalOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setModalOpen(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalOpen]);
+
   const allHexes: HexEntry[] = useMemo(() => {
     if (!mapData) return [];
     const list: HexEntry[] = [];
