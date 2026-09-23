@@ -62,6 +62,16 @@ function photoHexCenter(col: number, row: number) {
   return { x: PHOTO_X0 + col * PHOTO_DX, y: PHOTO_Y0 + row * PHOTO_DY };
 }
 
+// Parses a hex id like "H23" into (col, row) the same way the systematic
+// grid below does, for a hex that isn't necessarily part of it.
+function parseHexId(hexId: string, columns: string[]): { col: number; row: number } | null {
+  const m = /^([A-Za-z]{1,2})(\d{1,2})$/.exec(hexId);
+  if (!m) return null;
+  const col = columns.indexOf(m[1].toUpperCase());
+  if (col === -1) return null;
+  return { col, row: parseInt(m[2], 10) };
+}
+
 // Every tile SVG draws its hexagon inset within a square viewBox (a small
 // margin around the hex for the stroke/labels) - the hex itself only spans
 // 200 of the viewBox's 230 units. Scale placed-tile <image> elements up by
@@ -176,10 +186,12 @@ export default function MapTab({
     setReportError(null);
     if (!roomId) return;
     setReportLoading(true);
-    // companyId is only passed when actually in that company's operating
-    // turn (canQueueLay) - browsing outside an operating round has no real
-    // company laying, so there's nothing to gate connectivity against.
-    fetchTileLayOptions(roomId, hexId, companyKind, canQueueLay ? companyId : null)
+    // Always pass companyId when known - connectivity (rule 5.7.9) no
+    // longer requires a real operating round to check (see
+    // confirmPendingPlacement/debug_force_tile_lay), so gating this on
+    // canQueueLay would leave the picker blind to it whenever a company was
+    // only picked via the testing panel rather than a genuine operating turn.
+    fetchTileLayOptions(roomId, hexId, companyKind, companyId)
       .then((r) => {
         setReport(r.report);
         setMaxTileColor(r.max_tile_color);
@@ -361,15 +373,34 @@ export default function MapTab({
   const photoGrid = useMemo(() => {
     if (!mapData) return [];
     const list: { hexId: string; col: number; row: number }[] = [];
+    const seen = new Set<string>();
     for (let col = 0; col < mapData.columns.length; col++) {
       for (let row = 1; row <= PHOTO_MAX_ROW; row++) {
         if (col % 2 === row % 2) {
-          list.push({ hexId: `${mapData.columns[col]}${row}`, col, row });
+          const hexId = `${mapData.columns[col]}${row}`;
+          list.push({ hexId, col, row });
+          seen.add(hexId);
         }
       }
     }
+    // A hex that's actually got a tile on it (or is mid-placement) always
+    // needs to be drawn, even if it falls on the "wrong" parity for the
+    // systematic grid above - that grid is a best-effort approximation of
+    // which positions exist on the real printed board, and a hex id typed
+    // into search or reached some other way isn't guaranteed to land on
+    // one of those positions, but a real placement on it is still real
+    // game state that has to be visible.
+    for (const hexId of Object.keys(effectiveBoardTiles ?? {})) {
+      if (seen.has(hexId)) continue;
+      const parsed = parseHexId(hexId, mapData.columns);
+      if (parsed) {
+        list.push({ hexId, ...parsed });
+        seen.add(hexId);
+      }
+    }
     return list;
-  }, [mapData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapData, effectiveBoardTiles]);
 
   const bounds = useMemo(() => {
     if (allHexes.length === 0) return { minX: 0, minY: 0, maxX: 800, maxY: 600 };
