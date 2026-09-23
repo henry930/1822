@@ -148,7 +148,20 @@ def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major", com
         connected = hex_id in reachable
 
     report = tile_lay_report(room.state.board, room.state.phase, hex_id, company_kind, connected)
-    return {"hex_id": hex_id, "phase": room.state.phase, "company_kind": company_kind, "report": report}
+
+    from app.data.phases import PHASES_BY_NUMBER
+
+    max_tile_color = {"yellow": "yellow", "green": "green", "brown": "brown", "grey": "gray"}[
+        PHASES_BY_NUMBER[room.state.phase].max_tile_color.name.lower()
+    ]
+
+    return {
+        "hex_id": hex_id,
+        "phase": room.state.phase,
+        "company_kind": company_kind,
+        "report": report,
+        "max_tile_color": max_tile_color,
+    }
 
 
 class DebugForceRoundRequest(BaseModel):

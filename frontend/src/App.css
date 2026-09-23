@@ -616,6 +616,16 @@ label.hint {
   outline-offset: 1px;
 }
 
+.ignore-legality-toggle {
+  display: block;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.ignore-legality-toggle input {
+  margin-right: 4px;
+}
+
 .raw-toggle {
   margin: 12px 0;
   background: none;

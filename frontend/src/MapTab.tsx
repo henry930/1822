@@ -68,6 +68,8 @@ function photoHexCenter(col: number, row: number) {
 // rendering visibly smaller than it with a gap around the edges.
 const TILE_ART_SCALE = 230 / 200;
 
+const TILE_COLOR_ORDER = ["yellow", "green", "brown", "gray"] as const;
+
 function hexPoints(cx: number, cy: number, size: number): string {
   // Flat-top hex, matching the tile SVGs' own orientation.
   const pts = [
@@ -130,8 +132,17 @@ export default function MapTab({
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [report, setReport] = useState<TileLayOption[] | null>(null);
+  const [maxTileColor, setMaxTileColor] = useState<"yellow" | "green" | "brown" | "gray">("yellow");
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  // Testing only: the picker normally only shows/enables tiles and
+  // rotations the server's rule engine says are legal here. Turning this
+  // on stops the UI from filtering on that - every tile for the current
+  // phase and every rotation becomes selectable, so the UI itself (art,
+  // rotation, hex targeting) can be checked independent of game rules.
+  // The server still enforces the real rules when Place is actually
+  // clicked - this only hides its opinion from the picker beforehand.
+  const [ignoreLegality, setIgnoreLegality] = useState(false);
 
   useEffect(() => {
     fetchBoardMap()
@@ -168,7 +179,10 @@ export default function MapTab({
     // turn (canQueueLay) - browsing outside an operating round has no real
     // company laying, so there's nothing to gate connectivity against.
     fetchTileLayOptions(roomId, hexId, companyKind, canQueueLay ? companyId : null)
-      .then((r) => setReport(r.report))
+      .then((r) => {
+        setReport(r.report);
+        setMaxTileColor(r.max_tile_color);
+      })
       .catch((e) => setReportError((e as Error).message))
       .finally(() => setReportLoading(false));
   }
@@ -374,8 +388,10 @@ export default function MapTab({
     if (placing) return "A placement is already in progress.";
     if (!pendingTileId) return "No tile selected.";
     if (!pendingOptions.length) return "No legality data loaded for this tile yet (still loading, or the fetch failed - see any error above).";
-    if (!pendingCurrent) return `No legality data for rotation ${pendingRotation} specifically.`;
-    if (!pendingCurrent.valid) return `Rotation ${pendingRotation} is invalid: ${pendingCurrent.reason}`;
+    if (!ignoreLegality) {
+      if (!pendingCurrent) return `No legality data for rotation ${pendingRotation} specifically.`;
+      if (!pendingCurrent.valid) return `Rotation ${pendingRotation} is invalid: ${pendingCurrent.reason}`;
+    }
     return null;
   }
   const placeDisabled = placeDisabledReason();
@@ -620,12 +636,22 @@ export default function MapTab({
 
             <div className="tile-modal-body">
               <div className="tile-modal-palette">
+                <label className="ignore-legality-toggle hint">
+                  <input
+                    type="checkbox"
+                    checked={ignoreLegality}
+                    onChange={(e) => setIgnoreLegality(e.target.checked)}
+                  />{" "}
+                  Show every tile/rotation for the current phase (ignore this hex's legality) - testing only, the
+                  server still enforces the real rules when you click Place.
+                </label>
                 {report && (
                   <>
                     <h4>Tiles that can be placed here ({companyKind})</h4>
-                    {(["yellow", "green", "brown", "gray"] as const).map((color) => {
+                    {TILE_COLOR_ORDER.map((color) => {
+                      const phaseAllows = TILE_COLOR_ORDER.indexOf(color) <= TILE_COLOR_ORDER.indexOf(maxTileColor);
                       const placeable = grouped[color].filter((t) =>
-                        (reportByTile.get(t.id) ?? []).some((o) => o.valid)
+                        ignoreLegality ? phaseAllows : (reportByTile.get(t.id) ?? []).some((o) => o.valid)
                       );
                       if (placeable.length === 0) return null;
                       return (
@@ -649,16 +675,18 @@ export default function MapTab({
                         </div>
                       );
                     })}
-                    {(["yellow", "green", "brown", "gray"] as const).every(
-                      (color) =>
-                        grouped[color].filter((t) => (reportByTile.get(t.id) ?? []).some((o) => o.valid)).length === 0
-                    ) && (
-                      <p className="hint">
-                        {report.some((r) => r.reason?.includes("connected"))
-                          ? `No tile can be placed here - ${selectedHexId} isn't connected to this company's track network yet.`
-                          : "No tile can legally be placed here right now."}
-                      </p>
-                    )}
+                    {!ignoreLegality &&
+                      TILE_COLOR_ORDER.every(
+                        (color) =>
+                          grouped[color].filter((t) => (reportByTile.get(t.id) ?? []).some((o) => o.valid)).length ===
+                          0
+                      ) && (
+                        <p className="hint">
+                          {report.some((r) => r.reason?.includes("connected"))
+                            ? `No tile can be placed here - ${selectedHexId} isn't connected to this company's track network yet.`
+                            : "No tile can legally be placed here right now."}
+                        </p>
+                      )}
                   </>
                 )}
               </div>
@@ -699,9 +727,13 @@ export default function MapTab({
                         );
                       })}
                     </div>
-                    {pendingCurrent && !pendingCurrent.valid && (
-                      <p className="error">Not valid at this rotation: {pendingCurrent.reason}</p>
-                    )}
+                    {pendingCurrent &&
+                      !pendingCurrent.valid &&
+                      (ignoreLegality ? (
+                        <p className="hint">Normally invalid here: {pendingCurrent.reason}</p>
+                      ) : (
+                        <p className="error">Not valid at this rotation: {pendingCurrent.reason}</p>
+                      ))}
                     {pendingCurrent?.valid && pendingCurrent.cost ? (
                       <p className="hint">Terrain cost: £{pendingCurrent.cost}</p>
                     ) : null}
@@ -722,7 +754,7 @@ export default function MapTab({
                     </button>
                     {placeDisabled && <p className="hint place-disabled-reason">Can't place yet: {placeDisabled}</p>}
                     <button
-                      disabled={!pendingCurrent?.valid || !inGame || !canQueueLay}
+                      disabled={(!ignoreLegality && !pendingCurrent?.valid) || !inGame || !canQueueLay}
                       onClick={() => {
                         if (selectedHexId && pendingTileId) {
                           onQueueLay(selectedHexId, pendingTileId, pendingRotation);

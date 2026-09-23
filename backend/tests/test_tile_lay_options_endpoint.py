@@ -21,6 +21,7 @@ def test_tile_lay_options_returns_full_report_for_live_room():
     assert data["hex_id"] == "Z1"
     assert data["phase"] == 1
     assert data["company_kind"] == "major"
+    assert data["max_tile_color"] == "yellow"
     assert len(data["report"]) > 300  # 61 tiles x 6 rotations
 
     yellow_valid = [r for r in data["report"] if r["tile_id"] == "3" and r["rotation"] == 0]
@@ -85,3 +86,25 @@ def test_tile_lay_options_rejects_unknown_company_id():
         params={"hex_id": "Z1", "company_id": "NOTACOMPANY"},
     )
     assert resp.status_code == 400
+
+
+def test_tile_lay_options_max_tile_color_tracks_phase():
+    """Drives the map UI's phase-appropriate tile filtering (e.g. when
+    showing every tile regardless of hex-specific legality, for testing)."""
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Alice", "Bob", "Carol"])
+
+    resp = client.get(f"/rooms/{room_id}/tile_lay_options", params={"hex_id": "Z1"})
+    assert resp.json()["max_tile_color"] == "yellow"
+
+    client.post(f"/rooms/{room_id}/debug/force_round", json={"phase": 3})
+    resp = client.get(f"/rooms/{room_id}/tile_lay_options", params={"hex_id": "Z1"})
+    assert resp.json()["max_tile_color"] == "green"
+
+    client.post(f"/rooms/{room_id}/debug/force_round", json={"phase": 5})
+    resp = client.get(f"/rooms/{room_id}/tile_lay_options", params={"hex_id": "Z1"})
+    assert resp.json()["max_tile_color"] == "brown"
+
+    client.post(f"/rooms/{room_id}/debug/force_round", json={"phase": 7})
+    resp = client.get(f"/rooms/{room_id}/tile_lay_options", params={"hex_id": "Z1"})
+    assert resp.json()["max_tile_color"] == "gray"

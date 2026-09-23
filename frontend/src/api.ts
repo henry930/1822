@@ -79,6 +79,7 @@ export type TileLayOptionsResponse = {
   phase: number;
   company_kind: string;
   report: TileLayOption[];
+  max_tile_color: "yellow" | "green" | "brown" | "gray";
 };
 
 export async function fetchTileLayOptions(
