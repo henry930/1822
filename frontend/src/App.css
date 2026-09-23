@@ -960,3 +960,37 @@ label.hint {
 .region-corrections-list h4 {
   margin-top: 0;
 }
+
+.region-data-checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+}
+
+.region-data-edges-heading {
+  margin-top: 10px;
+}
+
+.region-edge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.region-edge-label {
+  flex: 1;
+  color: #555;
+}
+
+.region-edge-toll-input {
+  width: 70px;
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.region-edges-list {
+  margin-bottom: 8px;
+}

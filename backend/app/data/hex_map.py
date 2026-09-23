@@ -47,8 +47,15 @@ class CityHex:
     name: str
     label: str | None   # None (unlabeled), "BM", "Y", "S", "C", "T", "L" (London), "EC"
     is_town: bool = False
+    # Some yellow tiles (1/2/55/56/69) print two town circles on one hex -
+    # a hex that needs one of those has town_count=2. Only meaningful when
+    # is_town is True; every other hex is the ordinary single-town/city case.
+    town_count: int = 1
     # A big city hex (London/M38, York/K19) is the printed home of more than
     # one company at once - a tuple covers that; most hexes just have one.
+    # A hex can independently also be catalogued in OFFBOARD_AREAS below
+    # (e.g. Aberdeen/H1, Glasgow/E6 are both a home-of-minor city AND an
+    # off-board revenue area) - the two lists aren't mutually exclusive.
     home_of_minor: int | tuple[int, ...] | None = None
     home_of_major: str | tuple[str, ...] | None = None
     destination_of_major: str | None = None
@@ -263,6 +270,25 @@ BLOCKED_ADJACENCIES: list[tuple[str, str, str]] = [
     ("N22", "N23", "approx"),  # Humber estuary
     ("I42", "K42", "approx"),  # South coast near Bournemouth
 ]
+
+# ---------------------------------------------------------------------------
+# Toll hexsides: a specific edge between two hexes that connects, but only if
+# a company pays a one-time fee to build across it (distinct from a terrain
+# hex's cost, which is paid for the *hex itself* regardless of which edge -
+# this is paid for crossing one particular edge between two named hexes).
+# None catalogued yet - this list is intentionally empty until verified
+# against the physical board via the map tab's region cross-check tool; it
+# exists now so that tool has somewhere to write confirmed entries to.
+# ---------------------------------------------------------------------------
+@dataclass(frozen=True)
+class EdgeToll:
+    hex_a: str
+    hex_b: str
+    cost: int
+    confidence: str = "approx"
+
+
+EDGE_TOLLS: list[EdgeToll] = []
 
 # ---------------------------------------------------------------------------
 # The Merthyr Tydfil <-> Pontypool special connection (rules section 9): a direct

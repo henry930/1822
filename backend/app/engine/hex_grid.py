@@ -17,7 +17,7 @@ the neighbor this module returns for that edge.
 """
 from __future__ import annotations
 
-from app.data.hex_map import BLOCKED_ADJACENCIES, HEX_COLUMNS
+from app.data.hex_map import BLOCKED_ADJACENCIES, EDGE_TOLLS, HEX_COLUMNS
 
 _COL_INDEX = {letter: i for i, letter in enumerate(HEX_COLUMNS)}
 _INDEX_COL = {i: letter for letter, i in _COL_INDEX.items()}
@@ -60,6 +60,19 @@ def is_adjacency_blocked(hex_id_a: str, hex_id_b: str) -> bool:
     """Rule 1.4.9-style coastal breaks (red lines on the board) where two
     hexes are geometrically adjacent but do not connect for routing."""
     return frozenset((hex_id_a, hex_id_b)) in _BLOCKED_PAIRS
+
+
+_EDGE_TOLL_BY_PAIR: dict[frozenset[str], int] = {
+    frozenset((t.hex_a, t.hex_b)): t.cost for t in EDGE_TOLLS
+}
+
+
+def edge_toll(hex_id_a: str, hex_id_b: str) -> int | None:
+    """The one-time fee (if any) a company must pay to build track across
+    the specific edge between these two hexes - None means the edge is
+    free to cross (the ordinary case) or blocked outright (see
+    is_adjacency_blocked; a blocked edge can't be crossed at any price)."""
+    return _EDGE_TOLL_BY_PAIR.get(frozenset((hex_id_a, hex_id_b)))
 
 
 def neighbor(hex_id: str, edge: int) -> str | None:

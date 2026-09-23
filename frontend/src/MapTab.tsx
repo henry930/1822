@@ -104,46 +104,99 @@ type HexEntry = { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offbo
 // needing to touch code. Saved locally (so nothing is lost on refresh) and
 // exportable as JSON to hand back for merging into app/data/hex_map.py -
 // this UI doesn't write to the server, it just collects and hands off.
+//
+// A hex isn't necessarily just one "kind": Aberdeen/H1 and Glasgow/E6 are
+// both a city (home of a minor) AND an off-board revenue area at once, so
+// city/town and off-board/terrain are tracked as independent, combinable
+// fields here rather than one mutually-exclusive "kind" - see
+// app.data.hex_map.CityHex's docstring on the backend for the same point.
 const REGION_CORRECTIONS_KEY = "1822-map-region-corrections-v1";
 
-type RegionKind = "" | "none" | "city" | "town" | "offboard" | "terrain";
+type CityOrTown = "" | "city" | "town";
+type EdgeStatus = "normal" | "blocked" | "toll";
+type EdgeCorrection = { status: EdgeStatus; cost: string };
 
 type RegionForm = {
-  kind: RegionKind;
+  cityOrTown: CityOrTown;
   name: string;
   label: string;
+  // Only meaningful when cityOrTown === "town" - some yellow tiles
+  // (1/2/55/56/69) print two town circles on one hex.
+  townCount: string;
   homeOfMajor: string;
   homeOfMinor: string;
   destinationOfMajor: string;
+  isOffboard: boolean;
+  offboardName: string;
   valueYellow: string;
   valueGreen: string;
   valueBrown: string;
   valueGrey: string;
+  isTerrain: boolean;
   terrain: string;
   cost: string;
+  // Per-edge (0=N,1=NE,2=SE,3=S,4=SW,5=NW) corrections - which neighboring
+  // regions this hex does/doesn't connect to, and any toll to cross. Only
+  // edges the player actually sets are stored; an edge absent here is left
+  // as whatever's already on file (or "normal"/free if nothing's catalogued).
+  edges: Partial<Record<number, EdgeCorrection>>;
   note: string;
 };
 
 type SavedRegionCorrection = RegionForm & { hexId: string; savedAt: string };
 
 const BLANK_REGION_FORM: RegionForm = {
-  kind: "",
+  cityOrTown: "",
   name: "",
   label: "",
+  townCount: "1",
   homeOfMajor: "",
   homeOfMinor: "",
   destinationOfMajor: "",
+  isOffboard: false,
+  offboardName: "",
   valueYellow: "",
   valueGreen: "",
   valueBrown: "",
   valueGrey: "",
+  isTerrain: false,
   terrain: "",
   cost: "",
+  edges: {},
   note: "",
 };
 
 const LABEL_OPTIONS = ["BM", "Y", "C", "EC", "L", "S", "T"];
 const TERRAIN_OPTIONS = ["river_small", "river_large", "estuary", "rough", "hill", "mountain"];
+
+// Edge numbering matches the backend (app.engine.hex_grid): 0=N, 1=NE,
+// 2=SE, 3=S, 4=SW, 5=NW - a tile's printed edges line up with these directly.
+const EDGE_DIRECTIONS: { edge: number; short: string; full: string }[] = [
+  { edge: 0, short: "N", full: "North" },
+  { edge: 1, short: "NE", full: "North-east" },
+  { edge: 2, short: "SE", full: "South-east" },
+  { edge: 3, short: "S", full: "South" },
+  { edge: 4, short: "SW", full: "South-west" },
+  { edge: 5, short: "NW", full: "North-west" },
+];
+
+// JS port of app.engine.hex_grid's neighbor math (flat-top hexes, "odd-q"
+// column offset) - kept in sync deliberately with the same coordinate
+// convention so a direction picked here always names the same real
+// neighbor hex the backend would compute for a tile lay there.
+const EVEN_COL_DELTAS: [number, number][] = [[0, -1], [1, -1], [1, 0], [0, 1], [-1, 0], [-1, -1]];
+const ODD_COL_DELTAS: [number, number][] = [[0, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
+const GRID_MIN_ROW = 1;
+const GRID_MAX_ROW = 44;
+
+function neighborHexId(columns: string[], col: number, row: number, edge: number): string | null {
+  const deltas = col % 2 === 1 ? ODD_COL_DELTAS : EVEN_COL_DELTAS;
+  const [dCol, dRow] = deltas[edge];
+  const nCol = col + dCol;
+  const nRow = row + dRow;
+  if (nCol < 0 || nCol >= columns.length || nRow < GRID_MIN_ROW || nRow > GRID_MAX_ROW) return null;
+  return `${columns[nCol]}${nRow}`;
+}
 
 function loadRegionCorrections(): Record<string, SavedRegionCorrection> {
   try {
@@ -164,35 +217,38 @@ function persistRegionCorrections(corrections: Record<string, SavedRegionCorrect
 }
 
 // Pre-fills the form from whatever this engine already has catalogued for
-// the hex, so "correcting" it is edit-in-place, not re-typing from scratch.
-function regionFormFromCatalogued(entry: HexEntry | undefined): RegionForm {
-  if (!entry) return { ...BLANK_REGION_FORM };
-  if (entry.kind === "city") {
-    const c = entry.hex as MapCity;
-    return {
-      ...BLANK_REGION_FORM,
-      kind: c.is_town ? "town" : "city",
-      name: c.name,
-      label: c.label ?? "",
-      homeOfMajor: c.home_of_major.join(", "),
-      homeOfMinor: c.home_of_minor.join(", "),
-      destinationOfMajor: c.destination_of_major ?? "",
-    };
+// the hex (possibly several entries at once - see the comment above), so
+// "correcting" it is edit-in-place, not re-typing from scratch. Edge data
+// is filled in separately (see the reset effect) since it depends on the
+// hex's neighbors, not on its own catalogue entries.
+function regionFormFromCatalogued(entries: HexEntry[]): Omit<RegionForm, "edges"> {
+  const form = { ...BLANK_REGION_FORM };
+  for (const entry of entries) {
+    if (entry.kind === "city") {
+      const c = entry.hex as MapCity;
+      form.cityOrTown = c.is_town ? "town" : "city";
+      form.name = c.name;
+      form.label = c.label ?? "";
+      form.townCount = String(c.town_count || 1);
+      form.homeOfMajor = c.home_of_major.join(", ");
+      form.homeOfMinor = c.home_of_minor.join(", ");
+      form.destinationOfMajor = c.destination_of_major ?? "";
+    } else if (entry.kind === "offboard") {
+      const o = entry.hex as MapOffboard;
+      form.isOffboard = true;
+      form.offboardName = o.name;
+      form.valueYellow = String(o.value_yellow);
+      form.valueGreen = String(o.value_green);
+      form.valueBrown = String(o.value_brown);
+      form.valueGrey = String(o.value_grey);
+    } else if (entry.kind === "terrain") {
+      const t = entry.hex as MapTerrain;
+      form.isTerrain = true;
+      form.terrain = t.terrain;
+      form.cost = String(t.cost);
+    }
   }
-  if (entry.kind === "offboard") {
-    const o = entry.hex as MapOffboard;
-    return {
-      ...BLANK_REGION_FORM,
-      kind: "offboard",
-      name: o.name,
-      valueYellow: String(o.value_yellow),
-      valueGreen: String(o.value_green),
-      valueBrown: String(o.value_brown),
-      valueGrey: String(o.value_grey),
-    };
-  }
-  const t = entry.hex as MapTerrain;
-  return { ...BLANK_REGION_FORM, kind: "terrain", terrain: t.terrain, cost: String(t.cost) };
+  return form;
 }
 
 type Props = {
@@ -477,6 +533,21 @@ export default function MapTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingPlacement, report, reportLoading, placing]);
 
+  // Esc also closes the tile-picker modal itself (the "Choose a tile to
+  // place here..." popup) when it's open with nothing armed yet - the
+  // pendingPlacement case above already handles Esc once a tile's picked.
+  useEffect(() => {
+    if (!modalOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setModalOpen(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [modalOpen]);
+
   const allHexes: HexEntry[] = useMemo(() => {
     if (!mapData) return [];
     const list: HexEntry[] = [];
@@ -486,11 +557,45 @@ export default function MapTab({
     return list;
   }, [mapData]);
 
-  const hexById = useMemo(() => {
-    const map = new Map<string, HexEntry>();
-    for (const entry of allHexes) map.set(entry.hex.id, entry);
+  // A hex can carry more than one catalogue entry at once (city + off-board
+  // area - see the region-data-panel comment above), so this maps to a list,
+  // not a single entry.
+  const hexEntriesById = useMemo(() => {
+    const map = new Map<string, HexEntry[]>();
+    for (const entry of allHexes) {
+      const list = map.get(entry.hex.id);
+      if (list) list.push(entry);
+      else map.set(entry.hex.id, [entry]);
+    }
     return map;
   }, [allHexes]);
+
+  // What's currently on file for a hex's 6 edges, read from the board map's
+  // blocked_adjacencies/edge_tolls lists - used to pre-fill the edge
+  // corrections form the same way regionFormFromCatalogued pre-fills the
+  // rest of it.
+  function edgesFromCatalogued(hexId: string): Partial<Record<number, EdgeCorrection>> {
+    if (!mapData) return {};
+    const parsed = parseHexId(hexId, mapData.columns);
+    if (!parsed) return {};
+    const result: Partial<Record<number, EdgeCorrection>> = {};
+    for (const { edge } of EDGE_DIRECTIONS) {
+      const neighborId = neighborHexId(mapData.columns, parsed.col, parsed.row, edge);
+      if (!neighborId) continue;
+      const blocked = mapData.blocked_adjacencies.find(
+        (b) => (b.hex_a === hexId && b.hex_b === neighborId) || (b.hex_a === neighborId && b.hex_b === hexId)
+      );
+      if (blocked) {
+        result[edge] = { status: "blocked", cost: "" };
+        continue;
+      }
+      const toll = mapData.edge_tolls.find(
+        (t) => (t.hex_a === hexId && t.hex_b === neighborId) || (t.hex_a === neighborId && t.hex_b === hexId)
+      );
+      if (toll) result[edge] = { status: "toll", cost: String(toll.cost) };
+    }
+    return result;
+  }
 
   // Reset the correction form whenever the selected hex changes: an already
   // -saved correction for this hex wins (that's the player's own latest
@@ -503,9 +608,16 @@ export default function MapTab({
       return;
     }
     const existing = regionCorrections[selectedHexId];
-    setRegionForm(existing ? { ...existing } : regionFormFromCatalogued(hexById.get(selectedHexId)));
+    if (existing) {
+      setRegionForm({ ...existing });
+    } else {
+      setRegionForm({
+        ...regionFormFromCatalogued(hexEntriesById.get(selectedHexId) ?? []),
+        edges: edgesFromCatalogued(selectedHexId),
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedHexId, hexById]);
+  }, [selectedHexId, hexEntriesById]);
 
   function saveRegionCorrection() {
     if (!selectedHexId) return;
@@ -526,7 +638,10 @@ export default function MapTab({
       return next;
     });
     if (hexId === selectedHexId) {
-      setRegionForm(regionFormFromCatalogued(hexById.get(hexId)));
+      setRegionForm({
+        ...regionFormFromCatalogued(hexEntriesById.get(hexId) ?? []),
+        edges: edgesFromCatalogued(hexId),
+      });
       setRegionSaved(false);
     }
   }
@@ -624,7 +739,12 @@ export default function MapTab({
     return results.slice(0, 20);
   }, [allHexes, search]);
 
-  const selectedInfo = allHexes.find(({ hex }) => hex.id === selectedHexId);
+  const selectedEntries = selectedHexId ? hexEntriesById.get(selectedHexId) ?? [] : [];
+  // A single representative entry for the places this still shows one
+  // thing (the modal/panel title) - prefers the city entry when a hex is
+  // both a city and an off-board area, since the city name is the more
+  // recognizable one.
+  const selectedInfo = selectedEntries.find((e) => e.kind === "city") ?? selectedEntries[0];
   const selectedPlacedTile = selectedHexId ? effectiveBoardTiles?.[selectedHexId] : undefined;
 
   const colorFor = (kind: "city" | "offboard" | "terrain", hex: MapCity | MapOffboard | MapTerrain) => {
@@ -694,7 +814,7 @@ export default function MapTab({
                   {photoGrid.map(({ hexId, col, row }) => {
                     const { x, y } = photoHexCenter(col, row);
                     const placed = effectiveBoardTiles?.[hexId];
-                    const catalogued = hexById.get(hexId);
+                    const catalogued = (hexEntriesById.get(hexId)?.length ?? 0) > 0;
                     const isSelected = hexId === selectedHexId;
                     const isQueued = hexId === queuedHexId;
                     const isPending = pendingPlacement?.hexId === hexId;
@@ -766,14 +886,21 @@ export default function MapTab({
               <div className="placed-tiles-list region-corrections-list">
                 <h4>Your region corrections ({Object.keys(regionCorrections).length})</h4>
                 <ul>
-                  {Object.values(regionCorrections).map((c) => (
-                    <li key={c.hexId}>
-                      <button onClick={() => selectHex(c.hexId)}>
-                        {c.hexId}: {c.kind || "?"}
-                        {c.name ? ` - ${c.name}` : ""}
-                      </button>
-                    </li>
-                  ))}
+                  {Object.values(regionCorrections).map((c) => {
+                    const tags = [
+                      c.cityOrTown && (c.cityOrTown === "town" ? "town" : "city"),
+                      c.isOffboard && "offboard",
+                      c.isTerrain && "terrain",
+                    ].filter(Boolean);
+                    return (
+                      <li key={c.hexId}>
+                        <button onClick={() => selectHex(c.hexId)}>
+                          {c.hexId}: {tags.length > 0 ? tags.join(" + ") : "?"}
+                          {c.name ? ` - ${c.name}` : ""}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
                 <div className="region-data-actions">
                   <button onClick={downloadRegionCorrections}>Download corrections.json</button>
@@ -953,52 +1080,76 @@ export default function MapTab({
               <div className="region-data-panel">
                 <h4>Cross-check this region's data</h4>
                 <p className="hint">Currently on file for {selectedHexId}:</p>
-                {selectedInfo ? (
-                  <ul className="region-data-list">
-                    <li>
-                      Kind:{" "}
-                      <strong>
-                        {selectedInfo.kind === "city"
-                          ? (selectedInfo.hex as MapCity).is_town
-                            ? "Town"
-                            : "City"
-                          : selectedInfo.kind}
-                      </strong>
-                    </li>
-                    {"name" in selectedInfo.hex && <li>Name: {(selectedInfo.hex as MapCity | MapOffboard).name}</li>}
-                    {selectedInfo.kind === "city" && (
-                      <>
-                        <li>Label: {(selectedInfo.hex as MapCity).label ?? "none"}</li>
-                        <li>Home of major(s): {(selectedInfo.hex as MapCity).home_of_major.join(", ") || "none"}</li>
-                        <li>Home of minor(s): {(selectedInfo.hex as MapCity).home_of_minor.join(", ") || "none"}</li>
-                        <li>Destination of major: {(selectedInfo.hex as MapCity).destination_of_major ?? "none"}</li>
-                      </>
-                    )}
-                    {selectedInfo.kind === "offboard" && (
-                      <li>
-                        Revenue (yellow/green/brown/grey): £{(selectedInfo.hex as MapOffboard).value_yellow}/£
-                        {(selectedInfo.hex as MapOffboard).value_green}/£
-                        {(selectedInfo.hex as MapOffboard).value_brown}/£
-                        {(selectedInfo.hex as MapOffboard).value_grey}
-                      </li>
-                    )}
-                    {selectedInfo.kind === "terrain" && (
-                      <li>
-                        Terrain: {(selectedInfo.hex as MapTerrain).terrain}, £{(selectedInfo.hex as MapTerrain).cost}{" "}
-                        to cross
-                      </li>
-                    )}
-                    <li>
-                      Confidence:{" "}
-                      <span className={`confidence-badge confidence-${selectedInfo.hex.confidence}`}>
-                        {selectedInfo.hex.confidence}
-                      </span>
-                    </li>
-                  </ul>
+                {selectedEntries.length > 0 ? (
+                  <>
+                    {selectedEntries.map((info) => (
+                      <ul className="region-data-list" key={info.kind}>
+                        <li>
+                          Kind:{" "}
+                          <strong>
+                            {info.kind === "city" ? ((info.hex as MapCity).is_town ? "Town" : "City") : info.kind}
+                          </strong>
+                        </li>
+                        {"name" in info.hex && <li>Name: {(info.hex as MapCity | MapOffboard).name}</li>}
+                        {info.kind === "city" && (
+                          <>
+                            <li>Label: {(info.hex as MapCity).label ?? "none"}</li>
+                            {(info.hex as MapCity).is_town && (info.hex as MapCity).town_count > 1 && (
+                              <li>Number of towns on this hex: {(info.hex as MapCity).town_count}</li>
+                            )}
+                            <li>Home of major(s): {(info.hex as MapCity).home_of_major.join(", ") || "none"}</li>
+                            <li>Home of minor(s): {(info.hex as MapCity).home_of_minor.join(", ") || "none"}</li>
+                            <li>Destination of major: {(info.hex as MapCity).destination_of_major ?? "none"}</li>
+                          </>
+                        )}
+                        {info.kind === "offboard" && (
+                          <li>
+                            Revenue (yellow/green/brown/grey): £{(info.hex as MapOffboard).value_yellow}/£
+                            {(info.hex as MapOffboard).value_green}/£
+                            {(info.hex as MapOffboard).value_brown}/£
+                            {(info.hex as MapOffboard).value_grey}
+                          </li>
+                        )}
+                        {info.kind === "terrain" && (
+                          <li>
+                            Terrain: {(info.hex as MapTerrain).terrain}, £{(info.hex as MapTerrain).cost} to cross
+                          </li>
+                        )}
+                        <li>
+                          Confidence:{" "}
+                          <span className={`confidence-badge confidence-${info.hex.confidence}`}>
+                            {info.hex.confidence}
+                          </span>
+                        </li>
+                      </ul>
+                    ))}
+                  </>
                 ) : (
                   <p className="hint">
                     Not catalogued at all - this engine treats {selectedHexId} as plain, undifferentiated land/sea.
                   </p>
+                )}
+
+                {selectedHexId && mapData && (
+                  <>
+                    <p className="hint">Edges on file:</p>
+                    <ul className="region-data-list region-edges-list">
+                      {EDGE_DIRECTIONS.map(({ edge, short, full }) => {
+                        const parsed = parseHexId(selectedHexId, mapData.columns);
+                        const neighborId = parsed
+                          ? neighborHexId(mapData.columns, parsed.col, parsed.row, edge)
+                          : null;
+                        const current = edgesFromCatalogued(selectedHexId)[edge];
+                        return (
+                          <li key={edge}>
+                            {full} ({short}) → {neighborId ?? "off the board"}
+                            {current?.status === "blocked" && " - blocked, no connection"}
+                            {current?.status === "toll" && ` - toll £${current.cost}`}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
                 )}
 
                 {regionCorrections[selectedHexId] && (
@@ -1009,34 +1160,33 @@ export default function MapTab({
                 )}
 
                 <div className="region-data-form">
+                  <p className="hint">
+                    A hex can be more than one of these at once (e.g. Aberdeen is both a city and an off-board
+                    revenue area) - check everything that's actually printed there.
+                  </p>
+
                   <label>
-                    What is this hex, as printed on your physical board?
+                    City / town on this hex?
                     <select
-                      value={regionForm.kind}
-                      onChange={(e) => setRegionForm({ ...regionForm, kind: e.target.value as RegionKind })}
+                      value={regionForm.cityOrTown}
+                      onChange={(e) => setRegionForm({ ...regionForm, cityOrTown: e.target.value as CityOrTown })}
                     >
-                      <option value="">— pick one —</option>
+                      <option value="">none</option>
                       <option value="city">City</option>
                       <option value="town">Town</option>
-                      <option value="offboard">Off-board area</option>
-                      <option value="terrain">Difficult terrain (river/hill/mountain)</option>
-                      <option value="none">Plain hex - no marking</option>
                     </select>
                   </label>
 
-                  {(regionForm.kind === "city" || regionForm.kind === "town" || regionForm.kind === "offboard") && (
-                    <label>
-                      Printed name
-                      <input
-                        value={regionForm.name}
-                        onChange={(e) => setRegionForm({ ...regionForm, name: e.target.value })}
-                        placeholder="e.g. Portsmouth"
-                      />
-                    </label>
-                  )}
-
-                  {(regionForm.kind === "city" || regionForm.kind === "town") && (
+                  {(regionForm.cityOrTown === "city" || regionForm.cityOrTown === "town") && (
                     <>
+                      <label>
+                        Printed name
+                        <input
+                          value={regionForm.name}
+                          onChange={(e) => setRegionForm({ ...regionForm, name: e.target.value })}
+                          placeholder="e.g. Portsmouth"
+                        />
+                      </label>
                       <label>
                         Printed label (letter code inside the city circle, if any)
                         <select
@@ -1051,6 +1201,18 @@ export default function MapTab({
                           ))}
                         </select>
                       </label>
+                      {regionForm.cityOrTown === "town" && (
+                        <label>
+                          Number of town circles printed on this one hex
+                          <select
+                            value={regionForm.townCount}
+                            onChange={(e) => setRegionForm({ ...regionForm, townCount: e.target.value })}
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                          </select>
+                        </label>
+                      )}
                       <label>
                         Home of major compan(y/ies) - comma-separated abbreviations, if any
                         <input
@@ -1078,35 +1240,61 @@ export default function MapTab({
                     </>
                   )}
 
-                  {regionForm.kind === "offboard" && (
-                    <label>
-                      Revenue by phase color (yellow / green / brown / grey)
-                      <div className="region-data-values-row">
+                  <label className="region-data-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={regionForm.isOffboard}
+                      onChange={(e) => setRegionForm({ ...regionForm, isOffboard: e.target.checked })}
+                    />
+                    Off-board revenue area here too (a company's starting point, or just a revenue-only box)
+                  </label>
+                  {regionForm.isOffboard && (
+                    <>
+                      <label>
+                        Off-board area name
                         <input
-                          value={regionForm.valueYellow}
-                          onChange={(e) => setRegionForm({ ...regionForm, valueYellow: e.target.value })}
-                          placeholder="£ yellow"
+                          value={regionForm.offboardName}
+                          onChange={(e) => setRegionForm({ ...regionForm, offboardName: e.target.value })}
+                          placeholder="e.g. Highlands"
                         />
-                        <input
-                          value={regionForm.valueGreen}
-                          onChange={(e) => setRegionForm({ ...regionForm, valueGreen: e.target.value })}
-                          placeholder="£ green"
-                        />
-                        <input
-                          value={regionForm.valueBrown}
-                          onChange={(e) => setRegionForm({ ...regionForm, valueBrown: e.target.value })}
-                          placeholder="£ brown"
-                        />
-                        <input
-                          value={regionForm.valueGrey}
-                          onChange={(e) => setRegionForm({ ...regionForm, valueGrey: e.target.value })}
-                          placeholder="£ grey"
-                        />
-                      </div>
-                    </label>
+                      </label>
+                      <label>
+                        Revenue by phase color (yellow / green / brown / grey)
+                        <div className="region-data-values-row">
+                          <input
+                            value={regionForm.valueYellow}
+                            onChange={(e) => setRegionForm({ ...regionForm, valueYellow: e.target.value })}
+                            placeholder="£ yellow"
+                          />
+                          <input
+                            value={regionForm.valueGreen}
+                            onChange={(e) => setRegionForm({ ...regionForm, valueGreen: e.target.value })}
+                            placeholder="£ green"
+                          />
+                          <input
+                            value={regionForm.valueBrown}
+                            onChange={(e) => setRegionForm({ ...regionForm, valueBrown: e.target.value })}
+                            placeholder="£ brown"
+                          />
+                          <input
+                            value={regionForm.valueGrey}
+                            onChange={(e) => setRegionForm({ ...regionForm, valueGrey: e.target.value })}
+                            placeholder="£ grey"
+                          />
+                        </div>
+                      </label>
+                    </>
                   )}
 
-                  {regionForm.kind === "terrain" && (
+                  <label className="region-data-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={regionForm.isTerrain}
+                      onChange={(e) => setRegionForm({ ...regionForm, isTerrain: e.target.checked })}
+                    />
+                    Difficult terrain here too (costs money to lay the first tile)
+                  </label>
+                  {regionForm.isTerrain && (
                     <>
                       <label>
                         Terrain type
@@ -1132,6 +1320,55 @@ export default function MapTab({
                       </label>
                     </>
                   )}
+
+                  <p className="hint region-data-edges-heading">
+                    Edges - which of the 6 neighboring regions this hex actually connects to. Leave as "Normal" for
+                    an ordinary connection; only mark the ones your physical board shows differently.
+                  </p>
+                  {selectedHexId &&
+                    mapData &&
+                    EDGE_DIRECTIONS.map(({ edge, short, full }) => {
+                      const parsed = parseHexId(selectedHexId, mapData.columns);
+                      const neighborId = parsed ? neighborHexId(mapData.columns, parsed.col, parsed.row, edge) : null;
+                      const current = regionForm.edges[edge] ?? { status: "normal", cost: "" };
+                      return (
+                        <div className="region-edge-row" key={edge}>
+                          <span className="region-edge-label">
+                            {full} ({short}) → {neighborId ?? "off board"}
+                          </span>
+                          <select
+                            value={current.status}
+                            disabled={!neighborId}
+                            onChange={(e) =>
+                              setRegionForm({
+                                ...regionForm,
+                                edges: {
+                                  ...regionForm.edges,
+                                  [edge]: { ...current, status: e.target.value as EdgeStatus },
+                                },
+                              })
+                            }
+                          >
+                            <option value="normal">Normal</option>
+                            <option value="blocked">Blocked - no connection</option>
+                            <option value="toll">Toll - costs money to connect</option>
+                          </select>
+                          {current.status === "toll" && (
+                            <input
+                              className="region-edge-toll-input"
+                              value={current.cost}
+                              onChange={(e) =>
+                                setRegionForm({
+                                  ...regionForm,
+                                  edges: { ...regionForm.edges, [edge]: { ...current, cost: e.target.value } },
+                                })
+                              }
+                              placeholder="£ toll"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
 
                   <label>
                     Notes (optional)

@@ -18,6 +18,14 @@ def test_board_map_returns_positioned_hex_catalog():
     assert aberdeen["name"] == "Aberdeen"
     assert aberdeen["col"] == 7  # H is the 8th column (0-indexed 7)
     assert aberdeen["row"] == 1
+    assert aberdeen["town_count"] == 1
+    # Aberdeen is also catalogued as an off-board revenue area - the two
+    # aren't mutually exclusive (see app.data.hex_map.CityHex's docstring).
+    assert any(h["id"] == "H1" for h in data["offboard"])
+
+    assert "blocked_adjacencies" in data
+    assert any(b["hex_a"] == "F23" and b["hex_b"] == "F25" for b in data["blocked_adjacencies"])
+    assert data["edge_tolls"] == []  # none catalogued yet
 
     # "b"-suffixed secondary-town ids parse leniently instead of being dropped.
     coatbridge = next(c for c in data["cities"] if c["id"] == "E7b")
