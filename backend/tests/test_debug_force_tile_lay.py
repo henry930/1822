@@ -61,6 +61,43 @@ def test_debug_force_tile_lay_rejects_unknown_company():
     assert resp.status_code == 400
 
 
+def test_debug_force_tile_lay_rejects_exhausted_tile_supply():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Alice", "Bob", "Carol"])
+
+    # tile "1" only has 1 copy in the physical supply.
+    first = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        json={"hex_id": "H1", "tile_id": "1", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
+    )
+    assert first.status_code == 200
+
+    second = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        json={"hex_id": "H2", "tile_id": "1", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
+    )
+    assert second.status_code == 400
+    assert "supply" in second.json()["detail"]
+
+
+def test_debug_force_tile_lay_allows_relaying_the_same_tile_on_its_own_hex():
+    """Laying the one copy of a limited tile back onto the hex it's
+    already on (e.g. just to change rotation) shouldn't count as needing
+    a second copy - apply_tile_lay returns the old one before drawing."""
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Alice", "Bob", "Carol"])
+
+    client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        json={"hex_id": "H1", "tile_id": "1", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
+    )
+    resp = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        json={"hex_id": "H1", "tile_id": "1", "rotation": 2, "company_id": "M1", "company_kind": "minor"},
+    )
+    assert resp.status_code == 200
+
+
 def test_debug_force_tile_lay_404s_for_unknown_room():
     client = TestClient(app)
     resp = client.post(

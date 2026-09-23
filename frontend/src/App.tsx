@@ -963,6 +963,7 @@ function App() {
               companyKind={mapCompanyIdFor() && /^M\d+$/.test(mapCompanyIdFor()!) ? "minor" : "major"}
               companyId={mapCompanyIdFor()}
               boardTiles={gameState.board?.tiles}
+              tilePool={gameState.board?.tile_pool}
               canQueueLay={gameState.round_type === "operating"}
               queuedHexId={includeTileLay ? tileHexId : null}
               onQueueLay={(hexId, tid, rotation) => {

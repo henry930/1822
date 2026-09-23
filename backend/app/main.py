@@ -175,11 +175,12 @@ class DebugForceTileLayRequest(BaseModel):
 @app.post("/rooms/{room_id}/debug/force_tile_lay")
 async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
     """Testing/debug only - lays a tile directly onto the board with only
-    the connectivity check (rule 5.7.9) enforced against company_id's
-    network. Skips everything else a real lay would check (phase/color,
-    tile supply, city-label match, upgrade-must-preserve-track) and
-    doesn't require an actual operating round, turn, or director - so the
-    map UI can be exercised without playing through a real game first."""
+    two checks enforced: connectivity (rule 5.7.9, against company_id's
+    network) and tile supply (a physical tile can't be laid twice at
+    once). Skips everything else a real lay would check (phase/color,
+    city-label match, upgrade-must-preserve-track) and doesn't require an
+    actual operating round, turn, or director - so the map UI can be
+    exercised without playing through a real game first."""
     room = registry.get(room_id)
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -200,6 +201,15 @@ async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
             status_code=400,
             detail=f"{req.hex_id} isn't connected to {req.company_id}'s track network (rule 5.7.9).",
         )
+
+    # None means unlimited supply (see new_board_state); a re-lay of the
+    # tile already sitting on this hex doesn't need a fresh one from the
+    # pool, since apply_tile_lay returns the old one before drawing a new.
+    remaining = state.board.tile_pool.get(req.tile_id)
+    existing = state.board.tiles.get(req.hex_id)
+    relaying_same_tile = existing is not None and existing.tile_id == req.tile_id
+    if remaining is not None and remaining <= 0 and not relaying_same_tile:
+        raise HTTPException(status_code=400, detail=f"No {req.tile_id} tiles remain in the supply.")
 
     apply_tile_lay(state.board, req.hex_id, req.tile_id, req.rotation)
 

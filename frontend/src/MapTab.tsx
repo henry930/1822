@@ -92,6 +92,8 @@ type Props = {
   companyKind: "minor" | "major";
   companyId: string | null;
   boardTiles: Record<string, PlacedTile> | undefined;
+  // null in a tile's entry means unlimited supply (see new_board_state).
+  tilePool: Record<string, number | null> | undefined;
   canQueueLay: boolean;
   onQueueLay: (hexId: string, tileId: string, rotation: number) => void;
   queuedHexId: string | null;
@@ -107,6 +109,7 @@ export default function MapTab({
   companyKind,
   companyId,
   boardTiles,
+  tilePool,
   canQueueLay,
   onQueueLay,
   queuedHexId,
@@ -249,6 +252,18 @@ export default function MapTab({
     return report.every((r) => !r.valid && (r.reason?.includes("isn't connected") ?? false));
   }
 
+  // null means unlimited (see new_board_state). Laying the tile already
+  // sitting on the target hex back onto itself (e.g. just rotating it)
+  // doesn't need a spare copy - the server returns the old one to the
+  // pool before drawing a new one - so that case reads as +1 available,
+  // matching the same relaying_same_tile logic server-side.
+  function remainingSupply(tileId: string, hexId: string | null): number | null {
+    const remaining = tilePool?.[tileId];
+    if (remaining === undefined || remaining === null) return null;
+    const relayingSameTile = hexId != null && boardTiles?.[hexId]?.tile_id === tileId;
+    return relayingSameTile ? remaining + 1 : remaining;
+  }
+
   // Lays the tile directly (debugForceTileLay) rather than going through a
   // real operate turn - no company-turn/director requirement, and no
   // round to end, so this never blocks a second placement right after the
@@ -260,6 +275,11 @@ export default function MapTab({
     if (!p || placing) return;
     if (reportLoading) return;
     if (isDisconnected()) {
+      window.alert("Invalid move");
+      return;
+    }
+    const remaining = remainingSupply(p.tileId, p.hexId);
+    if (remaining !== null && remaining <= 0) {
       window.alert("Invalid move");
       return;
     }
@@ -281,7 +301,8 @@ export default function MapTab({
       setPlaceConfirmed(`Placed tile ${p.tileId} (rotation ${p.rotation}) on ${p.hexId}.`);
       setPendingPlacement(null);
     } catch (e) {
-      if ((e as Error).message.toLowerCase().includes("connected")) {
+      const msg = (e as Error).message.toLowerCase();
+      if (msg.includes("connected") || msg.includes("supply")) {
         window.alert("Invalid move");
       } else {
         setPlaceError((e as Error).message);
@@ -719,14 +740,21 @@ export default function MapTab({
                       <span className="tile-palette-label">{color}</span>
                       {available.map((t) => {
                         const url = tileUrl(t.file);
+                        const remaining = remainingSupply(t.id, selectedHexId);
+                        const outOfSupply = remaining !== null && remaining <= 0;
                         return (
                           <button
                             key={t.id}
-                            className="tile-swatch modal-tile-swatch"
+                            className={`tile-swatch modal-tile-swatch${outOfSupply ? " out-of-supply" : ""}`}
                             onClick={() => pickTile(t.id)}
-                            title={`Tile ${t.id} (${t.count} in supply)`}
+                            title={
+                              outOfSupply
+                                ? `Tile ${t.id}: none left in supply`
+                                : `Tile ${t.id} (${remaining === null ? "unlimited" : `${remaining} left`})`
+                            }
                           >
                             {url ? <img src={url} alt={t.id} /> : t.id}
+                            {remaining !== null && <span className="tile-swatch-count">{remaining}</span>}
                           </button>
                         );
                       })}
