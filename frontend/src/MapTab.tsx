@@ -583,18 +583,24 @@ export default function MapTab({
     if (!mapData) return {};
     const parsed = parseHexId(hexId, mapData.columns);
     if (!parsed) return {};
+    // Defensive against an older/cached /board/map response that predates
+    // these two fields - without this, a stale server would throw on
+    // `.find` of undefined the instant any hex was selected, crashing the
+    // whole tab to a blank page instead of just leaving edges unannotated.
+    const blockedAdjacencies = mapData.blocked_adjacencies ?? [];
+    const edgeTolls = mapData.edge_tolls ?? [];
     const result: Partial<Record<number, EdgeCorrection>> = {};
     for (const { edge } of EDGE_DIRECTIONS) {
       const neighborId = neighborHexId(mapData.columns, parsed.col, parsed.row, edge);
       if (!neighborId) continue;
-      const blocked = mapData.blocked_adjacencies.find(
+      const blocked = blockedAdjacencies.find(
         (b) => (b.hex_a === hexId && b.hex_b === neighborId) || (b.hex_a === neighborId && b.hex_b === hexId)
       );
       if (blocked) {
         result[edge] = { status: "blocked", cost: "" };
         continue;
       }
-      const toll = mapData.edge_tolls.find(
+      const toll = edgeTolls.find(
         (t) => (t.hex_a === hexId && t.hex_b === neighborId) || (t.hex_a === neighborId && t.hex_b === hexId)
       );
       if (toll) result[edge] = { status: "toll", cost: String(toll.cost) };
@@ -1142,20 +1148,23 @@ export default function MapTab({
                   <>
                     <p className="hint">Edges on file:</p>
                     <ul className="region-data-list region-edges-list">
-                      {EDGE_DIRECTIONS.map(({ edge, short, full }) => {
+                      {(() => {
                         const parsed = parseHexId(selectedHexId, mapData.columns);
-                        const neighborId = parsed
-                          ? neighborHexId(mapData.columns, parsed.col, parsed.row, edge)
-                          : null;
-                        const current = edgesFromCatalogued(selectedHexId)[edge];
-                        return (
-                          <li key={edge}>
-                            {full} ({short}) → {neighborId ?? "off the board"}
-                            {current?.status === "blocked" && " - blocked, no connection"}
-                            {current?.status === "toll" && ` - toll £${current.cost}`}
-                          </li>
-                        );
-                      })}
+                        const currentEdges = edgesFromCatalogued(selectedHexId);
+                        return EDGE_DIRECTIONS.map(({ edge, short, full }) => {
+                          const neighborId = parsed
+                            ? neighborHexId(mapData.columns, parsed.col, parsed.row, edge)
+                            : null;
+                          const current = currentEdges[edge];
+                          return (
+                            <li key={edge}>
+                              {full} ({short}) → {neighborId ?? "off the board"}
+                              {current?.status === "blocked" && " - blocked, no connection"}
+                              {current?.status === "toll" && ` - toll £${current.cost}`}
+                            </li>
+                          );
+                        });
+                      })()}
                     </ul>
                   </>
                 )}
