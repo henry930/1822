@@ -10,6 +10,7 @@ import {
   type BoardMapData,
 } from "./api";
 import MapTab from "./MapTab";
+import { BidTrackCard } from "./BidTrack";
 import "./App.css";
 
 type LobbyMessage = {
@@ -857,33 +858,24 @@ function App() {
                 return (
                   <div key={kind} className="bid-kind">
                     <h4>{kind}</h4>
-                    {boxes.map((item, i) =>
-                      item ? (
-                        <div className="bid-box" key={i}>
-                          <span>
-                            #{i} {kind === "concession" ? item.ref : `${kind === "minor" ? "M" : "P"}${item.ref}`}
-                          </span>
-                          <span className="bids">
-                            {Object.entries(item.bids)
-                              .map(([pid, amt]) => `${nameFor(pid)}: £${amt}`)
-                              .join(", ") || "no bids"}
-                          </span>
-                          <input
-                            type="number"
-                            step={5}
-                            placeholder="amount"
+                    <div className="bid-track-grid">
+                      {boxes.map((item, i) =>
+                        item ? (
+                          <BidTrackCard
+                            key={i}
+                            kind={kind}
+                            boxIndex={i}
+                            item={item}
+                            playerOrder={gameState.player_order}
+                            nameFor={nameFor}
+                            bidAmount={bidAmounts[`${kind}-${i}`] ?? ""}
+                            onBidAmountChange={(v) => setBidAmounts({ ...bidAmounts, [`${kind}-${i}`]: v })}
+                            onBid={() => sendBid(kind, i)}
                             disabled={gameState.round_type !== "stock"}
-                            value={bidAmounts[`${kind}-${i}`] ?? ""}
-                            onChange={(e) =>
-                              setBidAmounts({ ...bidAmounts, [`${kind}-${i}`]: e.target.value })
-                            }
                           />
-                          <button onClick={() => sendBid(kind, i)} disabled={gameState.round_type !== "stock"}>
-                            Bid
-                          </button>
-                        </div>
-                      ) : null
-                    )}
+                        ) : null
+                      )}
+                    </div>
                   </div>
                 );
               })}
