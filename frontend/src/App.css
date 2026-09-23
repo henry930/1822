@@ -198,6 +198,160 @@ label.hint {
   background: #eee;
 }
 
+/* Bid boxes rendered as the physical price-track card: a loop of £-value
+   cells framing the box top and bottom, with a marker per player showing
+   where their bid sits on that track (rule 4.10 / 1.6). */
+.bid-track-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 6px 0 14px;
+}
+
+.bid-track-card {
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  background: #fafaf7;
+  width: 300px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.bid-track-card.kind-concession {
+  border-top: 4px solid #b45309;
+}
+.bid-track-card.kind-minor {
+  border-top: 4px solid #2e5eaa;
+}
+.bid-track-card.kind-private {
+  border-top: 4px solid #6b6b6b;
+}
+
+.bid-track-row {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  background: #e9e6da;
+  border-bottom: 1px solid #d8d4c4;
+}
+.bid-track-row + .bid-track-center {
+  border-top: none;
+}
+
+.bid-track-card > .bid-track-row:last-of-type {
+  border-bottom: none;
+  border-top: 1px solid #d8d4c4;
+}
+
+.bid-track-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 0 4px;
+  min-height: 34px;
+}
+
+.bid-track-value {
+  font-size: 9px;
+  color: #7a7a6a;
+  font-variant-numeric: tabular-nums;
+}
+
+.bid-track-markers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px;
+}
+
+.bid-track-marker {
+  --marker-color: #555;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  border-radius: 50%;
+  background: var(--marker-color);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.bid-track-marker.top {
+  box-shadow: 0 0 0 2px gold;
+}
+
+.bid-track-center {
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.bid-track-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.bid-track-kind {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+}
+
+.bid-track-label {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.bid-track-shares {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.share-icon {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #999;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.share-caption {
+  font-size: 10px;
+  color: #666;
+  margin-left: 4px;
+}
+
+.bid-track-top-bid {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.bid-track-controls {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.bid-track-controls input {
+  width: 80px;
+}
+
+.bid-track-index {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 9px;
+  color: #999;
+}
+
 .players-panel table {
   border-collapse: collapse;
   width: 100%;
