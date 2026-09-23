@@ -187,7 +187,12 @@ CITIES: list[CityHex] = [
     CityHex("G39", "Dorchester", None, is_town=True, confidence="approx"),
     CityHex("I42", "Bournemouth", None, home_of_minor=18, confidence="rules"),
     CityHex("J41", "Southampton", None, home_of_minor=17, confidence="rules"),
-    CityHex("K42", "Portsmouth", "T", is_town=True, confidence="approx"),
+    # is_town was True here previously, which contradicted its own label:
+    # every T-labelled tile (405/X10/X16) is a city shape, never a town, so
+    # a T-labelled town could never legally take any T-labelled tile. Every
+    # labelled hex (BM/C/EC/L/S/T/Y) is a city family for the same reason -
+    # labels only exist to pick which big-city tile geometry applies.
+    CityHex("K42", "Portsmouth", "T", is_town=False, confidence="approx"),
     CityHex("H40", "Salisbury", None, is_town=True, confidence="approx"),
     CityHex("L40", "Reading", None, is_town=True, confidence="approx"),
     CityHex("K33", "Oxford", None, is_town=True, confidence="approx"),
