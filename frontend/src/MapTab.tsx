@@ -123,6 +123,9 @@ type RegionForm = {
   // Only meaningful when cityOrTown === "town" - some yellow tiles
   // (1/2/55/56/69) print two town circles on one hex.
   townCount: string;
+  // Only meaningful when cityOrTown === "city" - almost always 1; London
+  // is a six-city super-hex (its tiles print six separate city circles).
+  cityCount: string;
   homeOfMajor: string;
   homeOfMinor: string;
   destinationOfMajor: string;
@@ -150,6 +153,7 @@ const BLANK_REGION_FORM: RegionForm = {
   name: "",
   label: "",
   townCount: "1",
+  cityCount: "1",
   homeOfMajor: "",
   homeOfMinor: "",
   destinationOfMajor: "",
@@ -230,6 +234,7 @@ function regionFormFromCatalogued(entries: HexEntry[]): Omit<RegionForm, "edges"
       form.name = c.name;
       form.label = c.label ?? "";
       form.townCount = String(c.town_count || 1);
+      form.cityCount = String(c.city_count || 1);
       form.homeOfMajor = c.home_of_major.join(", ");
       form.homeOfMinor = c.home_of_minor.join(", ");
       form.destinationOfMajor = c.destination_of_major ?? "";
@@ -1097,6 +1102,9 @@ export default function MapTab({
                             {(info.hex as MapCity).is_town && (info.hex as MapCity).town_count > 1 && (
                               <li>Number of towns on this hex: {(info.hex as MapCity).town_count}</li>
                             )}
+                            {!(info.hex as MapCity).is_town && (info.hex as MapCity).city_count > 1 && (
+                              <li>Number of cities on this hex: {(info.hex as MapCity).city_count}</li>
+                            )}
                             <li>Home of major(s): {(info.hex as MapCity).home_of_major.join(", ") || "none"}</li>
                             <li>Home of minor(s): {(info.hex as MapCity).home_of_minor.join(", ") || "none"}</li>
                             <li>Destination of major: {(info.hex as MapCity).destination_of_major ?? "none"}</li>
@@ -1210,6 +1218,21 @@ export default function MapTab({
                           >
                             <option value="1">1</option>
                             <option value="2">2</option>
+                          </select>
+                        </label>
+                      )}
+                      {regionForm.cityOrTown === "city" && (
+                        <label>
+                          Number of city circles printed on this one hex (almost always 1 - London is 6)
+                          <select
+                            value={regionForm.cityCount}
+                            onChange={(e) => setRegionForm({ ...regionForm, cityCount: e.target.value })}
+                          >
+                            {[1, 2, 3, 4, 5, 6].map((n) => (
+                              <option key={n} value={n}>
+                                {n}
+                              </option>
+                            ))}
                           </select>
                         </label>
                       )}

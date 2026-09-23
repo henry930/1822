@@ -103,3 +103,30 @@ def test_labelled_hexes_are_never_towns():
                 f"{c.id} {c.name!r} is marked is_town=True but label={c.label!r} "
                 "only appears on city-shaped tiles"
             )
+
+
+def test_city_and_town_counts_match_their_labelled_tiles():
+    """Every hex's town_count/city_count should match how many town/city
+    circles its own label's tiles actually print, wherever the hex has a
+    label to check against (unlabelled hexes are the ordinary single-city
+    or single-town case, nothing to cross-check). Catches a stale count if
+    a label's tile geometry ever changes."""
+    from app.data.tiles import TILE_SPECS, parse_tile_code
+
+    city_counts_by_label: dict[str, int] = {}
+    for spec in TILE_SPECS:
+        parsed = parse_tile_code(spec.id, spec.color, spec.count, spec.code)
+        if parsed.label and parsed.cities:
+            city_counts_by_label[parsed.label] = len(parsed.cities)
+
+    for c in CITIES:
+        if not c.is_town and c.label in city_counts_by_label:
+            assert c.city_count == city_counts_by_label[c.label], (
+                f"{c.id} {c.name!r} has city_count={c.city_count} but label={c.label!r} "
+                f"tiles print {city_counts_by_label[c.label]} cities"
+            )
+
+
+def test_london_is_a_six_city_hex():
+    london = next(c for c in CITIES if c.id == "M38")
+    assert london.city_count == 6
