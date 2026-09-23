@@ -12,8 +12,9 @@ from app.data.hex_map import CITIES
 from app.data.stock_market import STOCK_MARKET_BY_POSITION
 
 from .board import BoardState, TileLayError, apply_tile_lay, validate_tile_lay
+from .hex_grid import neighbor as hex_neighbor
 from .models import GameState
-from .network import hex_neighbors_via_track
+from .network import hex_neighbors_via_track, hex_track_edges
 from .routes import run_trains
 from .scoring import check_game_end_triggers
 from .stock_positions import place_token
@@ -67,6 +68,44 @@ def first_turn_housekeeping(state: GameState, board: BoardState, company_id: str
             major.tokens_on_map.append(home_hex)
 
 
+def reachable_hexes_for_tile_lay(state: GameState, board: BoardState, company_id: str, kind: str) -> set[str]:
+    """Rule 5.7.9: a company may only lay track on a hex that connects to
+    its own network - not anywhere on the board. "Connects" means: is one
+    of the company's own station hexes (home, or another token for a major
+    - always layable, this is how a network bootstraps), already has a tile
+    reached by the company's existing track (always layable - an upgrade),
+    or is empty and sits across an edge that an already-reached hex actually
+    has track running to (a legal target for a brand new tile).
+
+    Found via manual testing: this wasn't checked at all before - any hex
+    id, connected or not, showed every phase-legal tile as placeable."""
+    home = home_hex_for(company_id, kind)
+    stations: set[str] = {home} if home else set()
+    if kind == "major":
+        stations |= set(state.majors[company_id].tokens_on_map)
+    if not stations:
+        return set()
+
+    tiled_component: set[str] = set()
+    frontier = [h for h in stations if h in board.tiles]
+    seen = set(frontier)
+    while frontier:
+        current = frontier.pop()
+        tiled_component.add(current)
+        for nxt in hex_neighbors_via_track(board, current):
+            if nxt not in seen:
+                seen.add(nxt)
+                frontier.append(nxt)
+
+    legal = set(stations) | tiled_component
+    for hx in tiled_component:
+        for edge in hex_track_edges(board, hx):
+            n = hex_neighbor(hx, edge)
+            if n is not None:
+                legal.add(n)
+    return legal
+
+
 def lay_track(
     state: GameState,
     board: BoardState,
@@ -79,6 +118,10 @@ def lay_track(
 ) -> int:
     """Validates and applies a tile lay, deducting any terrain cost from the
     company's treasury. Returns the cost paid."""
+    if hex_id not in reachable_hexes_for_tile_lay(state, board, company_id, kind):
+        raise OperatingError(
+            f"{hex_id} isn't connected to {company_id}'s track network (rule 5.7.9)."
+        )
     try:
         cost = validate_tile_lay(board, state.phase, hex_id, tile_id, rotation, company_kind=kind)
     except TileLayError as e:

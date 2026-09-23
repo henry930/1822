@@ -168,14 +168,32 @@ def validate_tile_lay(
 
 
 def tile_lay_report(
-    board: BoardState, phase: int, hex_id: str, company_kind: str = "major",
+    board: BoardState, phase: int, hex_id: str, company_kind: str = "major", connected: bool = True,
 ) -> list[dict]:
     """Every (tile, rotation) combination's legality for a lay on this hex
     right now, computed by literally calling validate_tile_lay for each of
     the 61 tiles x 6 rotations - so this can never drift out of sync with
     what an actual lay would accept or reject. Used to drive the map UI's
     "what can I place here" prompt: one call gets the full grid so rotating
-    the tile in the UI afterwards is a free client-side lookup, no refetch."""
+    the tile in the UI afterwards is a free client-side lookup, no refetch.
+
+    `connected` is the one thing this function can't determine on its own -
+    board.py doesn't know which company is asking or where its network
+    reaches (that's app.engine.operating.reachable_hexes_for_tile_lay,
+    a layer up) - so the caller passes it in. When false, every combination
+    is reported invalid with a connectivity reason, since a hex that isn't
+    reachable by the company's own track can't legally take a tile at all
+    regardless of what validate_tile_lay itself would say about it in
+    isolation (rule 5.7.9)."""
+    if not connected:
+        return [
+            {
+                "tile_id": spec.id, "rotation": rotation, "valid": False, "cost": None,
+                "reason": f"{hex_id} isn't connected to this company's track network (rule 5.7.9).",
+            }
+            for spec in TILE_SPECS
+            for rotation in range(6)
+        ]
     report = []
     for spec in TILE_SPECS:
         for rotation in range(6):

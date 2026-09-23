@@ -87,6 +87,7 @@ type HexEntry = { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offbo
 type Props = {
   roomId: string | null;
   companyKind: "minor" | "major";
+  companyId: string | null;
   boardTiles: Record<string, PlacedTile> | undefined;
   inGame: boolean;
   canQueueLay: boolean;
@@ -99,6 +100,7 @@ type Props = {
 export default function MapTab({
   roomId,
   companyKind,
+  companyId,
   boardTiles,
   inGame,
   canQueueLay,
@@ -156,7 +158,10 @@ export default function MapTab({
     setReportError(null);
     if (!roomId) return;
     setReportLoading(true);
-    fetchTileLayOptions(roomId, hexId, companyKind)
+    // companyId is only passed when actually in that company's operating
+    // turn (canQueueLay) - browsing outside an operating round has no real
+    // company laying, so there's nothing to gate connectivity against.
+    fetchTileLayOptions(roomId, hexId, companyKind, canQueueLay ? companyId : null)
       .then((r) => setReport(r.report))
       .catch((e) => setReportError((e as Error).message))
       .finally(() => setReportLoading(false));
@@ -191,7 +196,7 @@ export default function MapTab({
     }
     loadReportFor(selectedHexId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedHexId, roomId, companyKind]);
+  }, [selectedHexId, roomId, companyKind, companyId, canQueueLay]);
 
   // Confirms a "Place tile" click actually took effect: boardTiles is the
   // live game state, so once it shows exactly the tile/rotation we just
@@ -635,7 +640,13 @@ export default function MapTab({
                     {(["yellow", "green", "brown", "gray"] as const).every(
                       (color) =>
                         grouped[color].filter((t) => (reportByTile.get(t.id) ?? []).some((o) => o.valid)).length === 0
-                    ) && <p className="hint">No tile can legally be placed here right now.</p>}
+                    ) && (
+                      <p className="hint">
+                        {report.some((r) => r.reason?.includes("connected"))
+                          ? `No tile can be placed here - ${selectedHexId} isn't connected to this company's track network yet.`
+                          : "No tile can legally be placed here right now."}
+                      </p>
+                    )}
                   </>
                 )}
               </div>

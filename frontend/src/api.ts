@@ -84,12 +84,12 @@ export type TileLayOptionsResponse = {
 export async function fetchTileLayOptions(
   roomId: string,
   hexId: string,
-  companyKind: "minor" | "major"
+  companyKind: "minor" | "major",
+  companyId?: string | null
 ): Promise<TileLayOptionsResponse> {
-  const url = `${API_BASE}/rooms/${roomId}/tile_lay_options?${new URLSearchParams({
-    hex_id: hexId,
-    company_kind: companyKind,
-  })}`;
+  const params: Record<string, string> = { hex_id: hexId, company_kind: companyKind };
+  if (companyId) params.company_id = companyId;
+  const url = `${API_BASE}/rooms/${roomId}/tile_lay_options?${new URLSearchParams(params)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to load tile lay options");
   return res.json();

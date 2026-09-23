@@ -5,6 +5,7 @@ of connected players before the game starts, and the live GameState once it has.
 """
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import json
 import uuid
@@ -65,6 +66,16 @@ class Room:
     # lobby player_id (the uuid a client connects with) -> engine player_id
     # ("p1".."pN", assigned by new_game in lobby_players order).
     player_id_map: dict[str, str] = field(default_factory=dict)
+    # Serializes action-apply + broadcast: with several player sockets each
+    # running their own receive loop, two actions can otherwise be applied
+    # back-to-back before either one's broadcast finishes going out to every
+    # client (broadcast awaits each socket's send_text in turn), so different
+    # clients can observe the two resulting states in different orders -
+    # e.g. a bot rapidly bidding/passing through minor floats sees the
+    # round type visibly flicker backwards. Holding this lock across
+    # apply+broadcast makes each action's effect fully visible to everyone
+    # before the next one is processed.
+    action_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
     async def broadcast(self) -> None:
         if self.state is None:

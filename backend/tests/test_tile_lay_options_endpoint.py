@@ -48,3 +48,40 @@ def test_tile_lay_options_400s_before_game_start():
     room_id = client.post("/rooms").json()["room_id"]
     resp = client.get(f"/rooms/{room_id}/tile_lay_options", params={"hex_id": "Z1"})
     assert resp.status_code == 400
+
+
+def test_tile_lay_options_with_company_id_gates_on_connectivity():
+    """The bug this guards against: found via manual play-testing - a hex
+    with no track anywhere near it (e.g. J33) showed every phase-legal tile
+    as placeable, because nothing checked whether the company's own network
+    actually reached that hex (rule 5.7.9)."""
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Alice", "Bob", "Carol"])
+
+    # CR's home is E6 (Glasgow, unlabeled) - always a legal lay target even
+    # with no track built yet.
+    home_resp = client.get(
+        f"/rooms/{room_id}/tile_lay_options",
+        params={"hex_id": "E6", "company_kind": "major", "company_id": "CR"},
+    )
+    assert home_resp.status_code == 200
+    assert any(r["valid"] for r in home_resp.json()["report"])
+
+    far_resp = client.get(
+        f"/rooms/{room_id}/tile_lay_options",
+        params={"hex_id": "J33", "company_kind": "major", "company_id": "CR"},
+    )
+    assert far_resp.status_code == 200
+    far_report = far_resp.json()["report"]
+    assert all(not r["valid"] for r in far_report)
+    assert all("connected" in r["reason"] for r in far_report)
+
+
+def test_tile_lay_options_rejects_unknown_company_id():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Alice", "Bob", "Carol"])
+    resp = client.get(
+        f"/rooms/{room_id}/tile_lay_options",
+        params={"hex_id": "Z1", "company_id": "NOTACOMPANY"},
+    )
+    assert resp.status_code == 400

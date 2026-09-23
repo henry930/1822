@@ -19,6 +19,12 @@
   margin-top: 8px;
 }
 
+.skip-to-operating-btn {
+  border-style: dashed;
+  color: #666;
+  font-size: 13px;
+}
+
 .error {
   color: #c0392b;
 }

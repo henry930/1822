@@ -148,3 +148,16 @@ def test_tile_lay_report_respects_minor_color_cap():
     board = new_board_state()
     report = tile_lay_report(board, phase=5, hex_id="Z1", company_kind="minor")
     assert all(not r["valid"] for r in report if TILE_SPECS_BY_ID[r["tile_id"]].color in ("brown", "gray"))
+
+
+def test_tile_lay_report_reports_all_invalid_when_not_connected():
+    """connected=False is how a disconnected hex (e.g. J33 with no track
+    anywhere near it) gets reported - every tile/rotation combination is
+    invalid regardless of what validate_tile_lay would say in isolation,
+    since app.engine.operating.reachable_hexes_for_tile_lay determined the
+    hex isn't reachable by the company's own network at all (rule 5.7.9)."""
+    board = new_board_state()
+    report = tile_lay_report(board, phase=1, hex_id="J33", company_kind="major", connected=False)
+    assert len(report) == len(TILE_SPECS) * 6
+    assert all(not r["valid"] for r in report)
+    assert all("connected" in r["reason"] for r in report)

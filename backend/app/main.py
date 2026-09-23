@@ -116,13 +116,19 @@ def board_map():
 
 
 @app.get("/rooms/{room_id}/tile_lay_options")
-def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major"):
+def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major", company_id: str | None = None):
     """Every (tile, rotation) combination's legality for a lay on this hex
     right now, for the room's live game state - drives the map UI's "what
     can I place here" prompt. company_kind should be "minor" or "major"
     (minors can never upgrade past green, rule 3.2.7); defaults to "major"
     (the less restrictive case) when the caller doesn't know which company
-    is laying, e.g. when just browsing outside an operating round."""
+    is laying, e.g. when just browsing outside an operating round.
+
+    company_id (e.g. "M24", "GWR"), when given, also gates every tile on
+    whether hex_id is actually reachable by that company's track network
+    (rule 5.7.9) - a hex nothing connects to shows no legal tiles at all,
+    regardless of phase/color. Omit it to browse without that check (e.g.
+    outside an operating round, when no company is actually laying)."""
     room = registry.get(room_id)
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -132,8 +138,16 @@ def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major"):
         raise HTTPException(status_code=400, detail="company_kind must be 'minor' or 'major'")
 
     from app.engine.board import tile_lay_report
+    from app.engine.operating import reachable_hexes_for_tile_lay
 
-    report = tile_lay_report(room.state.board, room.state.phase, hex_id, company_kind)
+    connected = True
+    if company_id is not None:
+        if company_id not in room.state.minors and company_id not in room.state.majors:
+            raise HTTPException(status_code=400, detail=f"Unknown company_id {company_id!r}")
+        reachable = reachable_hexes_for_tile_lay(room.state, room.state.board, company_id, company_kind)
+        connected = hex_id in reachable
+
+    report = tile_lay_report(room.state.board, room.state.phase, hex_id, company_kind, connected)
     return {"hex_id": hex_id, "phase": room.state.phase, "company_kind": company_kind, "report": report}
 
 
@@ -192,12 +206,13 @@ async def ws_endpoint(websocket: WebSocket, room_id: str, player_id: str):
             if not isinstance(action, dict) or "type" not in action:
                 await room.send_error(player_id, "Malformed action: expected an object with a 'type' field.")
                 continue
-            try:
-                room.apply_action(player_id, action)
-            except ActionError as e:
-                await room.send_error(player_id, str(e))
-                continue
-            await room.broadcast()
+            async with room.action_lock:
+                try:
+                    room.apply_action(player_id, action)
+                except ActionError as e:
+                    await room.send_error(player_id, str(e))
+                    continue
+                await room.broadcast()
     except WebSocketDisconnect:
         room.connections.pop(player_id, None)
         for p in room.lobby_players:

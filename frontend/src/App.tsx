@@ -68,6 +68,24 @@ type ErrorMessage = { type: "error"; message: string };
 // so the single browser session can act as any of the players in turn.
 type Seat = { lobbyPlayerId: string; name: string; ws: WebSocket };
 
+// Pure versions of activeSeat()'s logic, usable from code that isn't inside
+// a render (the "skip to operating round" fast-forward, which polls a ref
+// instead of reading React state).
+function activeEngineIdFor(state: EngineState): string | null {
+  if (state.round_type === "operating") {
+    const cid = state.operating_order[state.current_company_index] ?? null;
+    if (!cid) return null;
+    return state.minors[cid]?.director_player_id ?? state.majors[cid]?.director_player_id ?? null;
+  }
+  return state.active_player_id;
+}
+
+function seatForEngineId(engineId: string | null, seatsList: Seat[], idMap: Record<string, string>): Seat | null {
+  if (!engineId) return null;
+  const lobbyId = Object.entries(idMap).find(([, eng]) => eng === engineId)?.[0];
+  return seatsList.find((s) => s.lobbyPlayerId === lobbyId) ?? null;
+}
+
 function App() {
   const [name, setName] = useState("");
   const [roomIdInput, setRoomIdInput] = useState("");
@@ -94,6 +112,12 @@ function App() {
   const [includeBuyTrain, setIncludeBuyTrain] = useState(false);
   const [buyTrainCode, setBuyTrainCode] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
+  // Mirrors gameState/playerIdMap for code that runs outside React's render
+  // cycle (the "skip to operating round" fast-forward below) - reading
+  // React state there would only ever see the value from when that async
+  // function was called, not later broadcasts.
+  const latestStateRef = useRef<EngineState | null>(null);
+  const latestPlayerIdMapRef = useRef<Record<string, string>>({});
   // Guards the bot auto-pass effect against re-sending for the same turn
   // (effects can re-run before the resulting state broadcast arrives).
   const lastAutoPassedFor = useRef<string | null>(null);
@@ -144,6 +168,8 @@ function App() {
     if (msg.type === "state") {
       setGameState(msg.state);
       setPlayerIdMap(msg.player_id_map);
+      latestStateRef.current = msg.state;
+      latestPlayerIdMapRef.current = msg.player_id_map;
     }
     if (msg.type === "error") setError(msg.message);
   }
@@ -201,6 +227,78 @@ function App() {
       setSeats(newSeats);
       await new Promise((r) => setTimeout(r, 200)); // let sockets connect before starting
       await startRoom(room_id);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  // Testing convenience: starts a solo game exactly like handleSoloGame,
+  // then plays out real, legitimate actions (bid on the first minor,
+  // pass everyone else through) until an operating round actually starts -
+  // so map/tile-lay features can be tested immediately without manually
+  // clicking through the bidding phase every time. Nothing here is faked;
+  // it's the same websocket actions a human would send.
+  async function handleSoloGameSkipToOperating() {
+    setError(null);
+    try {
+      const { room_id } = await createRoom();
+      const names = ["Player 1", "Player 2", "Player 3"];
+      const newSeats: Seat[] = [];
+      for (const seatName of names) {
+        const { player_id } = await joinRoom(room_id, seatName);
+        const ws = new WebSocket(wsUrl(room_id, player_id));
+        ws.onmessage = (evt) => handleMessage(evt.data);
+        newSeats.push({ lobbyPlayerId: player_id, name: seatName, ws });
+      }
+      setRoomId(room_id);
+      setSeats(newSeats);
+      await new Promise((r) => setTimeout(r, 300));
+      await startRoom(room_id);
+
+      for (let i = 0; i < 30 && !latestStateRef.current; i++) {
+        await new Promise((r) => setTimeout(r, 150));
+      }
+
+      // Each iteration sends exactly one action and then waits for the
+      // resulting broadcast to actually land (polling latestStateRef, which
+      // handleMessage updates synchronously) before deciding what to do
+      // next - rather than firing on a fixed timer. A fixed-timer loop can
+      // queue up several actions before it has processed any of their
+      // results: by the time it locally notices the operating round has
+      // begun and stops sending *new* actions, a few already-sent ones
+      // (e.g. extra passes) may still be in flight, and the server applies
+      // them anyway - passing M24 straight through its operate turn and on
+      // into further minor floats the loop never intended to trigger. This
+      // way there is only ever one action outstanding at a time, so the
+      // loop stops the instant it observes an operating round with nothing
+      // still queued behind it.
+      let biddedOnMinor = false;
+      for (let i = 0; i < 40; i++) {
+        const state = latestStateRef.current;
+        if (!state || state.round_type === "operating") break;
+
+        const seat = seatForEngineId(activeEngineIdFor(state), newSeats, latestPlayerIdMapRef.current);
+        if (!seat) break;
+
+        if (!biddedOnMinor) {
+          const boxIndex = state.minor_bid_boxes.findIndex((b) => b !== null);
+          if (boxIndex >= 0) {
+            seat.ws.send(
+              JSON.stringify({ type: "bid", bids: [{ kind: "minor", box_index: boxIndex, amount: 100 }] })
+            );
+            biddedOnMinor = true;
+          } else {
+            seat.ws.send(JSON.stringify({ type: "pass" }));
+          }
+        } else {
+          seat.ws.send(JSON.stringify({ type: "pass" }));
+        }
+
+        const stateBefore = state;
+        for (let w = 0; w < 40 && latestStateRef.current === stateBefore; w++) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+      }
     } catch (e) {
       setError((e as Error).message);
     }
@@ -341,6 +439,11 @@ function App() {
           </div>
           <div className="solo-row">
             <button onClick={handleSoloGame}>Start solo game (you vs 2 auto-passing bots)</button>
+          </div>
+          <div className="solo-row">
+            <button onClick={handleSoloGameSkipToOperating} className="skip-to-operating-btn">
+              Start solo game, skip straight to an operating round (for testing)
+            </button>
           </div>
           {error && <p className="error">{error}</p>}
         </div>
@@ -577,6 +680,7 @@ function App() {
                   ? "minor"
                   : "major"
               }
+              companyId={gameState.round_type === "operating" ? activeCompanyId() : null}
               boardTiles={gameState.board?.tiles}
               inGame={true}
               canQueueLay={gameState.round_type === "operating"}
