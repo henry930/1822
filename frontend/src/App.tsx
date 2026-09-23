@@ -8,6 +8,7 @@ type LobbyMessage = {
   room_id: string;
   players: { player_id: string; name: string; connected: boolean }[];
   started: boolean;
+  seq?: number;
 };
 
 // The engine's serialized GameState. Only the fields the UI actually reads
@@ -60,6 +61,7 @@ type StateMessage = {
   type: "state";
   state: EngineState;
   player_id_map: Record<string, string>; // lobby player_id -> engine player_id ("p1".."pN")
+  seq?: number;
 };
 
 type ErrorMessage = { type: "error"; message: string };
@@ -171,8 +173,9 @@ function App() {
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [debugPhase, setDebugPhase] = useState("");
   const [debugRoundType, setDebugRoundType] = useState<"stock" | "operating">("operating");
-  const [debugCompanyId, setDebugCompanyId] = useState("");
+  const [debugCompanyId, setDebugCompanyId] = useState("M1");
   const [debugBusy, setDebugBusy] = useState(false);
+  const [debugResult, setDebugResult] = useState<string | null>(null);
   const [boardMapData, setBoardMapData] = useState<BoardMapData | null>(null);
   const [mapFocusRequest, setMapFocusRequest] = useState<{ hexId: string; nonce: number } | null>(null);
   // Count of currently-dropped sockets (single-connection mode has at most
@@ -190,6 +193,12 @@ function App() {
   // function was called, not later broadcasts.
   const latestStateRef = useRef<EngineState | null>(null);
   const latestPlayerIdMapRef = useRef<Record<string, string>>({});
+  // Highest broadcast "seq" applied so far (see rooms.py's Room.broadcast) -
+  // guards against a stale message on a slower solo-mode socket landing
+  // after a newer one from a faster socket and silently reverting the UI.
+  // Reset whenever a new room is created/joined, since seq restarts at 1
+  // per room.
+  const lastSeqRef = useRef(0);
   // Guards the bot auto-pass effect against re-sending for the same turn
   // (effects can re-run before the resulting state broadcast arrives).
   const lastAutoPassedFor = useRef<string | null>(null);
@@ -274,6 +283,12 @@ function App() {
 
   function handleMessage(raw: string) {
     const msg = JSON.parse(raw) as LobbyMessage | StateMessage | ErrorMessage;
+    if (msg.type === "lobby" || msg.type === "state") {
+      if (msg.seq !== undefined) {
+        if (msg.seq <= lastSeqRef.current) return; // stale - a newer broadcast already landed
+        lastSeqRef.current = msg.seq;
+      }
+    }
     if (msg.type === "lobby") setLobby(msg);
     if (msg.type === "state") {
       setGameState(msg.state);
@@ -290,6 +305,7 @@ function App() {
       const { room_id } = await createRoom();
       setRoomIdInput(room_id);
       const { player_id } = await joinRoom(room_id, name || "Player");
+      lastSeqRef.current = 0;
       setRoomId(room_id);
       setPlayerId(player_id);
     } catch (e) {
@@ -301,6 +317,7 @@ function App() {
     setError(null);
     try {
       const { player_id } = await joinRoom(roomIdInput, name || "Player");
+      lastSeqRef.current = 0;
       setRoomId(roomIdInput);
       setPlayerId(player_id);
     } catch (e) {
@@ -325,6 +342,7 @@ function App() {
     setError(null);
     try {
       const { room_id } = await createRoom();
+      lastSeqRef.current = 0;
       const names = ["Player 1", "Player 2", "Player 3"];
       const newSeats: Seat[] = [];
       for (const seatName of names) {
@@ -364,6 +382,7 @@ function App() {
     setError(null);
     try {
       const { room_id } = await createRoom();
+      lastSeqRef.current = 0;
       const names = ["Player 1", "Player 2", "Player 3"];
       const newSeats: Seat[] = [];
       for (const seatName of names) {
@@ -526,19 +545,33 @@ function App() {
   // actions through to get there. The endpoint broadcasts the result like
   // any real action, so this session's own sockets pick it up automatically.
   async function handleDebugForceRound(opts: { phase?: number; roundType?: "stock" | "operating" }) {
-    if (!roomId) return;
+    setDebugResult(null);
+    if (!roomId) {
+      setDebugResult("Nothing to do: not connected to a room right now.");
+      return;
+    }
     setError(null);
     setDebugBusy(true);
     try {
       const payload: Parameters<typeof debugForceRound>[1] = { ...opts };
       if (opts.roundType === "operating") {
         if (!debugCompanyId) {
-          setError("Pick a company first.");
+          setDebugResult("Pick a company first.");
           return;
         }
         payload.companyId = debugCompanyId;
+        // Always direct to *this* browser's own seat (never a company's
+        // pre-existing director, who may be a bot seat left over from
+        // ordinary background bidding) - otherwise the frontend's bot
+        // auto-pass effect can end this single-company operating round
+        // with a legitimate pass within ~300ms, reverting straight back
+        // to a stock round before anyone can act on it.
+        const humanLobbyId = seats.length > 0 ? seats[0].lobbyPlayerId : playerId;
+        const humanEngineId = humanLobbyId ? playerIdMap[humanLobbyId] : undefined;
+        if (humanEngineId) payload.playerId = humanEngineId;
       }
-      await debugForceRound(roomId, payload);
+      const result = await debugForceRound(roomId, payload);
+      setDebugResult(`Server confirmed: phase ${result.phase}, ${result.round_type} round.`);
       if (opts.roundType === "operating") {
         const home = homeHexFor(debugCompanyId);
         if (home) {
@@ -547,7 +580,7 @@ function App() {
         }
       }
     } catch (e) {
-      setError((e as Error).message);
+      setDebugResult(`Failed: ${(e as Error).message}`);
     } finally {
       setDebugBusy(false);
     }
@@ -719,6 +752,7 @@ function App() {
                   Set round
                 </button>
               </div>
+              {debugResult && <p className="debug-result">{debugResult}</p>}
               {debugRoundType === "operating" && debugCompanyId && (
                 <p className="hint">
                   {homeHexFor(debugCompanyId) ? (

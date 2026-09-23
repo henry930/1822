@@ -76,20 +76,33 @@ class Room:
     # apply+broadcast makes each action's effect fully visible to everyone
     # before the next one is processed.
     action_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    # Each broadcast gets the next number here, included in the payload as
+    # "seq". A client normally has just one socket, so message order is
+    # already guaranteed - but solo/hotseat mode opens up to three
+    # independent sockets (one per seat) for a single browser tab, and
+    # nothing guarantees those sockets' *receive* callbacks fire in the
+    # same order the server sent them in: a message on a slower socket can
+    # still be processed after a newer message that arrived first on a
+    # faster one, silently reverting the UI to older state. The client
+    # compares seq and ignores anything not newer than what it already has.
+    broadcast_seq: int = 0
 
     async def broadcast(self) -> None:
+        self.broadcast_seq += 1
         if self.state is None:
             payload = json.dumps({
                 "type": "lobby",
                 "room_id": self.room_id,
                 "players": [dataclasses.asdict(p) for p in self.lobby_players],
                 "started": self.started,
+                "seq": self.broadcast_seq,
             })
         else:
             payload = json.dumps({
                 "type": "state",
                 "state": json.loads(serialize_state(self.state)),
                 "player_id_map": self.player_id_map,
+                "seq": self.broadcast_seq,
             })
         stale = []
         for pid, ws in self.connections.items():

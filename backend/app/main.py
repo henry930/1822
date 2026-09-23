@@ -193,7 +193,16 @@ async def debug_force_round(room_id: str, req: DebugForceRoundRequest):
         else:
             raise HTTPException(status_code=400, detail=f"Unknown company_id {req.company_id!r}")
 
-        director = req.player_id or company.director_player_id or (state.player_order[0] if state.player_order else None)
+        # Prefer the caller's explicit player_id, or the first seat in
+        # turn order (the human in solo mode - the other two are
+        # auto-passed by the frontend), over any director this company
+        # already had. A pre-existing director can be a bot seat left over
+        # from ordinary stock-round bidding that happened to land on this
+        # company before the call; if it's used, the frontend's bot
+        # auto-pass effect fires within ~300ms and immediately ends this
+        # single-company operating round with a legitimate pass, reverting
+        # straight back to a stock round before anyone can act on it.
+        director = req.player_id or (state.player_order[0] if state.player_order else None) or company.director_player_id
         if director is None:
             raise HTTPException(status_code=400, detail="No players to assign as director")
         company.director_player_id = director
@@ -208,7 +217,8 @@ async def debug_force_round(room_id: str, req: DebugForceRoundRequest):
     elif req.round_type is not None:
         raise HTTPException(status_code=400, detail="round_type must be 'stock' or 'operating'")
 
-    await room.broadcast()
+    async with room.action_lock:
+        await room.broadcast()
     return {"status": "ok", "phase": state.phase, "round_type": state.round_type}
 
 
@@ -240,7 +250,8 @@ async def start_room(room_id: str):
     if len(room.lobby_players) > 7:
         raise HTTPException(status_code=400, detail="1822 supports at most 7 players")
     room.start()
-    await room.broadcast()
+    async with room.action_lock:
+        await room.broadcast()
     return {"status": "started"}
 
 
@@ -262,7 +273,8 @@ async def ws_endpoint(websocket: WebSocket, room_id: str, player_id: str):
     for p in room.lobby_players:
         if p.player_id == player_id:
             p.connected = True
-    await room.broadcast()
+    async with room.action_lock:
+        await room.broadcast()
     try:
         while True:
             raw = await websocket.receive_text()
@@ -286,4 +298,5 @@ async def ws_endpoint(websocket: WebSocket, room_id: str, player_id: str):
         for p in room.lobby_players:
             if p.player_id == player_id:
                 p.connected = False
-        await room.broadcast()
+        async with room.action_lock:
+            await room.broadcast()
