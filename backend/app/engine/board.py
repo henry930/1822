@@ -238,3 +238,18 @@ def apply_tile_lay(board: BoardState, hex_id: str, tile_id: str, rotation: int) 
         board.tile_pool[tile_id] = remaining - 1
 
     board.tiles[hex_id] = PlacedTile(tile_id=tile_id, rotation=rotation)
+
+
+def remove_tile(board: BoardState, hex_id: str) -> PlacedTile | None:
+    """Testing/debug only - real 1822 play never removes a placed tile
+    (rule 5.7.16: track, once placed, only ever gets upgraded in place).
+    Returns the removed tile (or None if the hex was already blank) and
+    returns its tile_id to supply, same accounting as apply_tile_lay does
+    when replacing one tile with another."""
+    existing = board.tiles.pop(hex_id, None)
+    if existing is None:
+        return None
+    remaining = board.tile_pool.get(existing.tile_id)
+    if remaining is not None:
+        board.tile_pool[existing.tile_id] = remaining + 1
+    return existing

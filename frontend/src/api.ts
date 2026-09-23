@@ -171,3 +171,18 @@ export async function debugSetCash(
   if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to set cash");
   return res.json();
 }
+
+// Testing/debug only - takes a placed tile back off the board and returns
+// it to supply. Not a real game action (track is never removed once laid).
+export async function debugRemoveTile(
+  roomId: string,
+  hexId: string
+): Promise<{ status: string; hex_id: string; removed_tile_id: string }> {
+  const res = await fetch(`${API_BASE}/rooms/${roomId}/debug/remove_tile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hex_id: hexId }),
+  });
+  if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to remove tile");
+  return res.json();
+}

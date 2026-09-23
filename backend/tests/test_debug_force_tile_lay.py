@@ -246,3 +246,49 @@ def test_debug_set_cash_overrides_a_players_cash():
 
     room = registry.get(room_id)
     assert room.state.players["p1"].cash == 700
+
+
+def test_debug_remove_tile_clears_the_hex_and_returns_it_to_supply():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+    room = registry.get(room_id)
+
+    lay = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        json={"hex_id": "J33", "tile_id": "1", "rotation": 0},  # tile "1" has only 1 copy
+    )
+    assert lay.status_code == 200, lay.json()
+    assert room.state.board.tile_pool["1"] == 0
+
+    resp = client.post(f"/rooms/{room_id}/debug/remove_tile", json={"hex_id": "J33"})
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok", "hex_id": "J33", "removed_tile_id": "1"}
+    assert "J33" not in room.state.board.tiles
+    assert room.state.board.tile_pool["1"] == 1
+
+
+def test_debug_remove_tile_lets_the_same_hex_be_retried():
+    """The whole point: try a placement, remove it, try a different tile on
+    the exact same hex, without needing a fresh room."""
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+
+    client.post(f"/rooms/{room_id}/debug/force_tile_lay", json={"hex_id": "J33", "tile_id": "9", "rotation": 0})
+    client.post(f"/rooms/{room_id}/debug/remove_tile", json={"hex_id": "J33"})
+    resp = client.post(f"/rooms/{room_id}/debug/force_tile_lay", json={"hex_id": "J33", "tile_id": "8", "rotation": 0})
+    assert resp.status_code == 200, resp.json()
+
+
+def test_debug_remove_tile_rejects_a_blank_hex():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+
+    resp = client.post(f"/rooms/{room_id}/debug/remove_tile", json={"hex_id": "J33"})
+    assert resp.status_code == 400
+    assert "No tile placed" in resp.json()["detail"]
+
+
+def test_debug_remove_tile_404s_for_unknown_room():
+    client = TestClient(app)
+    resp = client.post("/rooms/doesnotexist/debug/remove_tile", json={"hex_id": "J33"})
+    assert resp.status_code == 404

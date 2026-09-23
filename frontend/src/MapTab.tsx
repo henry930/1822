@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   debugForceTileLay,
+  debugRemoveTile,
   fetchBoardMap,
   fetchTileLayOptions,
   type BoardMapData,
@@ -141,6 +142,7 @@ export default function MapTab({
   const [placeConfirmed, setPlaceConfirmed] = useState<string | null>(null);
   const [placeError, setPlaceError] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [report, setReport] = useState<TileLayOption[] | null>(null);
@@ -326,6 +328,24 @@ export default function MapTab({
       }
     } finally {
       setPlacing(false);
+    }
+  }
+
+  // Testing only - not a real game action (rule 5.7.16 says track is never
+  // removed once laid). Lets a hex be tried out repeatedly during UI
+  // testing without restarting the whole room every time.
+  async function removeSelectedTile() {
+    if (!roomId || !selectedHexId || removing) return;
+    setPlaceConfirmed(null);
+    setPlaceError(null);
+    setRemoving(true);
+    try {
+      await debugRemoveTile(roomId, selectedHexId);
+      setPlaceConfirmed(`Removed the tile on ${selectedHexId}.`);
+    } catch (e) {
+      setPlaceError((e as Error).message);
+    } finally {
+      setRemoving(false);
     }
   }
 
@@ -725,17 +745,25 @@ export default function MapTab({
                   {placeError && <p className="error">{placeError}</p>}
                 </div>
               ) : (
-                <button
-                  className="open-picker-btn"
-                  onClick={() => {
-                    setPlaceConfirmed(null);
-                    setModalOpen(true);
-                  }}
-                >
-                  Choose a tile to place here...
-                </button>
+                <div className="hex-actions-row">
+                  <button
+                    className="open-picker-btn"
+                    onClick={() => {
+                      setPlaceConfirmed(null);
+                      setModalOpen(true);
+                    }}
+                  >
+                    Choose a tile to place here...
+                  </button>
+                  {selectedPlacedTile && (
+                    <button className="remove-tile-btn" disabled={removing} onClick={removeSelectedTile}>
+                      {removing ? "Removing..." : "Remove tile"}
+                    </button>
+                  )}
+                </div>
               )}
               {placeConfirmed && <p className="place-confirmed">✓ {placeConfirmed}</p>}
+              {!pendingPlacement && placeError && <p className="error">{placeError}</p>}
               {isQueuedNote(selectedHexId, queuedHexId)}
             </>
           )}

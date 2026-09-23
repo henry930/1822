@@ -655,6 +655,30 @@ label.hint {
   padding: 8px 12px;
 }
 
+.hex-actions-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.hex-actions-row .open-picker-btn {
+  margin: 0;
+}
+
+.remove-tile-btn {
+  background: #fff;
+  color: #b91c1c;
+  border: 1px solid #b91c1c;
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
+.remove-tile-btn:disabled {
+  color: #d99;
+  border-color: #d99;
+}
+
 .pending-placement-panel {
   border: 1px dashed #d4a017;
   background: #fffaf0;

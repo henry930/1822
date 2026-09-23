@@ -5,6 +5,7 @@ from app.engine.board import (
     apply_tile_lay,
     connection_pairs,
     new_board_state,
+    remove_tile,
     tile_lay_report,
     validate_tile_lay,
 )
@@ -37,6 +38,32 @@ def test_unlimited_tiles_do_not_deplete():
     validate_tile_lay(board, phase=1, hex_id="Z1", tile_id="7", rotation=0)
     apply_tile_lay(board, "Z1", "7", 0)
     assert board.tile_pool["7"] is None
+
+
+def test_remove_tile_clears_the_hex_and_returns_it_to_supply():
+    board = new_board_state()
+    apply_tile_lay(board, "Z1", "3", 0)
+    assert board.tile_pool["3"] == 5
+
+    removed = remove_tile(board, "Z1")
+
+    assert removed is not None and removed.tile_id == "3"
+    assert "Z1" not in board.tiles
+    assert board.tile_pool["3"] == 6
+
+
+def test_remove_tile_on_a_blank_hex_is_a_noop():
+    board = new_board_state()
+    assert remove_tile(board, "Z1") is None
+    assert board.tiles == {}
+
+
+def test_remove_tile_does_not_touch_unlimited_pool_count():
+    board = new_board_state()
+    apply_tile_lay(board, "Z1", "7", 0)
+    remove_tile(board, "Z1")
+    assert board.tile_pool["7"] is None
+    assert "Z1" not in board.tiles
 
 
 def test_color_not_yet_available_in_phase():

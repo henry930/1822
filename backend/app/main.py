@@ -260,6 +260,33 @@ async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
     return {"status": "ok", "hex_id": req.hex_id, "tile_id": req.tile_id, "rotation": req.rotation, "cost": cost}
 
 
+class DebugRemoveTileRequest(BaseModel):
+    hex_id: str
+
+
+@app.post("/rooms/{room_id}/debug/remove_tile")
+async def debug_remove_tile(room_id: str, req: DebugRemoveTileRequest):
+    """Testing/debug only - takes a placed tile back off the board and
+    returns it to supply. Not a real game action (rule 5.7.16: track is
+    never removed once laid) - exists purely so the map UI can be tried
+    out repeatedly on the same hex without restarting the room."""
+    room = registry.get(room_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.state is None:
+        raise HTTPException(status_code=400, detail="Game has not started")
+
+    from app.engine.board import remove_tile
+
+    removed = remove_tile(room.state.board, req.hex_id)
+    if removed is None:
+        raise HTTPException(status_code=400, detail=f"No tile placed on {req.hex_id}.")
+
+    async with room.action_lock:
+        await room.broadcast()
+    return {"status": "ok", "hex_id": req.hex_id, "removed_tile_id": removed.tile_id}
+
+
 class DebugSetCashRequest(BaseModel):
     player_id: str
     cash: int
