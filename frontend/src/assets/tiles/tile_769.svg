@@ -1,10 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="-115 -115 230 230" width="230" height="230">
 <path d="M -50.00,-86.60 L 50.00,-86.60 L 100.00,-0.00 L 50.00,86.60 L -50.00,86.60 L -100.00,0.00 Z" fill="#C17A3D" stroke="#1a1a1a" stroke-width="3"/>
-<path d="M 0.00,-100.00 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M 86.60,50.00 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M 0.00,100.00 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<path d="M -86.60,50.00 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="round"/>
-<circle cx="0.00" cy="0.00" r="10" fill="#1a1a1a"/>
-<text x="0.00" y="-20.00" font-family="Georgia, serif" font-size="20" text-anchor="middle" fill="#111">10</text>
+<path d="M 0.00,-86.60 L 0.00,0.00" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M 75.00,43.30 L 0.00,0.00" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M 0.00,86.60 L 0.00,0.00" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M -75.00,43.30 L 0.00,0.00" fill="none" stroke="white" stroke-width="20" stroke-linecap="butt"/>
+<path d="M 0.00,-86.60 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<path d="M 75.00,43.30 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<path d="M 0.00,86.60 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<path d="M -75.00,43.30 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
+<circle cx="0.00" cy="0.00" r="6.50" fill="#1a1a1a"/>
+<circle cx="0.00" cy="0.00" r="13" fill="#1a1a1a" stroke="white" stroke-width="3"/>
+<circle cx="-31.18" cy="-18.00" r="14" fill="white" stroke="#1a1a1a" stroke-width="2"/>
+<text x="-31.18" y="-12.60" font-family="Georgia, serif" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">10</text>
 <text x="-92" y="98" font-family="Arial, sans-serif" font-size="20" fill="#333">769</text>
 </svg>

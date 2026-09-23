@@ -23,6 +23,27 @@ revenue values printed on the sheets match). Colors/line weights follow
 standard 18xx tile-art convention (yellow -> green -> brown -> gray upgrade
 path).
 
+## Rendering conventions (matching the printed sheets)
+
+- Track meets each hex edge at the edge midpoint. Edge-to-edge track is a
+  straight line (opposite edges), a sharp arc (adjacent edges) or a gentle
+  arc (edges two apart); every rail has a thin white casing.
+- A town on a single through-track (#3, #4, #58, and both towns on
+  #1/#2/#55/#56/#69) sits *on* that straight/arc as a bold black dot. On the
+  two-rail tiles the second rail is drawn crossing over the first, and each
+  town is slid along its own rail away from the crossing.
+- A town with 3+ exits (#141-#144, #767-#769, X17) is a dot at the center
+  with straight spokes to each exit edge.
+- Every town's revenue is printed in a white bubble, auto-placed in the
+  clearest spot next to its dot so it never sits under track.
+- Cities are small station-slot circles (single, pair, triangle of 3,
+  2x2 square of 4) with nothing printed inside them.
+- Every revenue value (city or town) and the city-type label (Y, BM, EC...)
+  sits in open space next to what it belongs to, auto-placed clear of all
+  rails, cities, dots and other labels - never on a line. London's six
+  equal-revenue stations share a single bubble.
+- Junction tiles (no revenue location) have no dot.
+
 ## Regenerating
 
 ```bash
