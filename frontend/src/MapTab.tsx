@@ -154,7 +154,10 @@ type RegionForm = {
   // Per-edge (0=N,1=NE,2=SE,3=S,4=SW,5=NW) corrections - which neighboring
   // regions this hex does/doesn't connect to, and any toll to cross. Only
   // edges the player actually sets are stored; an edge absent here is left
-  // as whatever's already on file (or "normal"/free if nothing's catalogued).
+  // as whatever's already on file, or defaults to "empty" (not yet
+  // checked/nothing there) in the form itself - see the "Edges" section
+  // below, deliberately not "normal", since most edges genuinely are
+  // empty and this saves having to touch every one just to leave it alone.
   edges: Partial<Record<number, EdgeCorrection>>;
   note: string;
 };
@@ -1426,18 +1429,17 @@ export default function MapTab({
                   )}
 
                   <p className="hint region-data-edges-heading">
-                    Edges - which of the 6 neighboring regions this hex actually connects to. "Normal" is the
-                    default (ordinary connection, no action needed). Only change an edge if your board marks it
-                    specially: "Blocked" for a red no-go line, "Toll" for a marked fee to connect, or "Empty" if
-                    there's genuinely nothing there (open sea, off the printed board) rather than a documented
-                    block.
+                    Edges - which of the 6 neighboring regions this hex actually connects to. Starts as "Empty"
+                    (nothing there / not yet checked) for every edge - switch one to "Normal" once you've confirmed
+                    it's an ordinary connection, "Blocked" for a red no-go line, or "Toll" for a marked fee to
+                    connect.
                   </p>
                   {selectedHexId &&
                     mapData &&
                     EDGE_DIRECTIONS.map(({ edge, short, full }) => {
                       const parsed = parseHexId(selectedHexId, mapData.columns);
                       const neighborId = parsed ? neighborHexId(mapData.columns, parsed.col, parsed.row, edge) : null;
-                      const current = regionForm.edges[edge] ?? { status: "normal", cost: "" };
+                      const current = regionForm.edges[edge] ?? { status: "empty", cost: "" };
                       return (
                         <div className="region-edge-row" key={edge}>
                           <span className="region-edge-label">
