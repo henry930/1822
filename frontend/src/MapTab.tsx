@@ -136,13 +136,15 @@ export default function MapTab({
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   // Testing only: the picker normally only shows/enables tiles and
-  // rotations the server's rule engine says are legal here. Turning this
-  // on stops the UI from filtering on that - every tile for the current
-  // phase and every rotation becomes selectable, so the UI itself (art,
-  // rotation, hex targeting) can be checked independent of game rules.
-  // The server still enforces the real rules when Place is actually
-  // clicked - this only hides its opinion from the picker beforehand.
-  const [ignoreLegality, setIgnoreLegality] = useState(false);
+  // rotations the server's rule engine says are legal here. With this on,
+  // the UI stops filtering on that - every tile for the current phase and
+  // every rotation becomes selectable regardless of hex/round legality, so
+  // the UI itself (art, rotation, hex targeting) can be checked
+  // independent of game rules. Defaults on since this whole app is
+  // currently in active UI testing, not real play; the server still
+  // enforces the real rules when Place is actually clicked either way -
+  // this only hides its opinion from the picker beforehand.
+  const [ignoreLegality, setIgnoreLegality] = useState(true);
 
   useEffect(() => {
     fetchBoardMap()
