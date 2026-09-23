@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  debugForceTileLay,
   fetchBoardMap,
   fetchTileLayOptions,
   type BoardMapData,
@@ -93,9 +94,7 @@ type Props = {
   boardTiles: Record<string, PlacedTile> | undefined;
   canQueueLay: boolean;
   onQueueLay: (hexId: string, tileId: string, rotation: number) => void;
-  onPlaceTile: (hexId: string, tileId: string, rotation: number) => void;
   queuedHexId: string | null;
-  globalError: string | null;
   // Bump the nonce (any change - a new object is enough) to make the map
   // jump to and open hexId, e.g. "show me this company's home hex" from
   // outside this tab. A plain hexId prop wouldn't re-trigger for the same
@@ -110,9 +109,7 @@ export default function MapTab({
   boardTiles,
   canQueueLay,
   onQueueLay,
-  onPlaceTile,
   queuedHexId,
-  globalError,
   focusRequest,
 }: Props) {
   const [mapData, setMapData] = useState<BoardMapData | null>(null);
@@ -128,10 +125,8 @@ export default function MapTab({
     null
   );
   const [viewMode, setViewMode] = useState<"photo" | "schematic">("photo");
-  const [placeAttempt, setPlaceAttempt] = useState<{ hexId: string; tileId: string; rotation: number } | null>(
-    null
-  );
   const [placeConfirmed, setPlaceConfirmed] = useState<string | null>(null);
+  const [placeError, setPlaceError] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -220,47 +215,9 @@ export default function MapTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedHexId, roomId, companyKind, companyId, canQueueLay]);
 
-  // Confirms a "Place tile" click actually took effect: boardTiles is the
-  // live game state, so once it shows exactly the tile/rotation we just
-  // asked for on this hex, the lay genuinely succeeded server-side (not
-  // just "the button was clicked") - and if a server error arrives instead
-  // while an attempt is pending, that's a clear failure to surface too.
   useEffect(() => {
-    if (!placeAttempt) return;
-    const current = boardTiles?.[placeAttempt.hexId];
-    if (current && current.tile_id === placeAttempt.tileId && current.rotation === placeAttempt.rotation) {
-      setPlaceConfirmed(`Placed tile ${placeAttempt.tileId} (rotation ${placeAttempt.rotation}) on ${placeAttempt.hexId}.`);
-      setPlaceAttempt(null);
-      setPlacing(false);
-      setPendingPlacement(null);
-    }
-  }, [boardTiles, placeAttempt]);
-
-  useEffect(() => {
-    if (placeAttempt && globalError) {
-      setPlaceAttempt(null);
-      setPlacing(false);
-    }
-  }, [globalError, placeAttempt]);
-
-  // A placement that never resolves (no matching state update, no error -
-  // e.g. the websocket send silently failed) shouldn't leave the button
-  // stuck showing "Placing..." forever.
-  useEffect(() => {
-    if (!placing) return;
-    const timeout = setTimeout(() => {
-      setPlacing(false);
-      setPlaceAttempt((cur) => {
-        if (cur) setReportError("No response from the server - check your connection and try again.");
-        return null;
-      });
-    }, 8000);
-    return () => clearTimeout(timeout);
-  }, [placing]);
-
-  useEffect(() => {
-    setPlaceAttempt(null);
     setPlaceConfirmed(null);
+    setPlaceError(null);
     setPlacing(false);
     setPendingPlacement(null);
   }, [selectedHexId]);
@@ -292,7 +249,13 @@ export default function MapTab({
     return report.every((r) => !r.valid && (r.reason?.includes("isn't connected") ?? false));
   }
 
-  function confirmPendingPlacement() {
+  // Lays the tile directly (debugForceTileLay) rather than going through a
+  // real operate turn - no company-turn/director requirement, and no
+  // round to end, so this never blocks a second placement right after the
+  // first the way a real operate action would. Connectivity (rule 5.7.9)
+  // is still checked, once here against the already-fetched report for an
+  // instant "Invalid move", and again server-side as the real gate.
+  async function confirmPendingPlacement() {
     const p = pendingPlacement;
     if (!p || placing) return;
     if (reportLoading) return;
@@ -300,10 +263,32 @@ export default function MapTab({
       window.alert("Invalid move");
       return;
     }
+    if (!roomId || !companyId) {
+      setPlaceError("No company selected - pick one in the testing controls panel first.");
+      return;
+    }
     setPlaceConfirmed(null);
+    setPlaceError(null);
     setPlacing(true);
-    setPlaceAttempt({ hexId: p.hexId, tileId: p.tileId, rotation: p.rotation });
-    onPlaceTile(p.hexId, p.tileId, p.rotation);
+    try {
+      await debugForceTileLay(roomId, {
+        hexId: p.hexId,
+        tileId: p.tileId,
+        rotation: p.rotation,
+        companyId,
+        companyKind,
+      });
+      setPlaceConfirmed(`Placed tile ${p.tileId} (rotation ${p.rotation}) on ${p.hexId}.`);
+      setPendingPlacement(null);
+    } catch (e) {
+      if ((e as Error).message.toLowerCase().includes("connected")) {
+        window.alert("Invalid move");
+      } else {
+        setPlaceError((e as Error).message);
+      }
+    } finally {
+      setPlacing(false);
+    }
   }
 
   // Left/Right rotate, Enter confirms (sends the real placement and checks
@@ -680,7 +665,7 @@ export default function MapTab({
                   >
                     Queue for Operate instead (to also pick a dividend / buy a train)
                   </button>
-                  {!placing && globalError && <p className="error">{globalError}</p>}
+                  {placeError && <p className="error">{placeError}</p>}
                 </div>
               ) : (
                 <button

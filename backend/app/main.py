@@ -164,6 +164,50 @@ def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major", com
     }
 
 
+class DebugForceTileLayRequest(BaseModel):
+    hex_id: str
+    tile_id: str
+    rotation: int
+    company_id: str
+    company_kind: str = "major"
+
+
+@app.post("/rooms/{room_id}/debug/force_tile_lay")
+async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
+    """Testing/debug only - lays a tile directly onto the board with only
+    the connectivity check (rule 5.7.9) enforced against company_id's
+    network. Skips everything else a real lay would check (phase/color,
+    tile supply, city-label match, upgrade-must-preserve-track) and
+    doesn't require an actual operating round, turn, or director - so the
+    map UI can be exercised without playing through a real game first."""
+    room = registry.get(room_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.state is None:
+        raise HTTPException(status_code=400, detail="Game has not started")
+    state = room.state
+    if req.company_kind not in ("minor", "major"):
+        raise HTTPException(status_code=400, detail="company_kind must be 'minor' or 'major'")
+    if req.company_id not in state.minors and req.company_id not in state.majors:
+        raise HTTPException(status_code=400, detail=f"Unknown company_id {req.company_id!r}")
+
+    from app.engine.board import apply_tile_lay
+    from app.engine.operating import reachable_hexes_for_tile_lay
+
+    reachable = reachable_hexes_for_tile_lay(state, state.board, req.company_id, req.company_kind)
+    if req.hex_id not in reachable:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{req.hex_id} isn't connected to {req.company_id}'s track network (rule 5.7.9).",
+        )
+
+    apply_tile_lay(state.board, req.hex_id, req.tile_id, req.rotation)
+
+    async with room.action_lock:
+        await room.broadcast()
+    return {"status": "ok", "hex_id": req.hex_id, "tile_id": req.tile_id, "rotation": req.rotation}
+
+
 class DebugForceRoundRequest(BaseModel):
     phase: int | None = None
     round_type: str | None = None  # "stock" or "operating"

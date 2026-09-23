@@ -475,6 +475,16 @@ function App() {
     return gameState.minors[cid]?.director_player_id ?? gameState.majors[cid]?.director_player_id ?? null;
   }
 
+  // Which company the Map tab checks connectivity against: the real
+  // active company during a genuine operating round, or otherwise the
+  // testing panel's own company picker - laying a tile there (via
+  // debug/force_tile_lay) never requires an actual operating round, so it
+  // needs a company some other way.
+  function mapCompanyIdFor(): string | null {
+    if (gameState?.round_type === "operating") return activeCompanyId();
+    return debugCompanyId || null;
+  }
+
   function send(action: object) {
     const seat = activeSeat();
     if (!seat) {
@@ -524,20 +534,6 @@ function App() {
       return;
     }
     send({ type: "sell_shares", company_id: sellCompanyId, count });
-  }
-
-  function sendPlaceTile(hexId: string, tid: string, rotation: number) {
-    const cid = activeCompanyId();
-    if (!cid) {
-      setError("No company is currently operating.");
-      return;
-    }
-    send({
-      type: "operate",
-      company_id: cid,
-      dividend_choice: "withhold",
-      tile_lay: { hex_id: hexId, tile_id: tid, rotation },
-    });
   }
 
   // Testing/debug only: jumps the live room straight to a phase and/or
@@ -964,12 +960,8 @@ function App() {
           {activeTab === "map" && (
             <MapTab
               roomId={roomId}
-              companyKind={
-                gameState.round_type === "operating" && activeCompanyId() && gameState.minors[activeCompanyId()!]
-                  ? "minor"
-                  : "major"
-              }
-              companyId={gameState.round_type === "operating" ? activeCompanyId() : null}
+              companyKind={mapCompanyIdFor() && /^M\d+$/.test(mapCompanyIdFor()!) ? "minor" : "major"}
+              companyId={mapCompanyIdFor()}
               boardTiles={gameState.board?.tiles}
               canQueueLay={gameState.round_type === "operating"}
               queuedHexId={includeTileLay ? tileHexId : null}
@@ -980,8 +972,6 @@ function App() {
                 setIncludeTileLay(true);
                 setActiveTab("operate");
               }}
-              onPlaceTile={sendPlaceTile}
-              globalError={error}
               focusRequest={mapFocusRequest}
             />
           )}

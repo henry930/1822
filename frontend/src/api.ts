@@ -118,3 +118,26 @@ export async function debugForceRound(
   if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to force round");
   return res.json();
 }
+
+// Testing/debug only - lays a tile directly onto the board with only the
+// connectivity check (rule 5.7.9) enforced against companyId's network.
+// Doesn't require an actual operating round, turn, or director, and
+// doesn't advance anything - so any number of these can be sent in a row.
+export async function debugForceTileLay(
+  roomId: string,
+  opts: { hexId: string; tileId: string; rotation: number; companyId: string; companyKind: "minor" | "major" }
+): Promise<{ status: string; hex_id: string; tile_id: string; rotation: number }> {
+  const res = await fetch(`${API_BASE}/rooms/${roomId}/debug/force_tile_lay`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      hex_id: opts.hexId,
+      tile_id: opts.tileId,
+      rotation: opts.rotation,
+      company_id: opts.companyId,
+      company_kind: opts.companyKind,
+    }),
+  });
+  if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to lay tile");
+  return res.json();
+}
