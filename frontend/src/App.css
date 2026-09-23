@@ -870,3 +870,93 @@ label.hint {
   padding: 4px 10px;
   cursor: pointer;
 }
+
+.region-data-panel {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #ddd;
+}
+
+.region-data-list {
+  list-style: none;
+  margin: 4px 0 8px;
+  padding: 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.region-data-list li {
+  padding: 1px 0;
+}
+
+.confidence-badge {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.confidence-rules {
+  background: #d7ecd9;
+  color: #21633a;
+}
+
+.confidence-map {
+  background: #d9e6f5;
+  color: #1f4a80;
+}
+
+.confidence-approx {
+  background: #f6e3c2;
+  color: #8a5a10;
+}
+
+.region-data-saved-note {
+  color: #2c6e49;
+}
+
+.region-data-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.region-data-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: #555;
+}
+
+.region-data-form input,
+.region-data-form select,
+.region-data-form textarea {
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.region-data-values-row {
+  display: flex;
+  gap: 4px;
+}
+
+.region-data-values-row input {
+  width: 0;
+  flex: 1;
+}
+
+.region-data-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.region-corrections-list h4 {
+  margin-top: 0;
+}

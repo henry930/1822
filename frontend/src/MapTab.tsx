@@ -98,6 +98,103 @@ function hexPoints(cx: number, cy: number, size: number): string {
 type PlacedTile = { tile_id: string; rotation: number };
 type HexEntry = { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offboard" | "terrain" };
 
+// --- Region data cross-check panel -----------------------------------------
+// Lets a player who has the physical board in front of them correct/confirm
+// what this engine has on file for a hex, one click at a time, without
+// needing to touch code. Saved locally (so nothing is lost on refresh) and
+// exportable as JSON to hand back for merging into app/data/hex_map.py -
+// this UI doesn't write to the server, it just collects and hands off.
+const REGION_CORRECTIONS_KEY = "1822-map-region-corrections-v1";
+
+type RegionKind = "" | "none" | "city" | "town" | "offboard" | "terrain";
+
+type RegionForm = {
+  kind: RegionKind;
+  name: string;
+  label: string;
+  homeOfMajor: string;
+  homeOfMinor: string;
+  destinationOfMajor: string;
+  valueYellow: string;
+  valueGreen: string;
+  valueBrown: string;
+  valueGrey: string;
+  terrain: string;
+  cost: string;
+  note: string;
+};
+
+type SavedRegionCorrection = RegionForm & { hexId: string; savedAt: string };
+
+const BLANK_REGION_FORM: RegionForm = {
+  kind: "",
+  name: "",
+  label: "",
+  homeOfMajor: "",
+  homeOfMinor: "",
+  destinationOfMajor: "",
+  valueYellow: "",
+  valueGreen: "",
+  valueBrown: "",
+  valueGrey: "",
+  terrain: "",
+  cost: "",
+  note: "",
+};
+
+const LABEL_OPTIONS = ["BM", "Y", "C", "EC", "L", "S", "T"];
+const TERRAIN_OPTIONS = ["river_small", "river_large", "estuary", "rough", "hill", "mountain"];
+
+function loadRegionCorrections(): Record<string, SavedRegionCorrection> {
+  try {
+    const raw = localStorage.getItem(REGION_CORRECTIONS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function persistRegionCorrections(corrections: Record<string, SavedRegionCorrection>) {
+  try {
+    localStorage.setItem(REGION_CORRECTIONS_KEY, JSON.stringify(corrections));
+  } catch {
+    // private browsing / quota exceeded - the in-memory state for this
+    // session still works, it just won't survive a refresh.
+  }
+}
+
+// Pre-fills the form from whatever this engine already has catalogued for
+// the hex, so "correcting" it is edit-in-place, not re-typing from scratch.
+function regionFormFromCatalogued(entry: HexEntry | undefined): RegionForm {
+  if (!entry) return { ...BLANK_REGION_FORM };
+  if (entry.kind === "city") {
+    const c = entry.hex as MapCity;
+    return {
+      ...BLANK_REGION_FORM,
+      kind: c.is_town ? "town" : "city",
+      name: c.name,
+      label: c.label ?? "",
+      homeOfMajor: c.home_of_major.join(", "),
+      homeOfMinor: c.home_of_minor.join(", "),
+      destinationOfMajor: c.destination_of_major ?? "",
+    };
+  }
+  if (entry.kind === "offboard") {
+    const o = entry.hex as MapOffboard;
+    return {
+      ...BLANK_REGION_FORM,
+      kind: "offboard",
+      name: o.name,
+      valueYellow: String(o.value_yellow),
+      valueGreen: String(o.value_green),
+      valueBrown: String(o.value_brown),
+      valueGrey: String(o.value_grey),
+    };
+  }
+  const t = entry.hex as MapTerrain;
+  return { ...BLANK_REGION_FORM, kind: "terrain", terrain: t.terrain, cost: String(t.cost) };
+}
+
 type Props = {
   roomId: string | null;
   companyKind: "minor" | "major";
@@ -149,6 +246,12 @@ export default function MapTab({
   const [maxTileColor, setMaxTileColor] = useState<"yellow" | "green" | "brown" | "gray">("yellow");
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [regionCorrections, setRegionCorrections] = useState<Record<string, SavedRegionCorrection>>(
+    loadRegionCorrections
+  );
+  const [regionForm, setRegionForm] = useState<RegionForm>({ ...BLANK_REGION_FORM });
+  const [regionSaved, setRegionSaved] = useState(false);
+  const [regionCopied, setRegionCopied] = useState(false);
 
   // What's actually drawn on the map: real server state, with the pending
   // (unconfirmed) placement overlaid on top of its hex so rotating it is
@@ -389,6 +492,65 @@ export default function MapTab({
     return map;
   }, [allHexes]);
 
+  // Reset the correction form whenever the selected hex changes: an already
+  // -saved correction for this hex wins (that's the player's own latest
+  // word on it), otherwise pre-fill from whatever's catalogued so far, or a
+  // blank form for a hex this engine doesn't know about at all yet.
+  useEffect(() => {
+    setRegionSaved(false);
+    if (!selectedHexId) {
+      setRegionForm({ ...BLANK_REGION_FORM });
+      return;
+    }
+    const existing = regionCorrections[selectedHexId];
+    setRegionForm(existing ? { ...existing } : regionFormFromCatalogued(hexById.get(selectedHexId)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedHexId, hexById]);
+
+  function saveRegionCorrection() {
+    if (!selectedHexId) return;
+    const entry: SavedRegionCorrection = { ...regionForm, hexId: selectedHexId, savedAt: new Date().toISOString() };
+    setRegionCorrections((prev) => {
+      const next = { ...prev, [selectedHexId]: entry };
+      persistRegionCorrections(next);
+      return next;
+    });
+    setRegionSaved(true);
+  }
+
+  function discardRegionCorrection(hexId: string) {
+    setRegionCorrections((prev) => {
+      const next = { ...prev };
+      delete next[hexId];
+      persistRegionCorrections(next);
+      return next;
+    });
+    if (hexId === selectedHexId) {
+      setRegionForm(regionFormFromCatalogued(hexById.get(hexId)));
+      setRegionSaved(false);
+    }
+  }
+
+  function downloadRegionCorrections() {
+    const blob = new Blob([JSON.stringify(regionCorrections, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "1822-map-corrections.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyRegionCorrections() {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(regionCorrections, null, 2));
+      setRegionCopied(true);
+      setTimeout(() => setRegionCopied(false), 1500);
+    } catch {
+      // Clipboard API unavailable (e.g. insecure context) - Download still works.
+    }
+  }
+
   // Every clickable hex region on the real board scan: the printed board is
   // a full rectangular hex grid (sea hexes included, just colored blue), and
   // - per the calibration note above - a real hex only ever exists where the
@@ -600,6 +762,28 @@ export default function MapTab({
                 </ul>
               </div>
             )}
+            {Object.keys(regionCorrections).length > 0 && (
+              <div className="placed-tiles-list region-corrections-list">
+                <h4>Your region corrections ({Object.keys(regionCorrections).length})</h4>
+                <ul>
+                  {Object.values(regionCorrections).map((c) => (
+                    <li key={c.hexId}>
+                      <button onClick={() => selectHex(c.hexId)}>
+                        {c.hexId}: {c.kind || "?"}
+                        {c.name ? ` - ${c.name}` : ""}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="region-data-actions">
+                  <button onClick={downloadRegionCorrections}>Download corrections.json</button>
+                  <button onClick={copyRegionCorrections}>{regionCopied ? "Copied!" : "Copy to clipboard"}</button>
+                </div>
+                <p className="hint">
+                  Send this file (or the copied JSON) back and it'll get merged into the actual map data.
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="hex-map-scroll">
@@ -765,6 +949,209 @@ export default function MapTab({
               {placeConfirmed && <p className="place-confirmed">✓ {placeConfirmed}</p>}
               {!pendingPlacement && placeError && <p className="error">{placeError}</p>}
               {isQueuedNote(selectedHexId, queuedHexId)}
+
+              <div className="region-data-panel">
+                <h4>Cross-check this region's data</h4>
+                <p className="hint">Currently on file for {selectedHexId}:</p>
+                {selectedInfo ? (
+                  <ul className="region-data-list">
+                    <li>
+                      Kind:{" "}
+                      <strong>
+                        {selectedInfo.kind === "city"
+                          ? (selectedInfo.hex as MapCity).is_town
+                            ? "Town"
+                            : "City"
+                          : selectedInfo.kind}
+                      </strong>
+                    </li>
+                    {"name" in selectedInfo.hex && <li>Name: {(selectedInfo.hex as MapCity | MapOffboard).name}</li>}
+                    {selectedInfo.kind === "city" && (
+                      <>
+                        <li>Label: {(selectedInfo.hex as MapCity).label ?? "none"}</li>
+                        <li>Home of major(s): {(selectedInfo.hex as MapCity).home_of_major.join(", ") || "none"}</li>
+                        <li>Home of minor(s): {(selectedInfo.hex as MapCity).home_of_minor.join(", ") || "none"}</li>
+                        <li>Destination of major: {(selectedInfo.hex as MapCity).destination_of_major ?? "none"}</li>
+                      </>
+                    )}
+                    {selectedInfo.kind === "offboard" && (
+                      <li>
+                        Revenue (yellow/green/brown/grey): £{(selectedInfo.hex as MapOffboard).value_yellow}/£
+                        {(selectedInfo.hex as MapOffboard).value_green}/£
+                        {(selectedInfo.hex as MapOffboard).value_brown}/£
+                        {(selectedInfo.hex as MapOffboard).value_grey}
+                      </li>
+                    )}
+                    {selectedInfo.kind === "terrain" && (
+                      <li>
+                        Terrain: {(selectedInfo.hex as MapTerrain).terrain}, £{(selectedInfo.hex as MapTerrain).cost}{" "}
+                        to cross
+                      </li>
+                    )}
+                    <li>
+                      Confidence:{" "}
+                      <span className={`confidence-badge confidence-${selectedInfo.hex.confidence}`}>
+                        {selectedInfo.hex.confidence}
+                      </span>
+                    </li>
+                  </ul>
+                ) : (
+                  <p className="hint">
+                    Not catalogued at all - this engine treats {selectedHexId} as plain, undifferentiated land/sea.
+                  </p>
+                )}
+
+                {regionCorrections[selectedHexId] && (
+                  <p className="hint region-data-saved-note">
+                    ✓ Saved {new Date(regionCorrections[selectedHexId].savedAt).toLocaleString()} - included in the
+                    export below.
+                  </p>
+                )}
+
+                <div className="region-data-form">
+                  <label>
+                    What is this hex, as printed on your physical board?
+                    <select
+                      value={regionForm.kind}
+                      onChange={(e) => setRegionForm({ ...regionForm, kind: e.target.value as RegionKind })}
+                    >
+                      <option value="">— pick one —</option>
+                      <option value="city">City</option>
+                      <option value="town">Town</option>
+                      <option value="offboard">Off-board area</option>
+                      <option value="terrain">Difficult terrain (river/hill/mountain)</option>
+                      <option value="none">Plain hex - no marking</option>
+                    </select>
+                  </label>
+
+                  {(regionForm.kind === "city" || regionForm.kind === "town" || regionForm.kind === "offboard") && (
+                    <label>
+                      Printed name
+                      <input
+                        value={regionForm.name}
+                        onChange={(e) => setRegionForm({ ...regionForm, name: e.target.value })}
+                        placeholder="e.g. Portsmouth"
+                      />
+                    </label>
+                  )}
+
+                  {(regionForm.kind === "city" || regionForm.kind === "town") && (
+                    <>
+                      <label>
+                        Printed label (letter code inside the city circle, if any)
+                        <select
+                          value={regionForm.label}
+                          onChange={(e) => setRegionForm({ ...regionForm, label: e.target.value })}
+                        >
+                          <option value="">none</option>
+                          {LABEL_OPTIONS.map((l) => (
+                            <option key={l} value={l}>
+                              {l}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Home of major compan(y/ies) - comma-separated abbreviations, if any
+                        <input
+                          value={regionForm.homeOfMajor}
+                          onChange={(e) => setRegionForm({ ...regionForm, homeOfMajor: e.target.value })}
+                          placeholder="e.g. NBR"
+                        />
+                      </label>
+                      <label>
+                        Home of minor compan(y/ies) - comma-separated numbers, if any
+                        <input
+                          value={regionForm.homeOfMinor}
+                          onChange={(e) => setRegionForm({ ...regionForm, homeOfMinor: e.target.value })}
+                          placeholder="e.g. 3"
+                        />
+                      </label>
+                      <label>
+                        Destination of major (abbreviation, if any)
+                        <input
+                          value={regionForm.destinationOfMajor}
+                          onChange={(e) => setRegionForm({ ...regionForm, destinationOfMajor: e.target.value })}
+                          placeholder="e.g. NER"
+                        />
+                      </label>
+                    </>
+                  )}
+
+                  {regionForm.kind === "offboard" && (
+                    <label>
+                      Revenue by phase color (yellow / green / brown / grey)
+                      <div className="region-data-values-row">
+                        <input
+                          value={regionForm.valueYellow}
+                          onChange={(e) => setRegionForm({ ...regionForm, valueYellow: e.target.value })}
+                          placeholder="£ yellow"
+                        />
+                        <input
+                          value={regionForm.valueGreen}
+                          onChange={(e) => setRegionForm({ ...regionForm, valueGreen: e.target.value })}
+                          placeholder="£ green"
+                        />
+                        <input
+                          value={regionForm.valueBrown}
+                          onChange={(e) => setRegionForm({ ...regionForm, valueBrown: e.target.value })}
+                          placeholder="£ brown"
+                        />
+                        <input
+                          value={regionForm.valueGrey}
+                          onChange={(e) => setRegionForm({ ...regionForm, valueGrey: e.target.value })}
+                          placeholder="£ grey"
+                        />
+                      </div>
+                    </label>
+                  )}
+
+                  {regionForm.kind === "terrain" && (
+                    <>
+                      <label>
+                        Terrain type
+                        <select
+                          value={regionForm.terrain}
+                          onChange={(e) => setRegionForm({ ...regionForm, terrain: e.target.value })}
+                        >
+                          <option value="">— pick one —</option>
+                          {TERRAIN_OPTIONS.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Cost to cross (£)
+                        <input
+                          value={regionForm.cost}
+                          onChange={(e) => setRegionForm({ ...regionForm, cost: e.target.value })}
+                          placeholder="e.g. 40"
+                        />
+                      </label>
+                    </>
+                  )}
+
+                  <label>
+                    Notes (optional)
+                    <textarea
+                      value={regionForm.note}
+                      onChange={(e) => setRegionForm({ ...regionForm, note: e.target.value })}
+                      rows={2}
+                      placeholder="Anything I should know about this hex"
+                    />
+                  </label>
+
+                  <div className="region-data-actions">
+                    <button onClick={saveRegionCorrection}>Save correction for {selectedHexId}</button>
+                    {regionCorrections[selectedHexId] && (
+                      <button onClick={() => discardRegionCorrection(selectedHexId)}>Discard</button>
+                    )}
+                  </div>
+                  {regionSaved && <p className="place-confirmed">✓ Saved - added to your corrections export.</p>}
+                </div>
+              </div>
             </>
           )}
         </div>
