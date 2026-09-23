@@ -217,7 +217,7 @@ function App() {
     const isMinor = /^M\d+$/.test(companyId);
     const minorNumber = isMinor ? parseInt(companyId.slice(1), 10) : null;
     const city = boardMapData.cities.find((c) =>
-      isMinor ? c.home_of_minor === minorNumber : c.home_of_major === companyId
+      isMinor ? c.home_of_minor.includes(minorNumber!) : c.home_of_major.includes(companyId)
     );
     return city?.id ?? null;
   }

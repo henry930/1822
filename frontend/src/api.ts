@@ -41,8 +41,10 @@ export type MapCity = MapHex & {
   name: string;
   label: string | null;
   is_town: boolean;
-  home_of_minor: number | null;
-  home_of_major: string | null;
+  // A city like London/M38 or York/K19 is home to several companies at
+  // once, so this is always a list (possibly empty) rather than one value.
+  home_of_minor: number[];
+  home_of_major: string[];
   destination_of_major: string | null;
 };
 export type MapOffboard = MapHex & {

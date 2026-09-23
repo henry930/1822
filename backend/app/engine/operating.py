@@ -26,10 +26,14 @@ class OperatingError(Exception):
 
 def home_hex_for(company_id: str, kind: str) -> str | None:
     for c in CITIES:
-        if kind == "minor" and c.home_of_minor is not None and f"M{c.home_of_minor}" == company_id:
-            return c.id
-        if kind == "major" and c.home_of_major == company_id:
-            return c.id
+        if kind == "minor" and c.home_of_minor is not None:
+            minors = c.home_of_minor if isinstance(c.home_of_minor, tuple) else (c.home_of_minor,)
+            if any(f"M{n}" == company_id for n in minors):
+                return c.id
+        if kind == "major" and c.home_of_major is not None:
+            majors = c.home_of_major if isinstance(c.home_of_major, tuple) else (c.home_of_major,)
+            if company_id in majors:
+                return c.id
     return None
 
 

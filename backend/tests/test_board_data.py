@@ -38,10 +38,42 @@ def test_hex_ids_are_unique():
 def test_rules_confidence_hexes_match_minor_company_table():
     from app.data.minor_companies import MINOR_COMPANIES_BY_NUMBER
 
-    rules_cities = {c.home_of_minor: c.id for c in CITIES if c.home_of_minor is not None}
+    rules_cities: dict[int, str] = {}
+    for c in CITIES:
+        if c.home_of_minor is None:
+            continue
+        numbers = c.home_of_minor if isinstance(c.home_of_minor, tuple) else (c.home_of_minor,)
+        for n in numbers:
+            rules_cities[n] = c.id
+
     for number, hex_id in rules_cities.items():
         expected = MINOR_COMPANIES_BY_NUMBER[number].home_hex
-        assert hex_id == expected, f"M{number} hex mismatch: {hex_id} vs {expected}"
+        # M2's printed home ("E2-4") is a range across the Highlands
+        # off-board area, not one hex - E2 is the chosen concrete pick.
+        if "-" in expected:
+            assert hex_id in expected, f"M{number} hex {hex_id} not part of range {expected}"
+        else:
+            assert hex_id == expected, f"M{number} hex mismatch: {hex_id} vs {expected}"
+
+
+def test_every_company_has_a_resolvable_home_hex():
+    """A company with no catalogued home (home_hex_for returns None)
+    isn't just missing flavor data - reachable_hexes_for_tile_lay treats
+    "no stations" as "nothing is reachable, not even this company's own
+    home", so it can never legally lay a single tile anywhere. This caught
+    a real bug: a city like London/M38 is genuinely the printed home of
+    three minors and three majors at once, and the old single-value
+    home_of_minor/home_of_major fields could only ever record one of them,
+    silently dropping the rest to None."""
+    from app.data.major_companies import MAJOR_COMPANIES
+    from app.data.minor_companies import BASE_GAME_MINOR_COMPANIES
+    from app.engine.operating import home_hex_for
+
+    for major in MAJOR_COMPANIES:
+        assert home_hex_for(major.abbr, "major") is not None, f"{major.abbr} has no home hex"
+    for minor in BASE_GAME_MINOR_COMPANIES:
+        company_id = f"M{minor.number}"
+        assert home_hex_for(company_id, "minor") is not None, f"{company_id} has no home hex"
 
 
 def test_merthyr_pontypool_link_hexes_exist_in_offboard_or_cities():

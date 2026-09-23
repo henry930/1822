@@ -82,9 +82,18 @@ def board_map():
         pos = _lenient_position(c.id)
         if pos is None:
             continue
+        # Normalized to always be a list client-side (even a single value),
+        # since a hex like London/M38 is genuinely home to several companies
+        # at once - see CityHex's docstring in app.data.hex_map.
+        home_of_minor = list(c.home_of_minor) if isinstance(c.home_of_minor, tuple) else (
+            [c.home_of_minor] if c.home_of_minor is not None else []
+        )
+        home_of_major = list(c.home_of_major) if isinstance(c.home_of_major, tuple) else (
+            [c.home_of_major] if c.home_of_major is not None else []
+        )
         cities.append({
             "id": c.id, "name": c.name, "label": c.label, "is_town": c.is_town,
-            "home_of_minor": c.home_of_minor, "home_of_major": c.home_of_major,
+            "home_of_minor": home_of_minor, "home_of_major": home_of_major,
             "destination_of_major": c.destination_of_major, "confidence": c.confidence,
             **pos,
         })

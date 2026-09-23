@@ -47,8 +47,10 @@ class CityHex:
     name: str
     label: str | None   # None (unlabeled), "BM", "Y", "S", "C", "T", "L" (London), "EC"
     is_town: bool = False
-    home_of_minor: int | None = None
-    home_of_major: str | None = None
+    # A big city hex (London/M38, York/K19) is the printed home of more than
+    # one company at once - a tuple covers that; most hexes just have one.
+    home_of_minor: int | tuple[int, ...] | None = None
+    home_of_major: str | tuple[str, ...] | None = None
     destination_of_major: str | None = None
     confidence: str = "map"
 
@@ -105,6 +107,10 @@ OFFBOARD_AREAS: list[OffBoardArea] = [
 CITIES: list[CityHex] = [
     # --- Scotland ---
     CityHex("H1", "Aberdeen", None, home_of_minor=1, destination_of_major="NBR", confidence="rules"),
+    # M2's printed home ("Highlands") is the E2-E4 off-board area (see
+    # OFFBOARD_AREAS above) rather than a specific city; E2 is used as its
+    # one concrete hex since the engine needs a single home_hex per company.
+    CityHex("E2", "Highlands", None, home_of_minor=2, confidence="rules"),
     CityHex("H5", "Edinburgh", "Y", home_of_minor=3, home_of_major="NBR",
             destination_of_major="NER", confidence="rules"),
     CityHex("E6", "Glasgow", None, home_of_minor=27, home_of_major="CR", confidence="map"),
@@ -139,7 +145,9 @@ CITIES: list[CityHex] = [
     CityHex("K24", "Sheffield", None, home_of_minor=8, confidence="rules"),
     CityHex("J20", "Leeds", None, is_town=True, confidence="approx"),
     CityHex("J19", "Bradford", None, is_town=True, confidence="approx"),
-    CityHex("K19", "York", None, home_of_major="MR", destination_of_major="NER", confidence="map"),
+    # NER's own home (rules Company Tables p.40) is also York - added onto
+    # MR's existing entry here rather than a second "K19" catalog row.
+    CityHex("K19", "York", None, home_of_major=("MR", "NER"), destination_of_major="NER", confidence="map"),
     CityHex("N21", "Hull", None, home_of_minor=26, confidence="rules"),
     CityHex("N23", "Grimsby", None, home_of_minor=9, confidence="rules"),
     CityHex("M26", "Lincoln", None, is_town=True, confidence="approx"),
@@ -185,7 +193,14 @@ CITIES: list[CityHex] = [
     CityHex("K33", "Oxford", None, is_town=True, confidence="approx"),
     CityHex("L33", "Hertford", None, is_town=True, confidence="approx"),
     # --- London & South East ---
-    CityHex("M38", "London", "L", home_of_minor=15, home_of_major="LNWR", confidence="rules"),
+    # London hosts three minors' homes (M14/MetR, M15/LT&SR, M16/L&BR - rules
+    # Company Tables p.36) and three majors' (LNWR, LBSCR/"London (S)",
+    # SECR/"London (SE)" - p.40), all on this one hex.
+    CityHex(
+        "M38", "London", "L",
+        home_of_minor=(14, 15, 16), home_of_major=("LNWR", "LBSCR", "SECR"),
+        confidence="rules",
+    ),
     # London also hosts M14 (Metropolitan, optional rondel) and M16 (L&BR, NW station),
     # plus home stations for GWR/LBSCR/SECR (all co-located in the same black hex).
     CityHex("M42", "Brighton", None, destination_of_major="LBSCR", confidence="map"),
