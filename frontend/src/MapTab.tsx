@@ -129,6 +129,13 @@ export default function MapTab({
   );
   const [placeConfirmed, setPlaceConfirmed] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
+  // Purely client-side placements made while ignoreLegality is on - Place
+  // never even asks the server in that mode (no company/operating-round
+  // requirement to satisfy), so there's nothing in the real boardTiles
+  // prop to render or confirm against. Merged with boardTiles wherever
+  // this component draws "what's on the map" so the art/rotation/hex
+  // targeting can be checked end-to-end purely in the browser.
+  const [localPlacedTiles, setLocalPlacedTiles] = useState<Record<string, PlacedTile>>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [report, setReport] = useState<TileLayOption[] | null>(null);
@@ -145,6 +152,11 @@ export default function MapTab({
   // enforces the real rules when Place is actually clicked either way -
   // this only hides its opinion from the picker beforehand.
   const [ignoreLegality, setIgnoreLegality] = useState(true);
+
+  // What's actually drawn on the map: real server state, plus this
+  // browser's own client-side-only placements when ignoreLegality is on
+  // (those never reach the server at all - see the Place button below).
+  const effectiveBoardTiles = ignoreLegality ? { ...boardTiles, ...localPlacedTiles } : boardTiles;
 
   useEffect(() => {
     fetchBoardMap()
@@ -361,7 +373,7 @@ export default function MapTab({
   }, [allHexes, search]);
 
   const selectedInfo = allHexes.find(({ hex }) => hex.id === selectedHexId);
-  const selectedPlacedTile = selectedHexId ? boardTiles?.[selectedHexId] : undefined;
+  const selectedPlacedTile = selectedHexId ? effectiveBoardTiles?.[selectedHexId] : undefined;
 
   const colorFor = (kind: "city" | "offboard" | "terrain", hex: MapCity | MapOffboard | MapTerrain) => {
     if (kind === "city") return (hex as MapCity).is_town ? "#dbe4ee" : "#8fb8e0";
@@ -375,7 +387,7 @@ export default function MapTab({
   const grouped: Record<string, TileManifestEntry[]> = { yellow: [], green: [], brown: [], gray: [] };
   for (const t of manifest) grouped[t.color]?.push(t);
 
-  const placedList = Object.entries(boardTiles ?? {});
+  const placedList = Object.entries(effectiveBoardTiles ?? {});
 
   const pendingOptions = pendingTileId ? reportByTile.get(pendingTileId) ?? [] : [];
   const pendingCurrent = pendingOptions.find((o) => o.rotation === pendingRotation);
@@ -453,7 +465,7 @@ export default function MapTab({
                 >
                   {photoGrid.map(({ hexId, col, row }) => {
                     const { x, y } = photoHexCenter(col, row);
-                    const placed = boardTiles?.[hexId];
+                    const placed = effectiveBoardTiles?.[hexId];
                     const catalogued = hexById.get(hexId);
                     const isSelected = hexId === selectedHexId;
                     const isQueued = hexId === queuedHexId;
@@ -530,7 +542,7 @@ export default function MapTab({
             >
               {allHexes.map(({ hex, kind }) => {
                 const { x, y } = hexCenter(hex.col, hex.row, hex.dx, hex.dy);
-                const placed = boardTiles?.[hex.id];
+                const placed = effectiveBoardTiles?.[hex.id];
                 const isSelected = hex.id === selectedHexId;
                 const isQueued = hex.id === queuedHexId;
                 return (
@@ -651,8 +663,9 @@ export default function MapTab({
                     checked={ignoreLegality}
                     onChange={(e) => setIgnoreLegality(e.target.checked)}
                   />{" "}
-                  Show every tile/rotation for the current phase (ignore this hex's legality) - testing only, the
-                  server still enforces the real rules when you click Place.
+                  UI test mode: every tile/rotation for the current phase is selectable, Place works with no company
+                  or operating round needed, and placing draws the tile locally without sending anything to the
+                  server. Uncheck for the real thing (server-enforced legality, real placement).
                 </label>
                 {report && (
                   <>
@@ -753,6 +766,19 @@ export default function MapTab({
                       title={placeDisabled ?? "Place this tile"}
                       onClick={() => {
                         if (!selectedHexId || !pendingTileId) return;
+                        if (ignoreLegality) {
+                          // Pure UI test: never asks the server (no company
+                          // or operating round needed) - just draws the
+                          // tile locally and confirms immediately.
+                          setLocalPlacedTiles((prev) => ({
+                            ...prev,
+                            [selectedHexId]: { tile_id: pendingTileId, rotation: pendingRotation },
+                          }));
+                          setPlaceConfirmed(
+                            `Placed tile ${pendingTileId} (rotation ${pendingRotation}) on ${selectedHexId} (UI test only - not sent to the server).`
+                          );
+                          return;
+                        }
                         setPlaceConfirmed(null);
                         setPlacing(true);
                         setPlaceAttempt({ hexId: selectedHexId, tileId: pendingTileId, rotation: pendingRotation });
