@@ -383,12 +383,19 @@ export default function MapTab({
   // see the actual failing condition. This makes the real cause impossible
   // to miss instead of guessing again.
   function placeDisabledReason(): string | null {
-    if (!inGame) return "Not in a game.";
-    if (!canQueueLay) return "Not currently an operating round.";
+    // Reentrancy/selection guards stay even with ignoreLegality on -
+    // there's genuinely nothing to send without these. Everything else
+    // (being in a game, an operating round, hex-specific legality) is a
+    // game-rule check the toggle is meant to bypass in the picker; the
+    // server still enforces all of it for real when the click actually
+    // goes through, so bypassing it here can't place an illegal tile,
+    // only let you try and see the real error.
     if (placing) return "A placement is already in progress.";
     if (!pendingTileId) return "No tile selected.";
-    if (!pendingOptions.length) return "No legality data loaded for this tile yet (still loading, or the fetch failed - see any error above).";
     if (!ignoreLegality) {
+      if (!inGame) return "Not in a game.";
+      if (!canQueueLay) return "Not currently an operating round.";
+      if (!pendingOptions.length) return "No legality data loaded for this tile yet (still loading, or the fetch failed - see any error above).";
       if (!pendingCurrent) return `No legality data for rotation ${pendingRotation} specifically.`;
       if (!pendingCurrent.valid) return `Rotation ${pendingRotation} is invalid: ${pendingCurrent.reason}`;
     }
@@ -754,7 +761,9 @@ export default function MapTab({
                     </button>
                     {placeDisabled && <p className="hint place-disabled-reason">Can't place yet: {placeDisabled}</p>}
                     <button
-                      disabled={(!ignoreLegality && !pendingCurrent?.valid) || !inGame || !canQueueLay}
+                      disabled={
+                        ignoreLegality ? false : !pendingCurrent?.valid || !inGame || !canQueueLay
+                      }
                       onClick={() => {
                         if (selectedHexId && pendingTileId) {
                           onQueueLay(selectedHexId, pendingTileId, pendingRotation);
