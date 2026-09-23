@@ -95,6 +95,11 @@ type Props = {
   onPlaceTile: (hexId: string, tileId: string, rotation: number) => void;
   queuedHexId: string | null;
   globalError: string | null;
+  // Bump the nonce (any change - a new object is enough) to make the map
+  // jump to and open hexId, e.g. "show me this company's home hex" from
+  // outside this tab. A plain hexId prop wouldn't re-trigger for the same
+  // hex picked twice in a row.
+  focusRequest?: { hexId: string; nonce: number } | null;
 };
 
 export default function MapTab({
@@ -108,6 +113,7 @@ export default function MapTab({
   onPlaceTile,
   queuedHexId,
   globalError,
+  focusRequest,
 }: Props) {
   const [mapData, setMapData] = useState<BoardMapData | null>(null);
   const [manifest, setManifest] = useState<TileManifestEntry[]>([]);
@@ -251,6 +257,12 @@ export default function MapTab({
     setSelectedHexId(hexId);
     setModalOpen(true);
   }
+
+  useEffect(() => {
+    if (!focusRequest) return;
+    selectHex(focusRequest.hexId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusRequest]);
 
   const reportByTile = useMemo(() => {
     const map = new Map<string, TileLayOption[]>();

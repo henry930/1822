@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { createRoom, debugForceRound, joinRoom, startRoom, wsUrl } from "./api";
+import { createRoom, debugForceRound, fetchBoardMap, joinRoom, startRoom, wsUrl, type BoardMapData } from "./api";
 import MapTab from "./MapTab";
 import "./App.css";
 
@@ -116,6 +116,8 @@ function App() {
   const [debugRoundType, setDebugRoundType] = useState<"stock" | "operating">("operating");
   const [debugCompanyId, setDebugCompanyId] = useState("");
   const [debugBusy, setDebugBusy] = useState(false);
+  const [boardMapData, setBoardMapData] = useState<BoardMapData | null>(null);
+  const [mapFocusRequest, setMapFocusRequest] = useState<{ hexId: string; nonce: number } | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   // Mirrors gameState/playerIdMap for code that runs outside React's render
   // cycle (the "skip to operating round" fast-forward below) - reading
@@ -126,6 +128,25 @@ function App() {
   // Guards the bot auto-pass effect against re-sending for the same turn
   // (effects can re-run before the resulting state broadcast arrives).
   const lastAutoPassedFor = useRef<string | null>(null);
+
+  // Loaded once for the debug panel's "home hex" lookup - the same
+  // cities/home-of-minor/home-of-major data MapTab already fetches for
+  // itself, but App doesn't otherwise need the board map.
+  useEffect(() => {
+    fetchBoardMap()
+      .then(setBoardMapData)
+      .catch(() => {});
+  }, []);
+
+  function homeHexFor(companyId: string): string | null {
+    if (!boardMapData) return null;
+    const isMinor = /^M\d+$/.test(companyId);
+    const minorNumber = isMinor ? parseInt(companyId.slice(1), 10) : null;
+    const city = boardMapData.cities.find((c) =>
+      isMinor ? c.home_of_minor === minorNumber : c.home_of_major === companyId
+    );
+    return city?.id ?? null;
+  }
 
   // Single-connection mode (normal multiplayer: one browser = one player)
   useEffect(() => {
@@ -414,6 +435,13 @@ function App() {
         payload.companyId = debugCompanyId;
       }
       await debugForceRound(roomId, payload);
+      if (opts.roundType === "operating") {
+        const home = homeHexFor(debugCompanyId);
+        if (home) {
+          setActiveTab("map");
+          setMapFocusRequest({ hexId: home, nonce: Date.now() });
+        }
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -574,6 +602,26 @@ function App() {
                   Set round
                 </button>
               </div>
+              {debugRoundType === "operating" && debugCompanyId && (
+                <p className="hint">
+                  {homeHexFor(debugCompanyId) ? (
+                    <>
+                      {debugCompanyId}'s home hex (where its station token goes, and the only legal spot to lay
+                      track before it has any) is <strong>{homeHexFor(debugCompanyId)}</strong>.{" "}
+                      <button
+                        onClick={() => {
+                          setActiveTab("map");
+                          setMapFocusRequest({ hexId: homeHexFor(debugCompanyId)!, nonce: Date.now() });
+                        }}
+                      >
+                        Jump to it on the map
+                      </button>
+                    </>
+                  ) : (
+                    "Home hex not found in the board data."
+                  )}
+                </p>
+              )}
             </div>
           )}
 
@@ -784,6 +832,7 @@ function App() {
               }}
               onPlaceTile={sendPlaceTile}
               globalError={error}
+              focusRequest={mapFocusRequest}
             />
           )}
 
