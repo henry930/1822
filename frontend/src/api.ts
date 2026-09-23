@@ -81,6 +81,31 @@ export async function fetchBoardMap(): Promise<BoardMapData> {
   return res.json();
 }
 
+// Server-side storage for the map tab's region cross-check tool - previously
+// only ever saved to one browser's localStorage; now persisted centrally so
+// corrections survive a refresh/new machine and aren't lost if the browser's
+// storage is cleared. `data` is whatever shape MapTab's RegionForm produces;
+// the server stores it opaquely (as JSON) and doesn't interpret it.
+export async function fetchRegionCorrections(): Promise<Record<string, Record<string, unknown>>> {
+  const res = await fetch(`${API_BASE}/board/corrections`);
+  if (!res.ok) throw new Error("Failed to load region corrections");
+  return res.json();
+}
+
+export async function saveRegionCorrectionToServer(hexId: string, data: Record<string, unknown>): Promise<void> {
+  const res = await fetch(`${API_BASE}/board/corrections/${encodeURIComponent(hexId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data }),
+  });
+  if (!res.ok) throw new Error("Failed to save region correction");
+}
+
+export async function deleteRegionCorrectionFromServer(hexId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/board/corrections/${encodeURIComponent(hexId)}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete region correction");
+}
+
 export type TileLayOption = {
   tile_id: string;
   rotation: number;

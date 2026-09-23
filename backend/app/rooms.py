@@ -14,6 +14,7 @@ from enum import Enum
 
 from fastapi import WebSocket
 
+from app import db
 from app.engine.actions import ActionError, apply_action
 from app.engine.models import GameState
 from app.engine.setup import new_game
@@ -89,6 +90,7 @@ class Room:
 
     async def broadcast(self) -> None:
         self.broadcast_seq += 1
+        self.persist()
         if self.state is None:
             payload = json.dumps({
                 "type": "lobby",
@@ -131,6 +133,7 @@ class Room:
             p.player_id: f"p{i + 1}" for i, p in enumerate(self.lobby_players)
         }
         self.started = True
+        self.persist()
 
     def apply_action(self, lobby_player_id: str, action: dict) -> None:
         """Raises ActionError on an illegal action - callers should relay
@@ -142,6 +145,24 @@ class Room:
             raise ActionError("Unknown player.")
         apply_action(self.state, engine_player_id, action)
 
+    def persist(self) -> None:
+        """Saves this room to SQLite so an active game survives a server
+        restart (see app.db's module docstring - this was previously pure
+        in-memory state, wiped on every restart). `connections` and
+        `action_lock` are transport/runtime-only and deliberately excluded;
+        `state` (if the game has started) goes through pickle since it's a
+        deep dataclass graph, not something worth hand-rolling a JSON
+        reconstruction for (see app.db)."""
+        lobby_json = json.dumps([dataclasses.asdict(p) for p in self.lobby_players])
+        state_blob = db.pickle_state(self.state) if self.state is not None else None
+        db.save_room_row(
+            room_id=self.room_id,
+            lobby_json=lobby_json,
+            started=self.started,
+            state_pickle=state_blob,
+            player_id_map_json=json.dumps(self.player_id_map),
+        )
+
 
 class RoomRegistry:
     def __init__(self) -> None:
@@ -151,10 +172,27 @@ class RoomRegistry:
         room_id = uuid.uuid4().hex[:8]
         room = Room(room_id=room_id)
         self._rooms[room_id] = room
+        room.persist()
         return room
 
     def get(self, room_id: str) -> Room | None:
         return self._rooms.get(room_id)
+
+    def load_from_db(self) -> None:
+        """Repopulates the registry from SQLite - call once at server
+        startup so rooms saved before a restart come back to life instead
+        of silently vanishing. WebSocket `connections` don't survive a
+        restart either way (every client's socket already dropped), so
+        clients just reconnect and get the restored state on their next
+        message/broadcast."""
+        for row in db.load_room_rows():
+            room = Room(room_id=row["room_id"])
+            room.lobby_players = [LobbyPlayer(**p) for p in json.loads(row["lobby_json"])]
+            room.started = bool(row["started"])
+            room.player_id_map = json.loads(row["player_id_map_json"])
+            if row["state_pickle"] is not None:
+                room.state = db.unpickle_state(row["state_pickle"])
+            self._rooms[room.room_id] = room
 
 
 registry = RoomRegistry()
