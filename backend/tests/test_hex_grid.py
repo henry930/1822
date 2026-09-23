@@ -1,4 +1,5 @@
 from app.engine.hex_grid import (
+    edge_toll,
     is_adjacency_blocked,
     make_id,
     neighbor,
@@ -42,3 +43,11 @@ def test_blocked_adjacency_from_rules_confirmed_pair():
     # rule 1.4.9: Holyhead (F23) and Mid Wales's northern hex (F25) do not connect.
     assert is_adjacency_blocked("F23", "F25") is True
     assert is_adjacency_blocked("H20", "H21") is False
+
+
+def test_edge_toll_is_symmetric_and_none_when_uncatalogued():
+    # EDGE_TOLLS is intentionally empty until confirmed via the map tab's
+    # cross-check tool (see app.data.hex_map) - this just guards the lookup
+    # plumbing itself, order-independent as a real entry would need to be.
+    assert edge_toll("H20", "H21") is None
+    assert edge_toll("H21", "H20") is None

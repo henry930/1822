@@ -41,8 +41,13 @@ export type MapCity = MapHex & {
   name: string;
   label: string | null;
   is_town: boolean;
+  // How many town circles this hex prints (only meaningful when is_town is
+  // true) - some yellow tiles (1/2/55/56/69) carry two towns on one hex.
+  town_count: number;
   // A city like London/M38 or York/K19 is home to several companies at
   // once, so this is always a list (possibly empty) rather than one value.
+  // A hex can also independently appear in `offboard` below (e.g. Aberdeen,
+  // Glasgow) - the two aren't mutually exclusive.
   home_of_minor: number[];
   home_of_major: string[];
   destination_of_major: string | null;
@@ -56,11 +61,15 @@ export type MapOffboard = MapHex & {
   value_grey: number;
 };
 export type MapTerrain = MapHex & { terrain: string; cost: number };
+export type BlockedAdjacency = { hex_a: string; hex_b: string; confidence: string };
+export type EdgeToll = { hex_a: string; hex_b: string; cost: number; confidence: string };
 export type BoardMapData = {
   columns: string[];
   cities: MapCity[];
   offboard: MapOffboard[];
   terrain: MapTerrain[];
+  blocked_adjacencies: BlockedAdjacency[];
+  edge_tolls: EdgeToll[];
 };
 
 export async function fetchBoardMap(): Promise<BoardMapData> {

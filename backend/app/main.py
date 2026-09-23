@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app.data.hex_map import CITIES, HEX_COLUMNS, OFFBOARD_AREAS, TERRAIN_HEXES
+from app.data.hex_map import BLOCKED_ADJACENCIES, CITIES, EDGE_TOLLS, HEX_COLUMNS, OFFBOARD_AREAS, TERRAIN_HEXES
 from app.engine.actions import ActionError
 from app.rooms import LobbyPlayer, registry
 
@@ -93,6 +93,7 @@ def board_map():
         )
         cities.append({
             "id": c.id, "name": c.name, "label": c.label, "is_town": c.is_town,
+            "town_count": c.town_count,
             "home_of_minor": home_of_minor, "home_of_major": home_of_major,
             "destination_of_major": c.destination_of_major, "confidence": c.confidence,
             **pos,
@@ -121,7 +122,17 @@ def board_map():
             "id": t.id, "terrain": t.terrain, "cost": t.cost, "confidence": t.confidence, **pos,
         })
 
-    return {"columns": list(HEX_COLUMNS), "cities": cities, "offboard": offboard, "terrain": terrain}
+    blocked_adjacencies = [
+        {"hex_a": a, "hex_b": b, "confidence": confidence} for a, b, confidence in BLOCKED_ADJACENCIES
+    ]
+    edge_tolls = [
+        {"hex_a": t.hex_a, "hex_b": t.hex_b, "cost": t.cost, "confidence": t.confidence} for t in EDGE_TOLLS
+    ]
+
+    return {
+        "columns": list(HEX_COLUMNS), "cities": cities, "offboard": offboard, "terrain": terrain,
+        "blocked_adjacencies": blocked_adjacencies, "edge_tolls": edge_tolls,
+    }
 
 
 @app.get("/rooms/{room_id}/tile_lay_options")
