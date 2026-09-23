@@ -113,7 +113,17 @@ type HexEntry = { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offbo
 const REGION_CORRECTIONS_KEY = "1822-map-region-corrections-v1";
 
 type CityOrTown = "" | "city" | "town";
-type EdgeStatus = "normal" | "blocked" | "toll";
+// "normal" - track genuinely connects across this edge, ordinary case.
+// "blocked" - the board explicitly marks this edge as never connecting
+//   (e.g. a red coastal-break line) even though the two hexes sit right
+//   next to each other and both carry track elsewhere.
+// "toll" - connects, but costs money to build across.
+// "empty" - there's simply no track connection here at all (open sea, off
+//   the printed board, or otherwise not track territory) - not a
+//   documented "blocked" rule, just nothing to connect. Functionally the
+//   same as "blocked" for routing, recorded separately so the reason why
+//   isn't lost when this gets merged back into the real map data.
+type EdgeStatus = "normal" | "blocked" | "toll" | "empty";
 type EdgeCorrection = { status: EdgeStatus; cost: string };
 
 type RegionForm = {
@@ -1376,8 +1386,11 @@ export default function MapTab({
                   )}
 
                   <p className="hint region-data-edges-heading">
-                    Edges - which of the 6 neighboring regions this hex actually connects to. Leave as "Normal" for
-                    an ordinary connection; only mark the ones your physical board shows differently.
+                    Edges - which of the 6 neighboring regions this hex actually connects to. "Normal" is the
+                    default (ordinary connection, no action needed). Only change an edge if your board marks it
+                    specially: "Blocked" for a red no-go line, "Toll" for a marked fee to connect, or "Empty" if
+                    there's genuinely nothing there (open sea, off the printed board) rather than a documented
+                    block.
                   </p>
                   {selectedHexId &&
                     mapData &&
@@ -1403,9 +1416,10 @@ export default function MapTab({
                               })
                             }
                           >
-                            <option value="normal">Normal</option>
-                            <option value="blocked">Blocked - no connection</option>
-                            <option value="toll">Toll - costs money to connect</option>
+                            <option value="normal">Normal - connects</option>
+                            <option value="blocked">Blocked - marked as never connecting</option>
+                            <option value="toll">Toll - connects, costs money</option>
+                            <option value="empty">Empty - nothing here, no connection</option>
                           </select>
                           {current.status === "toll" && (
                             <input
