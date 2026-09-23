@@ -202,10 +202,32 @@ function neighborHexId(columns: string[], col: number, row: number, edge: number
   return `${columns[nCol]}${nRow}`;
 }
 
+// Fills in any field missing from a stored correction with its blank
+// default - guards against a correction saved by an older version of this
+// form (e.g. from before `edges` or `cityCount` existed) crashing the page
+// the instant it's loaded back in, since every field here is read
+// unconditionally elsewhere (regionForm.edges[edge] etc.) rather than with
+// optional chaining every time.
+function normalizeRegionCorrection(raw: Partial<SavedRegionCorrection>, hexId: string): SavedRegionCorrection {
+  return {
+    ...BLANK_REGION_FORM,
+    ...raw,
+    edges: raw.edges ?? {},
+    hexId: raw.hexId ?? hexId,
+    savedAt: raw.savedAt ?? new Date(0).toISOString(),
+  };
+}
+
 function loadRegionCorrections(): Record<string, SavedRegionCorrection> {
   try {
     const raw = localStorage.getItem(REGION_CORRECTIONS_KEY);
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, Partial<SavedRegionCorrection>>;
+    const result: Record<string, SavedRegionCorrection> = {};
+    for (const [hexId, entry] of Object.entries(parsed)) {
+      result[hexId] = normalizeRegionCorrection(entry ?? {}, hexId);
+    }
+    return result;
   } catch {
     return {};
   }
