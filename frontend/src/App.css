@@ -317,6 +317,13 @@ label.hint {
   stroke-width: 3;
 }
 
+.photo-hex.pending {
+  stroke: #d4a017;
+  stroke-width: 3;
+  stroke-dasharray: 4 2;
+  fill: rgba(212, 160, 23, 0.15);
+}
+
 .hex-search {
   position: relative;
 }
@@ -471,6 +478,36 @@ label.hint {
   border: none;
   font-weight: 600;
   padding: 8px 12px;
+}
+
+.pending-placement-panel {
+  border: 1px dashed #d4a017;
+  background: #fffaf0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+
+.pending-placement-panel .tile-preview {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+}
+
+.pending-placement-panel .tile-preview img {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.15s;
+}
+
+.pending-placement-actions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.pending-placement-actions .place-tile-btn {
+  flex: 1;
 }
 
 .tile-modal-backdrop {

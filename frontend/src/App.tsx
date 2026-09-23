@@ -971,7 +971,6 @@ function App() {
               }
               companyId={gameState.round_type === "operating" ? activeCompanyId() : null}
               boardTiles={gameState.board?.tiles}
-              inGame={true}
               canQueueLay={gameState.round_type === "operating"}
               queuedHexId={includeTileLay ? tileHexId : null}
               onQueueLay={(hexId, tid, rotation) => {
