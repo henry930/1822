@@ -151,6 +151,67 @@ def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major", com
     return {"hex_id": hex_id, "phase": room.state.phase, "company_kind": company_kind, "report": report}
 
 
+class DebugForceRoundRequest(BaseModel):
+    phase: int | None = None
+    round_type: str | None = None  # "stock" or "operating"
+    company_id: str | None = None  # required when round_type == "operating"
+    player_id: str | None = None  # lobby player_id to make director; defaults to the first player
+
+
+@app.post("/rooms/{room_id}/debug/force_round")
+async def debug_force_round(room_id: str, req: DebugForceRoundRequest):
+    """Testing/debug only - not a real game action. Jumps straight to a
+    given phase and/or round without playing through the bidding that
+    would normally get there, so map/tile-lay/operating-round features can
+    be exercised without a multi-minute bot playthrough first. Mutates the
+    live room state directly and broadcasts the result to every connected
+    client, same as a real action would."""
+    room = registry.get(room_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.state is None:
+        raise HTTPException(status_code=400, detail="Game has not started")
+    state = room.state
+
+    from app.data.phases import PHASES_BY_NUMBER
+    from app.engine.models import RoundType
+    from app.engine.operating import first_turn_housekeeping
+    from app.engine.round_manager import start_stock_round
+
+    if req.phase is not None:
+        if req.phase not in PHASES_BY_NUMBER:
+            raise HTTPException(status_code=400, detail=f"Unknown phase {req.phase!r}")
+        state.phase = req.phase
+
+    if req.round_type == "operating":
+        if req.company_id is None:
+            raise HTTPException(status_code=400, detail="company_id is required for round_type='operating'")
+        if req.company_id in state.minors:
+            kind, company = "minor", state.minors[req.company_id]
+        elif req.company_id in state.majors:
+            kind, company = "major", state.majors[req.company_id]
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown company_id {req.company_id!r}")
+
+        director = req.player_id or company.director_player_id or (state.player_order[0] if state.player_order else None)
+        if director is None:
+            raise HTTPException(status_code=400, detail="No players to assign as director")
+        company.director_player_id = director
+        company.floated = True
+        first_turn_housekeeping(state, state.board, req.company_id, kind)
+
+        state.round_type = RoundType.OPERATING
+        state.operating_order = [req.company_id]
+        state.current_company_index = 0
+    elif req.round_type == "stock":
+        start_stock_round(state)
+    elif req.round_type is not None:
+        raise HTTPException(status_code=400, detail="round_type must be 'stock' or 'operating'")
+
+    await room.broadcast()
+    return {"status": "ok", "phase": state.phase, "round_type": state.round_type}
+
+
 @app.post("/rooms", response_model=CreateRoomResponse)
 def create_room():
     room = registry.create_room()

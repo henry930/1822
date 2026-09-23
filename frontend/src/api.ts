@@ -94,3 +94,26 @@ export async function fetchTileLayOptions(
   if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to load tile lay options");
   return res.json();
 }
+
+// Testing/debug only - jumps the live room straight to a given phase and/or
+// round (optionally making a specific company operate) without playing
+// through the bidding that would normally get there. Mutates state
+// directly server-side and broadcasts the result to every connected
+// client, same as a real action.
+export async function debugForceRound(
+  roomId: string,
+  opts: { phase?: number; roundType?: "stock" | "operating"; companyId?: string; playerId?: string }
+): Promise<{ status: string; phase: number; round_type: string }> {
+  const body: Record<string, unknown> = {};
+  if (opts.phase !== undefined) body.phase = opts.phase;
+  if (opts.roundType !== undefined) body.round_type = opts.roundType;
+  if (opts.companyId !== undefined) body.company_id = opts.companyId;
+  if (opts.playerId !== undefined) body.player_id = opts.playerId;
+  const res = await fetch(`${API_BASE}/rooms/${roomId}/debug/force_round`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to force round");
+  return res.json();
+}

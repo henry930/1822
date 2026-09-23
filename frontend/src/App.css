@@ -61,6 +61,34 @@
   color: #c0392b;
 }
 
+.debug-panel-toggle {
+  margin-bottom: 8px;
+}
+
+.debug-toggle-btn {
+  background: none;
+  border: 1px dashed #999;
+  color: #666;
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.debug-panel {
+  background: #fff7e6;
+  border: 1px dashed #d4a017;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.debug-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
 .tab-bar {
   display: flex;
   gap: 4px;

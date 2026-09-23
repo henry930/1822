@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { createRoom, joinRoom, startRoom, wsUrl } from "./api";
+import { createRoom, debugForceRound, joinRoom, startRoom, wsUrl } from "./api";
 import MapTab from "./MapTab";
 import "./App.css";
 
@@ -111,6 +111,11 @@ function App() {
   const [tileRotation, setTileRotation] = useState("0");
   const [includeBuyTrain, setIncludeBuyTrain] = useState(false);
   const [buyTrainCode, setBuyTrainCode] = useState("");
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [debugPhase, setDebugPhase] = useState("");
+  const [debugRoundType, setDebugRoundType] = useState<"stock" | "operating">("operating");
+  const [debugCompanyId, setDebugCompanyId] = useState("");
+  const [debugBusy, setDebugBusy] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   // Mirrors gameState/playerIdMap for code that runs outside React's render
   // cycle (the "skip to operating round" fast-forward below) - reading
@@ -391,6 +396,31 @@ function App() {
     });
   }
 
+  // Testing/debug only: jumps the live room straight to a phase and/or
+  // round via the server's debug endpoint, instead of playing bid/pass
+  // actions through to get there. The endpoint broadcasts the result like
+  // any real action, so this session's own sockets pick it up automatically.
+  async function handleDebugForceRound(opts: { phase?: number; roundType?: "stock" | "operating" }) {
+    if (!roomId) return;
+    setError(null);
+    setDebugBusy(true);
+    try {
+      const payload: Parameters<typeof debugForceRound>[1] = { ...opts };
+      if (opts.roundType === "operating") {
+        if (!debugCompanyId) {
+          setError("Pick a company first.");
+          return;
+        }
+        payload.companyId = debugCompanyId;
+      }
+      await debugForceRound(roomId, payload);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setDebugBusy(false);
+    }
+  }
+
   function sendOperate() {
     const cid = activeCompanyId();
     if (!cid) return;
@@ -487,6 +517,66 @@ function App() {
               <span className="acting-as">Acting as: {seat.name}</span>
             )}
           </div>
+
+          <div className="debug-panel-toggle">
+            <button className="debug-toggle-btn" onClick={() => setShowDebugPanel((v) => !v)}>
+              {showDebugPanel ? "Hide" : "Show"} testing controls
+            </button>
+          </div>
+          {showDebugPanel && (
+            <div className="debug-panel">
+              <p className="hint">
+                Testing only - jumps straight to a phase/round instead of playing through bidding. Mutates the live
+                game for everyone in this room.
+              </p>
+              <div className="debug-panel-row">
+                <label>
+                  Phase:{" "}
+                  <input
+                    type="number"
+                    min={1}
+                    value={debugPhase}
+                    onChange={(e) => setDebugPhase(e.target.value)}
+                    style={{ width: 60 }}
+                  />
+                </label>
+                <button
+                  disabled={debugBusy || !debugPhase}
+                  onClick={() => handleDebugForceRound({ phase: parseInt(debugPhase, 10) })}
+                >
+                  Set phase
+                </button>
+              </div>
+              <div className="debug-panel-row">
+                <select value={debugRoundType} onChange={(e) => setDebugRoundType(e.target.value as "stock" | "operating")}>
+                  <option value="operating">Operating round</option>
+                  <option value="stock">Stock round</option>
+                </select>
+                {debugRoundType === "operating" && (
+                  <select value={debugCompanyId} onChange={(e) => setDebugCompanyId(e.target.value)}>
+                    <option value="">Pick a company...</option>
+                    {Object.keys(gameState.minors).map((cid) => (
+                      <option key={cid} value={cid}>
+                        {cid} (minor)
+                      </option>
+                    ))}
+                    {Object.keys(gameState.majors).map((cid) => (
+                      <option key={cid} value={cid}>
+                        {cid} (major)
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  disabled={debugBusy || (debugRoundType === "operating" && !debugCompanyId)}
+                  onClick={() => handleDebugForceRound({ roundType: debugRoundType })}
+                >
+                  Set round
+                </button>
+              </div>
+            </div>
+          )}
+
           {gameState.game_over && <p className="game-over">Game over.</p>}
           {error && <p className="error">{error}</p>}
 
