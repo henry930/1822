@@ -177,20 +177,27 @@ class DebugForceTileLayRequest(BaseModel):
     hex_id: str
     tile_id: str
     rotation: int
-    company_id: str
+    # Both optional: with company_id, this behaves like a real company lay
+    # (connectivity-gated, billed to that company's treasury). Without one,
+    # connectivity isn't checked at all (there's no company network to be
+    # connected to) and any terrain cost is billed to player_id's personal
+    # cash instead - or the room's first player if player_id is omitted too.
+    company_id: str | None = None
     company_kind: str = "major"
+    player_id: str | None = None
 
 
 @app.post("/rooms/{room_id}/debug/force_tile_lay")
 async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
     """Testing/debug only - lays a tile directly onto the board without
     requiring an actual operating round, turn, or director, so the map UI
-    can be exercised without playing through a real game first. Every real
-    tile-lay rule is still enforced, exactly as a live operating-round lay
-    would: connectivity to company_id's own network (rule 5.7.9), tile
-    supply, phase/color availability, upgrade-must-preserve-track,
-    city/town match, and the terrain cost (if any) against the company's
-    treasury (rule 5.7.18-20)."""
+    can be exercised without playing through a real game first. Every
+    board-legality rule is enforced regardless: tile supply, phase/color
+    availability, upgrade-must-preserve-track, city/town match, and the
+    terrain cost (if any). When company_id is given, connectivity to its
+    own track network (rule 5.7.9) is also enforced and the cost is billed
+    to its treasury; without one, any hex is a legal target and the cost is
+    billed to a player's personal cash instead (rule 5.7.18-20)."""
     room = registry.get(room_id)
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -199,18 +206,19 @@ async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
     state = room.state
     if req.company_kind not in ("minor", "major"):
         raise HTTPException(status_code=400, detail="company_kind must be 'minor' or 'major'")
-    if req.company_id not in state.minors and req.company_id not in state.majors:
-        raise HTTPException(status_code=400, detail=f"Unknown company_id {req.company_id!r}")
 
     from app.engine.board import TileLayError, apply_tile_lay, validate_tile_lay
     from app.engine.operating import reachable_hexes_for_tile_lay
 
-    reachable = reachable_hexes_for_tile_lay(state, state.board, req.company_id, req.company_kind)
-    if req.hex_id not in reachable:
-        raise HTTPException(
-            status_code=400,
-            detail=f"{req.hex_id} isn't connected to {req.company_id}'s track network (rule 5.7.9).",
-        )
+    if req.company_id is not None:
+        if req.company_id not in state.minors and req.company_id not in state.majors:
+            raise HTTPException(status_code=400, detail=f"Unknown company_id {req.company_id!r}")
+        reachable = reachable_hexes_for_tile_lay(state, state.board, req.company_id, req.company_kind)
+        if req.hex_id not in reachable:
+            raise HTTPException(
+                status_code=400,
+                detail=f"{req.hex_id} isn't connected to {req.company_id}'s track network (rule 5.7.9).",
+            )
 
     try:
         cost = validate_tile_lay(
@@ -219,19 +227,62 @@ async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
     except TileLayError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
-    company = state.minors[req.company_id] if req.company_kind == "minor" else state.majors[req.company_id]
-    if cost > company.treasury:
+    # `payer` is whatever object cost gets deducted from - a company's
+    # treasury when laying under a company, otherwise a player's personal
+    # cash. `balance_attr` names which field on it holds the balance.
+    if req.company_id is not None:
+        payer = state.minors[req.company_id] if req.company_kind == "minor" else state.majors[req.company_id]
+        payer_label = req.company_id
+        balance_attr = "treasury"
+    else:
+        if req.player_id is not None:
+            if req.player_id not in state.players:
+                raise HTTPException(status_code=400, detail=f"Unknown player_id {req.player_id!r}")
+            payer = state.players[req.player_id]
+        else:
+            payer = next(iter(state.players.values())) if state.players else None
+        payer_label = payer.name if payer is not None else "the player"
+        balance_attr = "cash"
+
+    payer_balance = getattr(payer, balance_attr) if payer is not None else None
+    if payer_balance is not None and cost > payer_balance:
         raise HTTPException(
             status_code=400,
-            detail=f"{req.company_id} can't afford the £{cost} terrain cost (treasury £{company.treasury}; rule 5.7.18-20).",
+            detail=f"{payer_label} can't afford the £{cost} terrain cost (balance £{payer_balance}; rule 5.7.18-20).",
         )
+    if payer is not None:
+        setattr(payer, balance_attr, payer_balance - cost)
 
-    company.treasury -= cost
     apply_tile_lay(state.board, req.hex_id, req.tile_id, req.rotation)
 
     async with room.action_lock:
         await room.broadcast()
     return {"status": "ok", "hex_id": req.hex_id, "tile_id": req.tile_id, "rotation": req.rotation, "cost": cost}
+
+
+class DebugSetCashRequest(BaseModel):
+    player_id: str
+    cash: int
+
+
+@app.post("/rooms/{room_id}/debug/set_cash")
+async def debug_set_cash(room_id: str, req: DebugSetCashRequest):
+    """Testing/debug only - directly overrides a player's cash (e.g. to
+    set up a single-player tile-lay testing room with a specific starting
+    budget, rather than whatever new_game's player-count table gives)."""
+    room = registry.get(room_id)
+    if room is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if room.state is None:
+        raise HTTPException(status_code=400, detail="Game has not started")
+    if req.player_id not in room.state.players:
+        raise HTTPException(status_code=400, detail=f"Unknown player_id {req.player_id!r}")
+
+    room.state.players[req.player_id].cash = req.cash
+
+    async with room.action_lock:
+        await room.broadcast()
+    return {"status": "ok", "player_id": req.player_id, "cash": req.cash}
 
 
 class DebugForceRoundRequest(BaseModel):

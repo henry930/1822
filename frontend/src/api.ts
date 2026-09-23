@@ -121,14 +121,25 @@ export async function debugForceRound(
   return res.json();
 }
 
-// Testing/debug only - lays a tile directly onto the board with only the
-// connectivity check (rule 5.7.9) enforced against companyId's network.
-// Doesn't require an actual operating round, turn, or director, and
-// doesn't advance anything - so any number of these can be sent in a row.
+// Testing/debug only - lays a tile directly onto the board, enforcing
+// every board-legality rule (phase/color, city-town match, upgrade
+// preservation, supply, terrain cost). Doesn't require an actual operating
+// round, turn, or director, and doesn't advance anything - so any number
+// of these can be sent in a row. With companyId, connectivity (rule 5.7.9)
+// is also enforced against that company's network and cost is billed to
+// its treasury; with companyId null (no company selected), any hex is a
+// legal target and cost is billed to a player's cash instead.
 export async function debugForceTileLay(
   roomId: string,
-  opts: { hexId: string; tileId: string; rotation: number; companyId: string; companyKind: "minor" | "major" }
-): Promise<{ status: string; hex_id: string; tile_id: string; rotation: number }> {
+  opts: {
+    hexId: string;
+    tileId: string;
+    rotation: number;
+    companyId: string | null;
+    companyKind: "minor" | "major";
+    playerId?: string;
+  }
+): Promise<{ status: string; hex_id: string; tile_id: string; rotation: number; cost: number }> {
   const res = await fetch(`${API_BASE}/rooms/${roomId}/debug/force_tile_lay`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -138,8 +149,25 @@ export async function debugForceTileLay(
       rotation: opts.rotation,
       company_id: opts.companyId,
       company_kind: opts.companyKind,
+      player_id: opts.playerId,
     }),
   });
   if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to lay tile");
+  return res.json();
+}
+
+// Testing/debug only - directly overrides a player's cash, e.g. to set up
+// a single-player tile-lay testing room with a specific starting budget.
+export async function debugSetCash(
+  roomId: string,
+  playerId: string,
+  cash: number
+): Promise<{ status: string; player_id: string; cash: number }> {
+  const res = await fetch(`${API_BASE}/rooms/${roomId}/debug/set_cash`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ player_id: playerId, cash }),
+  });
+  if (!res.ok) throw new Error((await res.json()).detail ?? "Failed to set cash");
   return res.json();
 }

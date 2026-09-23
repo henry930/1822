@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { createRoom, debugForceRound, fetchBoardMap, joinRoom, startRoom, wsUrl, type BoardMapData } from "./api";
+import {
+  createRoom,
+  debugForceRound,
+  debugSetCash,
+  fetchBoardMap,
+  joinRoom,
+  startRoom,
+  wsUrl,
+  type BoardMapData,
+} from "./api";
 import MapTab from "./MapTab";
 import "./App.css";
 
@@ -453,6 +462,35 @@ function App() {
     }
   }
 
+  // Testing convenience: a minimal single-player room for exercising the
+  // Map tab's tile-placement UI in isolation - just "Henry" with a £700
+  // budget, no bidding/floating/operating-order to click through. The
+  // engine still requires 3 players (rule 1.7), so two silent placeholders
+  // are joined alongside Henry but never actually played; they don't need
+  // a WebSocket connection since nothing ever acts on their behalf. The
+  // debug company picker is cleared so MapTab's tile lays go through with
+  // no company at all (debugForceTileLay skips connectivity entirely in
+  // that case and bills terrain cost to Henry's personal cash instead).
+  async function handleQuickstartTilePlacement() {
+    setError(null);
+    try {
+      const { room_id } = await createRoom();
+      lastSeqRef.current = 0;
+      const { player_id } = await joinRoom(room_id, "Henry");
+      await joinRoom(room_id, "Bot 2");
+      await joinRoom(room_id, "Bot 3");
+      setRoomId(room_id);
+      setPlayerId(player_id);
+      setDebugCompanyId("");
+      await new Promise((r) => setTimeout(r, 200)); // let Henry's socket connect
+      await startRoom(room_id);
+      await debugSetCash(room_id, "p1", 700);
+      setActiveTab("map");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
   // The seat (WebSocket) that should act right now: whoever the engine says
   // is on turn, mapped from engine player_id back to a lobby seat.
   function activeSeat(): Seat | null {
@@ -641,6 +679,11 @@ function App() {
           <div className="solo-row">
             <button onClick={handleSoloGameSkipToOperating} className="skip-to-operating-btn">
               Start solo game, skip straight to an operating round (for testing)
+            </button>
+          </div>
+          <div className="solo-row">
+            <button onClick={handleQuickstartTilePlacement} className="skip-to-operating-btn">
+              Quickstart tile-placement testing (Henry, £700, no company checks)
             </button>
           </div>
           {error && <p className="error">{error}</p>}

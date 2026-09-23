@@ -297,8 +297,8 @@ export default function MapTab({
       window.alert("Invalid move");
       return;
     }
-    if (!roomId || !companyId) {
-      setPlaceError("No company selected - pick one in the testing controls panel first.");
+    if (!roomId) {
+      setPlaceError("No room - start a game first.");
       return;
     }
     setPlaceConfirmed(null);

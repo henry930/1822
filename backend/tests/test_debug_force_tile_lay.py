@@ -175,3 +175,74 @@ def test_debug_force_tile_lay_404s_for_unknown_room():
         json={"hex_id": "H1", "tile_id": "9", "rotation": 0, "company_id": "M1"},
     )
     assert resp.status_code == 404
+
+
+def test_debug_force_tile_lay_without_a_company_skips_connectivity():
+    """Omitting company_id entirely (the single-player tile-UI testing
+    mode) means there's no company network to be connected to, so any hex
+    is a legal target regardless of distance from any home station - board
+    rules (phase/color, city-town match, upgrade preservation, supply,
+    cost) still apply."""
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+
+    resp = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        # J33 has nothing built anywhere near it and no company is given.
+        json={"hex_id": "J33", "tile_id": "9", "rotation": 0},
+    )
+    assert resp.status_code == 200, resp.json()
+
+
+def test_debug_force_tile_lay_without_a_company_still_enforces_board_rules():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+
+    resp = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        # H1 (Aberdeen) is a catalogued city; plain tile 9 has no city.
+        json={"hex_id": "H1", "tile_id": "9", "rotation": 0},
+    )
+    assert resp.status_code == 400
+    assert "has no city" in resp.json()["detail"]
+
+
+def test_debug_force_tile_lay_without_a_company_bills_the_first_player():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+    room = registry.get(room_id)
+    room.state.players["p1"].cash = 700
+
+    resp = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        json={"hex_id": "H13", "tile_id": "3", "rotation": 0},  # H13: £40 estuary
+    )
+    assert resp.status_code == 200, resp.json()
+    assert resp.json()["cost"] == 40
+    assert room.state.players["p1"].cash == 660
+
+
+def test_debug_force_tile_lay_without_a_company_rejects_insufficient_cash():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+    room = registry.get(room_id)
+    room.state.players["p1"].cash = 0
+
+    resp = client.post(
+        f"/rooms/{room_id}/debug/force_tile_lay",
+        json={"hex_id": "H13", "tile_id": "3", "rotation": 0},
+    )
+    assert resp.status_code == 400
+    assert "afford" in resp.json()["detail"]
+
+
+def test_debug_set_cash_overrides_a_players_cash():
+    client = TestClient(app)
+    room_id = _create_and_start(client, ["Henry", "Bot 2", "Bot 3"])
+
+    resp = client.post(f"/rooms/{room_id}/debug/set_cash", json={"player_id": "p1", "cash": 700})
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok", "player_id": "p1", "cash": 700}
+
+    room = registry.get(room_id)
+    assert room.state.players["p1"].cash == 700
