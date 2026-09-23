@@ -280,8 +280,10 @@ export default function MapTab({
   // real operate turn - no company-turn/director requirement, and no
   // round to end, so this never blocks a second placement right after the
   // first the way a real operate action would. Connectivity (rule 5.7.9)
-  // is still checked, once here against the already-fetched report for an
-  // instant "Invalid move", and again server-side as the real gate.
+  // and tile supply are checked once here against already-fetched data for
+  // an instant "Invalid move"; every rule (those two plus phase/color,
+  // city-town match, upgrade-must-preserve-track, and terrain cost vs.
+  // treasury) is enforced again server-side as the real gate.
   async function confirmPendingPlacement() {
     const p = pendingPlacement;
     if (!p || placing) return;
@@ -313,11 +315,14 @@ export default function MapTab({
       setPlaceConfirmed(`Placed tile ${p.tileId} (rotation ${p.rotation}) on ${p.hexId}.`);
       setPendingPlacement(null);
     } catch (e) {
-      const msg = (e as Error).message.toLowerCase();
-      if (msg.includes("connected") || msg.includes("supply")) {
-        window.alert("Invalid move");
+      const msg = (e as Error).message;
+      if (msg.toLowerCase().includes("room not found") || msg.toLowerCase().includes("game has not started")) {
+        setPlaceError(msg);
       } else {
-        setPlaceError((e as Error).message);
+        // Every other rejection is a tile-lay rule the server enforced
+        // (connectivity, supply, phase/color, city-town match, upgrade
+        // preservation, or treasury) - surface it as the spec'd alert.
+        window.alert(`Invalid move: ${msg}`);
       }
     } finally {
       setPlacing(false);

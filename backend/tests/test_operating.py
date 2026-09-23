@@ -66,10 +66,10 @@ def test_lay_track_rejects_a_disconnected_hex():
 def test_lay_track_allows_the_home_hex_with_no_track_yet():
     state = _game()
     board = BoardState(tile_pool={})
-    major = state.majors["CR"]  # home E6 (Glasgow), unlabeled - plain tile 9 fits
+    major = state.majors["CR"]  # home E6 (Glasgow), unlabeled city - tile 5 fits
     major.treasury = 1000
-    lay_track(state, board, "CR", "major", "E6", "9", 0, treasury_field_owner=major)
-    assert board.tiles["E6"].tile_id == "9"
+    lay_track(state, board, "CR", "major", "E6", "5", 0, treasury_field_owner=major)
+    assert board.tiles["E6"].tile_id == "5"
 
 
 def test_reachable_hexes_includes_home_and_track_connected_neighbors():

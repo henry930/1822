@@ -134,12 +134,13 @@ def validate_tile_lay(
     if company_kind == "minor" and COLOR_ORDER.index(spec.color) > COLOR_ORDER.index("green"):
         raise TileLayError("Minor companies may never upgrade track past green (rule 3.2.7).")
 
-    remaining = board.tile_pool.get(tile_id)
-    if remaining is not None and remaining <= 0:
-        raise TileLayError(f"No {tile_id} tiles remain in the supply.")
-
     parsed = parse_tile_code(spec.id, spec.color, spec.count, spec.code)
     existing = board.tiles.get(hex_id)
+
+    remaining = board.tile_pool.get(tile_id)
+    relaying_same_tile = existing is not None and existing.tile_id == tile_id
+    if remaining is not None and remaining <= 0 and not relaying_same_tile:
+        raise TileLayError(f"No {tile_id} tiles remain in the supply.")
 
     if existing is None:
         if spec.color != "yellow":
@@ -161,6 +162,17 @@ def validate_tile_lay(
             raise TileLayError(
                 f"Tile label {parsed.label!r} does not match this hex's label {wanted_label!r} (rule 5.7.11)."
             )
+        # A label match alone isn't enough: most cities/towns are unlabeled,
+        # so an unlabeled plain-track tile (no city/town circle at all)
+        # would otherwise pass the check above too. Rule 5.7.10/5.7.11: a
+        # town needs a town (solid circle/bar) and a city needs a city
+        # (open circle) actually present on the tile.
+        if catalogued.is_town:
+            if not parsed.towns:
+                raise TileLayError(f"{hex_id} is a town; {tile_id} has no town to place there (rule 5.7.10).")
+        else:
+            if not parsed.cities:
+                raise TileLayError(f"{hex_id} is a city; {tile_id} has no city to place there (rule 5.7.11).")
 
     terrain = next((t for t in TERRAIN_HEXES if t.id == hex_id), None)
     cost = terrain.cost if (terrain is not None and existing is None) else 0

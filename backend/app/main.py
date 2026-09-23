@@ -183,13 +183,14 @@ class DebugForceTileLayRequest(BaseModel):
 
 @app.post("/rooms/{room_id}/debug/force_tile_lay")
 async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
-    """Testing/debug only - lays a tile directly onto the board with only
-    two checks enforced: connectivity (rule 5.7.9, against company_id's
-    network) and tile supply (a physical tile can't be laid twice at
-    once). Skips everything else a real lay would check (phase/color,
-    city-label match, upgrade-must-preserve-track) and doesn't require an
-    actual operating round, turn, or director - so the map UI can be
-    exercised without playing through a real game first."""
+    """Testing/debug only - lays a tile directly onto the board without
+    requiring an actual operating round, turn, or director, so the map UI
+    can be exercised without playing through a real game first. Every real
+    tile-lay rule is still enforced, exactly as a live operating-round lay
+    would: connectivity to company_id's own network (rule 5.7.9), tile
+    supply, phase/color availability, upgrade-must-preserve-track,
+    city/town match, and the terrain cost (if any) against the company's
+    treasury (rule 5.7.18-20)."""
     room = registry.get(room_id)
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
@@ -201,7 +202,7 @@ async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
     if req.company_id not in state.minors and req.company_id not in state.majors:
         raise HTTPException(status_code=400, detail=f"Unknown company_id {req.company_id!r}")
 
-    from app.engine.board import apply_tile_lay
+    from app.engine.board import TileLayError, apply_tile_lay, validate_tile_lay
     from app.engine.operating import reachable_hexes_for_tile_lay
 
     reachable = reachable_hexes_for_tile_lay(state, state.board, req.company_id, req.company_kind)
@@ -211,20 +212,26 @@ async def debug_force_tile_lay(room_id: str, req: DebugForceTileLayRequest):
             detail=f"{req.hex_id} isn't connected to {req.company_id}'s track network (rule 5.7.9).",
         )
 
-    # None means unlimited supply (see new_board_state); a re-lay of the
-    # tile already sitting on this hex doesn't need a fresh one from the
-    # pool, since apply_tile_lay returns the old one before drawing a new.
-    remaining = state.board.tile_pool.get(req.tile_id)
-    existing = state.board.tiles.get(req.hex_id)
-    relaying_same_tile = existing is not None and existing.tile_id == req.tile_id
-    if remaining is not None and remaining <= 0 and not relaying_same_tile:
-        raise HTTPException(status_code=400, detail=f"No {req.tile_id} tiles remain in the supply.")
+    try:
+        cost = validate_tile_lay(
+            state.board, state.phase, req.hex_id, req.tile_id, req.rotation, company_kind=req.company_kind
+        )
+    except TileLayError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
+    company = state.minors[req.company_id] if req.company_kind == "minor" else state.majors[req.company_id]
+    if cost > company.treasury:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{req.company_id} can't afford the £{cost} terrain cost (treasury £{company.treasury}; rule 5.7.18-20).",
+        )
+
+    company.treasury -= cost
     apply_tile_lay(state.board, req.hex_id, req.tile_id, req.rotation)
 
     async with room.action_lock:
         await room.broadcast()
-    return {"status": "ok", "hex_id": req.hex_id, "tile_id": req.tile_id, "rotation": req.rotation}
+    return {"status": "ok", "hex_id": req.hex_id, "tile_id": req.tile_id, "rotation": req.rotation, "cost": cost}
 
 
 class DebugForceRoundRequest(BaseModel):
