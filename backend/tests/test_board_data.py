@@ -80,3 +80,26 @@ def test_merthyr_pontypool_link_hexes_exist_in_offboard_or_cities():
     known_ids = {c.id for c in CITIES} | {a.id for a in OFFBOARD_AREAS}
     for hex_id in MERTHYR_PONTYPOOL_LINK:
         assert hex_id in known_ids
+
+
+def test_labelled_hexes_are_never_towns():
+    """Every labelled tile (BM/C/EC/L/S/T/Y) in app.data.tiles is a city
+    shape - labels only exist to pick which big-city tile geometry a hex
+    takes, so a catalogued hex can't be both is_town=True and carry one of
+    these labels. Caught a real data bug: Portsmouth/K42 was marked
+    is_town=True with label="T", but no T-labelled tile (405/X10/X16) has a
+    town - that hex could never have legally taken any tile."""
+    from app.data.tiles import TILE_SPECS, parse_tile_code
+
+    labels_with_city_shape = set()
+    for spec in TILE_SPECS:
+        parsed = parse_tile_code(spec.id, spec.color, spec.count, spec.code)
+        if parsed.label and parsed.cities:
+            labels_with_city_shape.add(parsed.label)
+
+    for c in CITIES:
+        if c.label in labels_with_city_shape:
+            assert not c.is_town, (
+                f"{c.id} {c.name!r} is marked is_town=True but label={c.label!r} "
+                "only appears on city-shaped tiles"
+            )

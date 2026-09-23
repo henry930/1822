@@ -212,5 +212,81 @@ TILE_SPECS: list[TileSpec] = [
 TILE_SPECS_BY_ID: dict[str, TileSpec] = {t.id: t for t in TILE_SPECS}
 
 
+# ---------------------------------------------------------------------------
+# Explicit upgrade paths, transcribed tile-by-tile from the rules.pdf Tile
+# Manifest page (the "TILE / # / UPGRADES" table). This is the authoritative
+# list of which specific tile ids a given tile id may become - stricter than
+# "next color in sequence, preserving old connections" (app.engine.board's
+# old check): several same-color tiles are geometrically able to preserve a
+# prior tile's connections but are NOT a legal upgrade per the printed
+# manifest (e.g. plain yellow #9 upgrades only to 82/83, not 80/81 too, even
+# though 80/81 are green and could preserve #9's track). An id absent here,
+# or mapped to [], has no further upgrade (a terminal tile for that path).
+#
+# 405 in parentheses under tiles #5/#6 in the manifest (a T-labelled green
+# city) is a legal-but-uncommon choice, same as the plain listed options -
+# the parenthesis just marks it as the tile that would also satisfy a
+# label=T hex, not a different tier of legality.
+#
+# X21/X22/X23 (the pre-printed London/label=L hex's own green/brown/gray
+# tiles) aren't rows in the manifest - London starts pre-printed and never
+# takes a yellow tile (rule 5.7.13) - but the manifest's final row shows its
+# revenue stepping 40/60/80/100 same as every other color tier, so the same
+# single-color-step chain applies; listed here for completeness.
+# ---------------------------------------------------------------------------
+UPGRADE_MAP: dict[str, list[str]] = {
+    "1": [], "2": [],
+    "3": ["141", "142", "143"],
+    "4": ["141", "142"],
+    "5": ["14", "15", "619", "405"],
+    "6": ["14", "15", "619", "405"],
+    "7": ["80", "82", "83"],
+    "8": ["80", "81", "82", "83"],
+    "9": ["82", "83"],
+    "55": [], "56": [],
+    "57": ["14", "15", "619", "X3"],
+    "58": ["141", "142", "143", "144"],
+    "69": [],
+    "14": ["63", "611"],
+    "15": ["63", "611"],
+    "80": ["545", "546"],
+    "81": ["546"],
+    "82": ["544", "545", "546"],
+    "83": ["544", "545", "546"],
+    "141": ["767", "768", "769"],
+    "142": ["767", "768", "769"],
+    "143": ["767", "769"],
+    "144": ["769"],
+    "207": ["X5"],
+    "208": ["X5"],
+    "405": ["X10"],
+    "619": ["63", "611"],
+    "622": ["X5"],
+    "X1": ["X6"],
+    "X2": ["X7"],
+    "X3": ["X8"],
+    "X4": ["X9"],
+    "X21": ["X22"],
+    "63": ["X19"],
+    "767": ["X17"],
+    "768": ["X17"],
+    "769": ["X17"],
+    "544": ["60", "169"],
+    "545": ["60", "169"],
+    "546": ["60", "169"],
+    "611": ["X18"],
+    "X5": ["X11"],
+    "X6": ["X12"],
+    "X7": ["X13"],
+    "X8": ["X14"],
+    "X9": ["X15"],
+    "X10": ["X16"],
+    "X22": ["X23"],
+    "60": [], "169": [],
+    "X11": [], "X12": [], "X13": [], "X14": [], "X15": [], "X16": [],
+    "X17": [], "X18": [], "X19": [], "X23": [],
+}
+
+
 def parsed_tiles() -> dict[str, ParsedTile]:
     return {t.id: parse_tile_code(t.id, t.color, t.count, t.code) for t in TILE_SPECS}

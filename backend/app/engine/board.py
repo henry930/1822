@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 
 from app.data.hex_map import CITIES, TERRAIN_HEXES
 from app.data.phases import PHASES_BY_NUMBER, TileColor
-from app.data.tiles import TILE_SPECS, TILE_SPECS_BY_ID, UNLIMITED, ParsedTile, parse_tile_code
+from app.data.tiles import TILE_SPECS, TILE_SPECS_BY_ID, UNLIMITED, UPGRADE_MAP, ParsedTile, parse_tile_code
 
 COLOR_ORDER = ["yellow", "green", "brown", "gray"]
 _MAX_COLOR_INDEX = {
@@ -99,15 +99,13 @@ def _next_color_ok(old_color: str | None, new_color: str) -> bool:
     return COLOR_ORDER.index(new_color) == COLOR_ORDER.index(old_color) + 1
 
 
-### Known limitations (not yet handled by validate_tile_lay):
-# - Pre-printed cities (labels BM, Y, C, EC - rule 5.7.13) start with the
-#   city already on the map hex and NO yellow tile ever placed there; their
-#   first real tile lay is a GREEN upgrade. This function currently assumes
-#   every hex starts blank and demands yellow first, which is wrong for
-#   those hexes - needs a "pre-printed" flag per hex before this is correct.
-# - S/T-labelled hexes use an *unlabeled* yellow tile "as if unlabelled"
-#   (rule 5.7.12), only becoming genuinely S/T-labelled at green+. The
-#   label-match check here is strict and doesn't yet encode that exemption.
+# Rule 5.7.13: these hexes start with the city already printed on the map
+# and NO yellow tile is ever placed there - their first real tile lay is a
+# GREEN tile matching the printed label.
+PRE_PRINTED_LABELS = {"BM", "Y", "C", "EC", "L"}
+# Rule 5.7.12: these hexes take a plain *unlabeled* yellow tile first "as if
+# unlabelled", only becoming genuinely labelled once upgraded to green+.
+EXEMPT_YELLOW_LABELS = {"S", "T"}
 
 
 def validate_tile_lay(
@@ -136,6 +134,10 @@ def validate_tile_lay(
 
     parsed = parse_tile_code(spec.id, spec.color, spec.count, spec.code)
     existing = board.tiles.get(hex_id)
+    catalogued = next((c for c in CITIES if c.id == hex_id), None)
+    wanted_label = catalogued.label if catalogued is not None else None
+    pre_printed = wanted_label in PRE_PRINTED_LABELS
+    exempt_first_lay = wanted_label in EXEMPT_YELLOW_LABELS and existing is None
 
     remaining = board.tile_pool.get(tile_id)
     relaying_same_tile = existing is not None and existing.tile_id == tile_id
@@ -143,36 +145,56 @@ def validate_tile_lay(
         raise TileLayError(f"No {tile_id} tiles remain in the supply.")
 
     if existing is None:
-        if spec.color != "yellow":
+        if pre_printed:
+            if spec.color != "green":
+                raise TileLayError(
+                    f"{hex_id} is a pre-printed {wanted_label} city; its first tile lay must be green (rule 5.7.13)."
+                )
+        elif spec.color != "yellow":
             raise TileLayError("The first tile placed on a hex must be yellow.")
     else:
         old_spec = TILE_SPECS_BY_ID[existing.tile_id]
         if not _next_color_ok(old_spec.color, spec.color):
             raise TileLayError(f"Cannot upgrade {old_spec.color} directly to {spec.color} (must go one step at a time).")
+        allowed_upgrades = UPGRADE_MAP.get(existing.tile_id, [])
+        if tile_id not in allowed_upgrades:
+            raise TileLayError(
+                f"{tile_id} is not a legal upgrade from {existing.tile_id} (Tile Manifest)."
+            )
         old_parsed = _parsed(existing.tile_id)
         old_pairs = connection_pairs(old_parsed, existing.rotation)
         new_pairs = connection_pairs(parsed, rotation)
         if not old_pairs.issubset(new_pairs):
             raise TileLayError("Upgrade must preserve every route the previous tile had (rule 5.7.16).")
 
-    catalogued = next((c for c in CITIES if c.id == hex_id), None)
     if catalogued is not None:
-        wanted_label = catalogued.label
-        if (parsed.label or None) != (wanted_label or None):
-            raise TileLayError(
-                f"Tile label {parsed.label!r} does not match this hex's label {wanted_label!r} (rule 5.7.11)."
-            )
         # A label match alone isn't enough: most cities/towns are unlabeled,
         # so an unlabeled plain-track tile (no city/town circle at all)
         # would otherwise pass the check above too. Rule 5.7.10/5.7.11: a
         # town needs a town (solid circle/bar) and a city needs a city
         # (open circle) actually present on the tile.
-        if catalogued.is_town:
-            if not parsed.towns:
-                raise TileLayError(f"{hex_id} is a town; {tile_id} has no town to place there (rule 5.7.10).")
-        else:
+        if exempt_first_lay:
+            # Rule 5.7.12: the S/T label doesn't apply until this hex's
+            # first upgrade - the yellow tile placed now must be a plain
+            # unlabeled city tile, not (yet) the S/T-labelled one.
+            if parsed.label is not None:
+                raise TileLayError(
+                    f"{hex_id} takes a plain unlabeled yellow tile first; "
+                    f"its {wanted_label} label only applies from green onward (rule 5.7.12)."
+                )
             if not parsed.cities:
                 raise TileLayError(f"{hex_id} is a city; {tile_id} has no city to place there (rule 5.7.11).")
+        else:
+            if (parsed.label or None) != (wanted_label or None):
+                raise TileLayError(
+                    f"Tile label {parsed.label!r} does not match this hex's label {wanted_label!r} (rule 5.7.11)."
+                )
+            if catalogued.is_town:
+                if not parsed.towns:
+                    raise TileLayError(f"{hex_id} is a town; {tile_id} has no town to place there (rule 5.7.10).")
+            else:
+                if not parsed.cities:
+                    raise TileLayError(f"{hex_id} is a city; {tile_id} has no city to place there (rule 5.7.11).")
 
     terrain = next((t for t in TERRAIN_HEXES if t.id == hex_id), None)
     cost = terrain.cost if (terrain is not None and existing is None) else 0

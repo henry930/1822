@@ -51,6 +51,26 @@ def test_lay_track_deducts_terrain_cost_from_treasury():
     assert board.tiles["H13"].tile_id == "3"
 
 
+def test_lay_track_rejects_a_new_tile_rotated_away_from_the_network():
+    """The hex being "reachable" (rule 5.7.9) isn't enough on its own - the
+    new tile's own track has to actually point back at the connecting
+    neighbor. Before this check existed, any phase/label-legal rotation was
+    accepted even if it oriented the tile's track entirely away from the
+    hex that made it reachable in the first place."""
+    state = _game()
+    board = BoardState(tile_pool={})
+    major = state.majors["NBR"]
+    major.treasury = 1000
+    for row in range(5, 13):
+        apply_tile_lay(board, f"H{row}", "9", rotation=0)  # straight N-S chain, H5..H12
+    # H12's track (edges {0,3}) reaches H13 via edge 3, so a new tile on
+    # H13 needs an edge 0 (opposite_edge(3)) to actually connect. Tile "3"
+    # (edges {0,1} at rotation 0) does; rotated to {1,2} it does not.
+    with pytest.raises(OperatingError, match="doesn't orient any track toward"):
+        lay_track(state, board, "NBR", "major", "H13", "3", 1, treasury_field_owner=major)
+    assert "H13" not in board.tiles
+
+
 def test_lay_track_rejects_a_disconnected_hex():
     """The bug this guards against: found via manual play-testing - laying
     a tile on a hex with no track anywhere near it (e.g. J33) was silently
