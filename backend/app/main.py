@@ -3,16 +3,31 @@ from __future__ import annotations
 import json
 import re
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app import db
 from app.data.hex_map import BLOCKED_ADJACENCIES, CITIES, EDGE_TOLLS, HEX_COLUMNS, OFFBOARD_AREAS, TERRAIN_HEXES
 from app.engine.actions import ActionError
 from app.rooms import LobbyPlayer, registry
 
-app = FastAPI(title="1822 Game Server")
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """Opens/creates the SQLite file (app.db), re-seeds the reference-data
+    tables from the current Python data (tiles/regions/trains/companies -
+    always a full replace, so a code change always wins), and reloads any
+    rooms saved before a previous restart back into the live registry."""
+    conn = db.get_connection()
+    db.seed_reference_data(conn)
+    registry.load_from_db()
+    yield
+
+
+app = FastAPI(title="1822 Game Server", lifespan=_lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -133,6 +148,33 @@ def board_map():
         "columns": list(HEX_COLUMNS), "cities": cities, "offboard": offboard, "terrain": terrain,
         "blocked_adjacencies": blocked_adjacencies, "edge_tolls": edge_tolls,
     }
+
+
+class RegionCorrectionRequest(BaseModel):
+    data: dict
+
+
+@app.get("/board/corrections")
+def list_region_corrections():
+    """Every region correction saved so far (the map tab's per-hex
+    cross-check tool - see MapTab.tsx), server-side now instead of only in
+    one browser's localStorage. Keyed by hex id."""
+    return db.get_region_corrections()
+
+
+@app.put("/board/corrections/{hex_id}")
+def save_region_correction(hex_id: str, req: RegionCorrectionRequest):
+    from datetime import datetime, timezone
+
+    saved_at = req.data.get("savedAt") or datetime.now(timezone.utc).isoformat()
+    db.upsert_region_correction(hex_id, req.data, saved_at)
+    return {"status": "saved", "hex_id": hex_id}
+
+
+@app.delete("/board/corrections/{hex_id}")
+def discard_region_correction(hex_id: str):
+    db.delete_region_correction(hex_id)
+    return {"status": "deleted", "hex_id": hex_id}
 
 
 @app.get("/rooms/{room_id}/tile_lay_options")
@@ -409,6 +451,7 @@ def join_room(room_id: str, req: JoinRequest):
         raise HTTPException(status_code=400, detail="Game already started")
     player_id = uuid.uuid4().hex[:8]
     room.lobby_players.append(LobbyPlayer(player_id=player_id, name=req.name))
+    room.persist()
     return JoinResponse(player_id=player_id, room_id=room_id)
 
 

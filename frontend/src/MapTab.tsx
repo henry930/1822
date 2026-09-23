@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   debugForceTileLay,
   debugRemoveTile,
+  deleteRegionCorrectionFromServer,
   fetchBoardMap,
+  fetchRegionCorrections,
   fetchTileLayOptions,
+  saveRegionCorrectionToServer,
   type BoardMapData,
   type MapCity,
   type MapOffboard,
@@ -363,6 +366,37 @@ export default function MapTab({
       .catch((e) => setLoadError((e as Error).message));
   }, []);
 
+  // Region corrections now live server-side (app.db) - previously only in
+  // this browser's localStorage. On mount: pull the server's copy in as
+  // the authoritative version for any hex it has, and push up anything
+  // that only exists locally (saved before this session ever talked to
+  // the server, or while offline) so the two converge. If the server is
+  // unreachable (or predates this endpoint), this silently falls back to
+  // working off localStorage alone, same as before.
+  useEffect(() => {
+    const localOnly = regionCorrections;
+    fetchRegionCorrections()
+      .then((serverCorrections) => {
+        setRegionCorrections((prev) => {
+          const merged: Record<string, SavedRegionCorrection> = { ...prev };
+          for (const [hexId, raw] of Object.entries(serverCorrections)) {
+            merged[hexId] = normalizeRegionCorrection(raw as Partial<SavedRegionCorrection>, hexId);
+          }
+          persistRegionCorrections(merged);
+          return merged;
+        });
+        for (const [hexId, correction] of Object.entries(localOnly)) {
+          if (!(hexId in serverCorrections)) {
+            saveRegionCorrectionToServer(hexId, correction).catch(() => {});
+          }
+        }
+      })
+      .catch(() => {
+        // Server unreachable - keep working off localStorage alone.
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Every (tile, rotation) combination's legality for the selected hex right
   // now, fetched once per hex/room/company-kind change - re-derived from the
   // real engine validator server-side, so it can never drift out of sync
@@ -671,6 +705,10 @@ export default function MapTab({
       return next;
     });
     setRegionSaved(true);
+    // Best-effort - localStorage above already made this durable client-
+    // side even if the server request fails (offline, server down); the
+    // mount-time sync effect will retry pushing it up on the next load.
+    saveRegionCorrectionToServer(selectedHexId, entry).catch(() => {});
   }
 
   function discardRegionCorrection(hexId: string) {
@@ -687,6 +725,7 @@ export default function MapTab({
       });
       setRegionSaved(false);
     }
+    deleteRegionCorrectionFromServer(hexId).catch(() => {});
   }
 
   function downloadRegionCorrections() {
@@ -950,7 +989,8 @@ export default function MapTab({
                   <button onClick={copyRegionCorrections}>{regionCopied ? "Copied!" : "Copy to clipboard"}</button>
                 </div>
                 <p className="hint">
-                  Send this file (or the copied JSON) back and it'll get merged into the actual map data.
+                  Saved to the server as you go now, so anyone hitting this backend sees the same corrections. The
+                  download/copy buttons above are still there if you want to hand the whole batch off directly.
                 </p>
               </div>
             )}
