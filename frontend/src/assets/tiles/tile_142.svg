@@ -8,7 +8,7 @@
 <path d="M 0.00,86.60 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
 <circle cx="0.00" cy="0.00" r="6.50" fill="#1a1a1a"/>
 <circle cx="0.00" cy="0.00" r="13" fill="#1a1a1a" stroke="white" stroke-width="3"/>
-<circle cx="40.00" cy="0.00" r="16" fill="white" stroke="#1a1a1a" stroke-width="2.5"/>
-<text x="40.00" y="6.00" font-family="Georgia, serif" font-size="17" font-weight="bold" text-anchor="middle" fill="#111">10</text>
+<circle cx="36.00" cy="0.00" r="14" fill="white" stroke="#1a1a1a" stroke-width="2"/>
+<text x="36.00" y="5.40" font-family="Georgia, serif" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">10</text>
 <text x="-92" y="98" font-family="Arial, sans-serif" font-size="20" fill="#333">142</text>
 </svg>

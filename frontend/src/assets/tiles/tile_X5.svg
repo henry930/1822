@@ -11,10 +11,19 @@
 <path d="M 0.00,86.60 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
 <path d="M -75.00,43.30 L 0.00,0.00" fill="none" stroke="#1a1a1a" stroke-width="13" stroke-linecap="butt"/>
 <circle cx="0.00" cy="0.00" r="6.50" fill="#1a1a1a"/>
-<rect x="-69.00" y="-30.00" width="138.00" height="60.00" rx="30" ry="30" fill="white" stroke="#1a1a1a" stroke-width="4"/>
-<line x1="-19.50" y1="-24.00" x2="-19.50" y2="24.00" stroke="#1a1a1a" stroke-width="2.5"/>
-<line x1="19.50" y1="-24.00" x2="19.50" y2="24.00" stroke="#1a1a1a" stroke-width="2.5"/>
-<text x="0.00" y="6.00" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#111">50</text>
-<text x="0" y="-58" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#111">Y</text>
+<polygon points="-17.00,-9.81 17.00,-9.81 0.00,19.64" fill="white" stroke-linejoin="round" stroke="#1a1a1a" stroke-width="40"/>
+<circle cx="-17.00" cy="-9.81" r="20" fill="#1a1a1a"/>
+<circle cx="17.00" cy="-9.81" r="20" fill="#1a1a1a"/>
+<circle cx="0.00" cy="19.64" r="20" fill="#1a1a1a"/>
+<polygon points="-17.00,-9.81 17.00,-9.81 0.00,19.64" fill="white" stroke-linejoin="round" stroke="white" stroke-width="34"/>
+<circle cx="-17.00" cy="-9.81" r="17" fill="white"/>
+<circle cx="17.00" cy="-9.81" r="17" fill="white"/>
+<circle cx="0.00" cy="19.64" r="17" fill="white"/>
+<circle cx="-17.00" cy="-9.81" r="15" fill="none" stroke="#666" stroke-width="1.5"/>
+<circle cx="17.00" cy="-9.81" r="15" fill="none" stroke="#666" stroke-width="1.5"/>
+<circle cx="0.00" cy="19.64" r="15" fill="none" stroke="#666" stroke-width="1.5"/>
+<circle cx="-58.90" cy="-10.39" r="14" fill="white" stroke="#1a1a1a" stroke-width="2"/>
+<text x="-58.90" y="-4.99" font-family="Georgia, serif" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">50</text>
+<text x="64.00" y="8.00" font-family="Georgia, serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#111">Y</text>
 <text x="-92" y="98" font-family="Arial, sans-serif" font-size="20" fill="#333">X5</text>
 </svg>

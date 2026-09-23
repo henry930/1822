@@ -36,6 +36,12 @@ path).
   with straight spokes to each exit edge.
 - Every town's revenue is printed in a white bubble, auto-placed in the
   clearest spot next to its dot so it never sits under track.
+- Cities are small station-slot circles (single, pair, triangle of 3,
+  2x2 square of 4) with nothing printed inside them.
+- Every revenue value (city or town) and the city-type label (Y, BM, EC...)
+  sits in open space next to what it belongs to, auto-placed clear of all
+  rails, cities, dots and other labels - never on a line. London's six
+  equal-revenue stations share a single bubble.
 - Junction tiles (no revenue location) have no dot.
 
 ## Regenerating

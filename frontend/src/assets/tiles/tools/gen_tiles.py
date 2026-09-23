@@ -129,7 +129,8 @@ class Tile:
 APOTHEM = R * math.sqrt(3) / 2  # hex center -> edge midpoint
 CASING_W = TRACK_W + 7           # white outline drawn under every rail
 TOWN_R = 13                      # town dot radius
-BUBBLE_R = 16                    # revenue bubble radius
+BUBBLE_R = 14                    # revenue bubble radius
+SLOT_R = 17                      # city station-slot radius
 
 
 def edge_mid(e):
@@ -289,66 +290,90 @@ def render_tile(tile: Tile) -> str:
         for hx, hy in hubs:
             svg.append(f'<circle cx="{hx:.2f}" cy="{hy:.2f}" r="{TRACK_W / 2:.2f}" fill="{STROKE}"/>')
 
-    # Cities (white circle(s) + revenue).
+    # Cities: small station-slot circles laid out like the printed tiles
+    # (1 circle, a pair, a triangle of 3, a 2x2 square of 4) on a white
+    # backing. Nothing is printed inside them - revenue goes in a bubble.
+    blockers = []  # (x, y, radius) round areas labels must stay clear of
     for info, (cx, cy) in city_positions:
         slots = info["slots"]
-        cr = 30
-        if slots <= 1:
-            svg.append(f'<circle cx="{cx:.2f}" cy="{cy:.2f}" r="{cr}" fill="white" stroke="{STROKE}" stroke-width="4"/>')
-        else:
-            spacing = cr * 1.3
-            width = 2 * cr + (slots - 1) * spacing
-            svg.append(
-                f'<rect x="{cx - width / 2:.2f}" y="{cy - cr:.2f}" width="{width:.2f}" height="{2 * cr:.2f}" '
-                f'rx="{cr}" ry="{cr}" fill="white" stroke="{STROKE}" stroke-width="4"/>'
-            )
-            start = -(slots - 1) / 2.0
-            for i in range(1, slots):
-                dx = cx + (start + i - 0.5) * spacing
-                svg.append(
-                    f'<line x1="{dx:.2f}" y1="{cy - cr + 6:.2f}" x2="{dx:.2f}" y2="{cy + cr - 6:.2f}" '
-                    f'stroke="{STROKE}" stroke-width="2.5"/>'
-                )
-        if info["revenue"] is not None:
-            svg.append(
-                f'<text x="{cx:.2f}" y="{cy + 6:.2f}" font-family="Georgia, serif" '
-                f'font-size="26" font-weight="bold" text-anchor="middle" fill="#111">{info["revenue"]}</text>'
-            )
+        s = SLOT_R
+        offs = {
+            1: [(0, 0)],
+            2: [(-s, 0), (s, 0)],
+            3: [(-s, -s * 0.577), (s, -s * 0.577), (0, s * 1.155)],
+        }.get(slots, [(-s, -s), (s, -s), (s, s), (-s, s)])
+        centers = [(cx + dx, cy + dy) for dx, dy in offs]
+        backing = ""
+        if len(centers) > 1:
+            pts = " ".join(f"{x:.2f},{y:.2f}" for x, y in centers)
+            backing = f'<polygon points="{pts}" fill="white" stroke-linejoin="round"'
+        # outline pass (thick black), then white fill pass, then slot rims
+        if backing:
+            svg.append(backing + f' stroke="{STROKE}" stroke-width="{2 * s + 6}"/>')
+        for x, y in centers:
+            svg.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{s + 3}" fill="{STROKE}"/>')
+        if backing:
+            svg.append(backing + f' stroke="white" stroke-width="{2 * s}"/>')
+        for x, y in centers:
+            svg.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{s}" fill="white"/>')
+        if len(centers) > 1:
+            for x, y in centers:
+                svg.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{s - 2}" fill="none" stroke="#666" stroke-width="1.5"/>')
+        blockers += [(x, y, s + 3) for x, y in centers]
 
-    # Towns: a bold black dot (white-ringed so it stands out on the rail)
-    # plus the revenue in a white bubble placed in the clearest nearby spot.
-    bubbles = []
+    # Towns: a bold black dot (white-ringed so it stands out on the rail).
     for tx, ty, _ in town_marks:
         svg.append(f'<circle cx="{tx:.2f}" cy="{ty:.2f}" r="{TOWN_R}" fill="{STROKE}" stroke="white" stroke-width="3"/>')
-    avoid_label = [(0.0, -58.0)] if tile.label else []
-    for tx, ty, rev in town_marks:
-        if rev is None:
-            continue
-        best, best_score = None, -1e9
-        for dist in (34, 40, 46):
-            for k in range(24):
-                ang = 2 * math.pi * k / 24
-                bx, by = tx + dist * math.cos(ang), ty + dist * math.sin(ang)
-                if not _inside_hex(bx, by, BUBBLE_R + 2):
+        blockers.append((tx, ty, TOWN_R + 2))
+
+    def clear_spot(anchor, radius, dists):
+        """Spot near `anchor` that keeps a `radius` label furthest clear of
+        every rail, city, town and already-placed label (never on a line)."""
+        ax, ay = anchor
+        best, best_score = anchor, -1e9
+        for dist in dists:
+            for k in range(1 if dist == 0 else 36):
+                ang = 2 * math.pi * k / 36
+                x, y = ax + dist * math.cos(ang), ay + dist * math.sin(ang)
+                if not _inside_hex(x, y, radius + 3):
                     continue
-                clear = min(math.dist((bx, by), q) for q in obstacles) - CASING_W / 2
-                clear = min([clear] + [math.dist((bx, by), (ox, oy)) - TOWN_R for ox, oy, _ in town_marks])
-                clear = min([clear] + [math.dist((bx, by), b) - BUBBLE_R for b in bubbles + avoid_label])
-                score = min(clear, BUBBLE_R + 8) - dist * 0.05  # enough room, then prefer close
+                clear = min([math.dist((x, y), q) - CASING_W / 2 for q in obstacles] or [99])
+                clear = min([clear] + [math.dist((x, y), (bx, by)) - br for bx, by, br in blockers])
+                score = min(clear - radius, 6) - dist * 0.04  # room first, then stay close
                 if score > best_score:
-                    best, best_score = (bx, by), score
-        bubbles.append(best)
-        bx, by = best
-        svg.append(f'<circle cx="{bx:.2f}" cy="{by:.2f}" r="{BUBBLE_R}" fill="white" stroke="{STROKE}" stroke-width="2.5"/>')
+                    best, best_score = (x, y), score
+        blockers.append((best[0], best[1], radius))
+        return best
+
+    def bubble(pos, text):
+        x, y = pos
+        svg.append(f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{BUBBLE_R}" fill="white" stroke="{STROKE}" stroke-width="2"/>')
+        size = 13 if len(str(text)) >= 3 else 15
         svg.append(
-            f'<text x="{bx:.2f}" y="{by + 6:.2f}" font-family="Georgia, serif" font-size="17" '
-            f'font-weight="bold" text-anchor="middle" fill="#111">{rev}</text>'
+            f'<text x="{x:.2f}" y="{y + size * 0.36:.2f}" font-family="Georgia, serif" font-size="{size}" '
+            f'font-weight="bold" text-anchor="middle" fill="#111">{text}</text>'
         )
 
-    # Label (city name-type marker e.g. Y, C, BM, S, EC, L, T)
+    # Revenue bubbles. Cities that all pay the same (London's six stations)
+    # share one bubble in the middle of the tile.
+    city_revs = {c["revenue"] for c, _ in city_positions}
+    if len(city_positions) > 1 and len(city_revs) == 1 and None not in city_revs:
+        bubble(clear_spot((0.0, 0.0), BUBBLE_R, (0, 8, 16)), city_revs.pop())
+    else:
+        for info, (cx, cy) in city_positions:
+            if info["revenue"] is not None:
+                dists = [SLOT_R * (1 + 0.577 * (info["slots"] >= 3)) + 3 + BUBBLE_R + d for d in (0, 5, 10, 16, 24)]
+                bubble(clear_spot((cx, cy), BUBBLE_R, dists), info["revenue"])
+    for tx, ty, rev in town_marks:
+        if rev is not None:
+            bubble(clear_spot((tx, ty), BUBBLE_R, (30, 36, 42, 50)), rev)
+
+    # Label (city-type marker e.g. Y, C, BM, S, EC, L, T), in open space.
     if tile.label:
+        lr = 9 + 6 * len(tile.label)
+        lx, ly = clear_spot((0.0, 0.0), lr, (45, 52, 58, 64))
         svg.append(
-            f'<text x="0" y="-58" font-family="Georgia, serif" font-size="22" '
+            f'<text x="{lx:.2f}" y="{ly + 8:.2f}" font-family="Georgia, serif" font-size="22" '
             f'font-weight="bold" text-anchor="middle" fill="#111">{tile.label}</text>'
         )
 
