@@ -44,6 +44,9 @@ export type MapCity = MapHex & {
   // How many town circles this hex prints (only meaningful when is_town is
   // true) - some yellow tiles (1/2/55/56/69) carry two towns on one hex.
   town_count: number;
+  // How many city circles this hex prints (only meaningful when is_town is
+  // false) - almost always 1; London/M38 is a six-city super-hex.
+  city_count: number;
   // A city like London/M38 or York/K19 is home to several companies at
   // once, so this is always a list (possibly empty) rather than one value.
   // A hex can also independently appear in `offboard` below (e.g. Aberdeen,

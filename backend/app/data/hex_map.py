@@ -51,6 +51,11 @@ class CityHex:
     # a hex that needs one of those has town_count=2. Only meaningful when
     # is_town is True; every other hex is the ordinary single-town/city case.
     town_count: int = 1
+    # Almost every city hex has a single city (this engine's ordinary case),
+    # but the London "L"-labelled hex (M38) is a six-city super-hex - its
+    # tiles (X21/X22/X23) each print six separate city circles rather than
+    # a single multi-slot one. Only meaningful when is_town is False.
+    city_count: int = 1
     # A big city hex (London/M38, York/K19) is the printed home of more than
     # one company at once - a tuple covers that; most hexes just have one.
     # A hex can independently also be catalogued in OFFBOARD_AREAS below
@@ -210,6 +215,7 @@ CITIES: list[CityHex] = [
     # SECR/"London (SE)" - p.40), all on this one hex.
     CityHex(
         "M38", "London", "L",
+        city_count=6,  # X21/X22/X23 each print six separate city circles on this one hex
         home_of_minor=(14, 15, 16), home_of_major=("LNWR", "LBSCR", "SECR"),
         confidence="rules",
     ),

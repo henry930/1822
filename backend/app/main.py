@@ -93,7 +93,7 @@ def board_map():
         )
         cities.append({
             "id": c.id, "name": c.name, "label": c.label, "is_town": c.is_town,
-            "town_count": c.town_count,
+            "town_count": c.town_count, "city_count": c.city_count,
             "home_of_minor": home_of_minor, "home_of_major": home_of_major,
             "destination_of_major": c.destination_of_major, "confidence": c.confidence,
             **pos,
