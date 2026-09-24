@@ -73,6 +73,30 @@ def test_region_correction_round_trip():
     assert "H1" not in db.get_region_corrections()
 
 
+def test_bulk_merge_region_corrections_preserves_untouched_fields():
+    _fresh_conn()
+    # H1 already has a name saved from an earlier single-hex edit.
+    db.upsert_region_correction("H1", {"name": "Aberdeen", "cityOrTown": "city"}, "2026-01-01T00:00:00Z")
+
+    db.bulk_merge_region_corrections(["H1", "H2"], {"disabled": True}, "2026-01-02T00:00:00Z")
+
+    corrections = db.get_region_corrections()
+    assert corrections["H1"]["disabled"] is True
+    assert corrections["H1"]["name"] == "Aberdeen"  # untouched by the bulk patch
+    assert corrections["H2"]["disabled"] is True
+    assert corrections["H2"]["hexId"] == "H2"
+
+
+def test_bulk_merge_region_corrections_overwrites_only_patched_keys():
+    _fresh_conn()
+    db.bulk_merge_region_corrections(["H1"], {"isTerrain": True, "terrain": "hill", "cost": "40"}, "t1")
+    db.bulk_merge_region_corrections(["H1"], {"disabled": True}, "t2")
+
+    corrections = db.get_region_corrections()
+    assert corrections["H1"]["disabled"] is True
+    assert corrections["H1"]["terrain"] == "hill"  # earlier bulk patch's field still present
+
+
 def test_room_persist_and_reload_round_trips_lobby_state():
     _fresh_conn()
     registry = RoomRegistry()

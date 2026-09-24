@@ -306,3 +306,22 @@ def delete_region_correction(hex_id: str) -> None:
     conn = get_connection()
     conn.execute("DELETE FROM region_corrections WHERE hex_id = ?", (hex_id,))
     conn.commit()
+
+
+def bulk_merge_region_corrections(hex_ids: list[str], patch: dict, saved_at: str) -> None:
+    """Merges `patch` (only the attribute categories the map tab's bulk
+    editor had switched on) into each hex's existing correction, keeping
+    whatever that hex already had for every other field - a per-hex name
+    or label, say, is never something a bulk edit should touch. A hex with
+    no existing correction just gets `patch` as its new one. All hexes
+    commit together in one transaction."""
+    conn = get_connection()
+    existing = get_region_corrections()
+    for hex_id in hex_ids:
+        merged = {**existing.get(hex_id, {}), **patch, "hexId": hex_id, "savedAt": saved_at}
+        conn.execute(
+            """INSERT INTO region_corrections (hex_id, data_json, saved_at) VALUES (?, ?, ?)
+               ON CONFLICT(hex_id) DO UPDATE SET data_json=excluded.data_json, saved_at=excluded.saved_at""",
+            (hex_id, json.dumps(merged), saved_at),
+        )
+    conn.commit()

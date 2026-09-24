@@ -106,6 +106,18 @@ export async function deleteRegionCorrectionFromServer(hexId: string): Promise<v
   if (!res.ok) throw new Error("Failed to delete region correction");
 }
 
+// The map tab's bulk region editor - applies the same attribute patch to
+// many hexes at once, merged server-side onto whatever each hex already
+// has saved (a per-hex field like name/label is never touched by this).
+export async function bulkSaveRegionCorrectionsToServer(hexIds: string[], data: Record<string, unknown>): Promise<void> {
+  const res = await fetch(`${API_BASE}/board/corrections`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hex_ids: hexIds, data }),
+  });
+  if (!res.ok) throw new Error("Failed to save bulk region corrections");
+}
+
 export type TileLayOption = {
   tile_id: string;
   rotation: number;
