@@ -54,6 +54,12 @@ CREATE TABLE IF NOT EXISTS region_corrections (
     saved_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS company_corrections (
+    company_id TEXT PRIMARY KEY,
+    data_json TEXT NOT NULL,
+    saved_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS tiles (
     id TEXT PRIMARY KEY,
     color TEXT NOT NULL,
@@ -324,4 +330,36 @@ def bulk_merge_region_corrections(hex_ids: list[str], patch: dict, saved_at: str
                ON CONFLICT(hex_id) DO UPDATE SET data_json=excluded.data_json, saved_at=excluded.saved_at""",
             (hex_id, json.dumps(merged), saved_at),
         )
+    conn.commit()
+
+
+# --- Company (home/destination) corrections -------------------------------
+
+def upsert_company_correction(company_id: str, data: dict, saved_at: str) -> None:
+    conn = get_connection()
+    conn.execute(
+        """INSERT INTO company_corrections (company_id, data_json, saved_at) VALUES (?, ?, ?)
+           ON CONFLICT(company_id) DO UPDATE SET data_json=excluded.data_json, saved_at=excluded.saved_at""",
+        (company_id, json.dumps(data), saved_at),
+    )
+    conn.commit()
+
+
+def get_company_corrections() -> dict[str, dict]:
+    conn = get_connection()
+    rows = conn.execute("SELECT company_id, data_json, saved_at FROM company_corrections").fetchall()
+    # saved_at always comes from the column, not the JSON blob - the caller
+    # (main.py) doesn't put it in `data` before calling upsert, only the
+    # separate `saved_at` argument, so the column is the one source of truth.
+    result = {}
+    for company_id, data_json, saved_at in rows:
+        entry = json.loads(data_json)
+        entry["savedAt"] = saved_at
+        result[company_id] = entry
+    return result
+
+
+def delete_company_correction(company_id: str) -> None:
+    conn = get_connection()
+    conn.execute("DELETE FROM company_corrections WHERE company_id = ?", (company_id,))
     conn.commit()

@@ -1056,3 +1056,59 @@ label.hint {
   font-weight: 600;
   color: #333;
 }
+
+.companies-panel h4 {
+  margin-top: 20px;
+}
+
+.companies-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.companies-table th {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 2px solid #ccc;
+  color: #555;
+}
+
+.companies-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.company-row-corrected {
+  background: #fff8e6;
+}
+
+.company-hex-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.company-hex-cell input {
+  width: 70px;
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.company-hex-hint {
+  white-space: nowrap;
+}
+
+.company-current-note {
+  margin: 2px 0 0;
+}
+
+.company-row-actions {
+  display: flex;
+  gap: 6px;
+}
