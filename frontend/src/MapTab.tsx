@@ -127,7 +127,11 @@ type CityOrTown = "" | "city" | "town";
 //   documented "blocked" rule, just nothing to connect. Functionally the
 //   same as "blocked" for routing, recorded separately so the reason why
 //   isn't lost when this gets merged back into the real map data.
-type EdgeStatus = "normal" | "blocked" | "toll" | "empty";
+// "coastal" - this edge itself is a coastline (land hex facing open sea) -
+//   distinct from "empty": it's not a claim about connecting to another
+//   hex at all, just marking the edge's own printed nature. Recorded
+//   separately so that distinction isn't lost either.
+type EdgeStatus = "normal" | "blocked" | "toll" | "empty" | "coastal";
 type EdgeCorrection = { status: EdgeStatus; cost: string };
 
 type RegionForm = {
@@ -1632,6 +1636,7 @@ export default function MapTab({
                             <option value="blocked">Blocked - marked as never connecting</option>
                             <option value="toll">Toll - connects, costs money</option>
                             <option value="empty">Empty - nothing here, no connection</option>
+                            <option value="coastal">Coastal - this edge is a coastline</option>
                           </select>
                           {current.status === "toll" && (
                             <input
@@ -1923,6 +1928,7 @@ function BulkEditPanel({
                   <option value="normal">Normal</option>
                   <option value="blocked">Blocked</option>
                   <option value="toll">Toll</option>
+                  <option value="coastal">Coastal</option>
                 </select>
                 {applied && current.status === "toll" && (
                   <input
