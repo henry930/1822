@@ -989,6 +989,18 @@ label.hint {
   color: #555;
 }
 
+.region-edge-apply {
+  flex: 1;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+}
+
+.bulk-edit-edges-heading {
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
 .region-edge-toll-input {
   width: 70px;
   font: inherit;
