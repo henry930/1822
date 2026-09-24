@@ -1113,20 +1113,26 @@ label.hint {
   gap: 6px;
 }
 
+.companies-panel {
+  max-width: none;
+}
+
 .companies-layout {
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  width: 100%;
 }
 
 .companies-main {
-  flex: 1;
+  flex: 1 1 50%;
   min-width: 0;
+  overflow-x: auto;
 }
 
 .companies-map-panel {
-  width: 380px;
-  flex-shrink: 0;
+  flex: 1 1 50%;
+  min-width: 0;
   position: sticky;
   top: 12px;
 }

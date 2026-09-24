@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchBoardMap, type BoardMapData } from "./api";
 import boardImageUrl from "./assets/map/board.jpg";
 import { PHOTO_HEX_SIZE, PHOTO_IMAGE_H, PHOTO_IMAGE_W, hexPoints, photoGridPositions, photoHexCenter } from "./hexGeometry";
@@ -19,6 +19,7 @@ type Props = {
 export default function MapHexPicker({ onPick, highlights = {} }: Props) {
   const [mapData, setMapData] = useState<BoardMapData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const polygonRefs = useRef(new Map<string, SVGPolygonElement>());
 
   useEffect(() => {
     fetchBoardMap()
@@ -26,7 +27,16 @@ export default function MapHexPicker({ onPick, highlights = {} }: Props) {
       .catch((e) => setLoadError((e as Error).message));
   }, []);
 
-  const grid = useMemo(() => (mapData ? photoGridPositions(mapData.columns) : []), [mapData]);
+  const grid = useMemo(
+    () => (mapData ? photoGridPositions(mapData.columns, Object.keys(highlights)) : []),
+    [mapData, highlights]
+  );
+
+  const highlightedHexId = Object.keys(highlights)[0];
+  useEffect(() => {
+    if (!highlightedHexId) return;
+    polygonRefs.current.get(highlightedHexId)?.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+  }, [highlightedHexId]);
 
   if (loadError) return <p className="error">{loadError}</p>;
   if (!mapData) return <p className="hint">Loading map...</p>;
@@ -42,6 +52,10 @@ export default function MapHexPicker({ onPick, highlights = {} }: Props) {
             return (
               <polygon
                 key={hexId}
+                ref={(el) => {
+                  if (el) polygonRefs.current.set(hexId, el);
+                  else polygonRefs.current.delete(hexId);
+                }}
                 points={hexPoints(x, y, PHOTO_HEX_SIZE)}
                 className={`hex-picker-hex${highlight ? ` hex-picker-hex-${highlight}` : ""}`}
                 onClick={() => onPick(hexId)}
