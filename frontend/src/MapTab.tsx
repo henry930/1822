@@ -16,6 +16,16 @@ import {
 } from "./api";
 import manifestUrl from "./assets/tiles/manifest.json?url";
 import boardImageUrl from "./assets/map/board.jpg";
+import {
+  PHOTO_HEX_SIZE,
+  PHOTO_IMAGE_H,
+  PHOTO_IMAGE_W,
+  hexPoints,
+  neighborHexId,
+  parseHexId,
+  photoGridPositions,
+  photoHexCenter,
+} from "./hexGeometry";
 
 type TileManifestEntry = {
   id: string;
@@ -46,36 +56,11 @@ function hexCenter(col: number, row: number, dx: number, dy: number) {
   return { x: x + dx * COL_SPACING * 0.5, y: y + dy * ROW_SPACING * 0.5 };
 }
 
-// Calibration for the real board scan (board.jpg, 1700x2200 - see
-// assets/map/README.md for how these were measured). The board's printed
-// row numbers turned out to increment by 1 per HALF a physical hex-row
-// (odd columns only ever carry odd row numbers, even columns only ever
-// carry even ones - confirmed against 26/28 rules-confidence catalogued
-// hexes), so a hex's pixel position is a *plain* linear map of its raw
-// (col, row) - no extra odd/even column offset term needed, unlike the
-// schematic view above which treats "row" as a per-column sequential index.
-const PHOTO_X0 = 222.0;
-const PHOTO_DX = 78.05; // px per column-letter step
-const PHOTO_Y0 = 92.1;
-const PHOTO_DY = 45.23; // px per printed row-number unit
-const PHOTO_HEX_SIZE = 52; // center-to-vertex, tessellates with PHOTO_DX/DY above
-const PHOTO_IMAGE_W = 1700;
-const PHOTO_IMAGE_H = 2200;
-const PHOTO_MAX_ROW = 43;
-
-function photoHexCenter(col: number, row: number) {
-  return { x: PHOTO_X0 + col * PHOTO_DX, y: PHOTO_Y0 + row * PHOTO_DY };
-}
-
-// Parses a hex id like "H23" into (col, row) the same way the systematic
-// grid below does, for a hex that isn't necessarily part of it.
-function parseHexId(hexId: string, columns: string[]): { col: number; row: number } | null {
-  const m = /^([A-Za-z]{1,2})(\d{1,2})$/.exec(hexId);
-  if (!m) return null;
-  const col = columns.indexOf(m[1].toUpperCase());
-  if (col === -1) return null;
-  return { col, row: parseInt(m[2], 10) };
-}
+// Board-photo calibration and hex geometry (PHOTO_X0/DX/Y0/DY, parseHexId,
+// photoHexCenter, hexPoints, neighborHexId) now live in ./hexGeometry -
+// shared with CompaniesTab's embedded map picker so the two can never
+// drift apart the way this file's neighbor math briefly did from the
+// backend's (see that module's comment for the story).
 
 // Every tile SVG draws its hexagon inset within a square viewBox (a small
 // margin around the hex for the stroke/labels) - the hex itself only spans
@@ -85,19 +70,6 @@ function parseHexId(hexId: string, columns: string[]): { col: number; row: numbe
 const TILE_ART_SCALE = 230 / 200;
 
 const TILE_COLOR_ORDER = ["yellow", "green", "brown", "gray"] as const;
-
-function hexPoints(cx: number, cy: number, size: number): string {
-  // Flat-top hex, matching the tile SVGs' own orientation.
-  const pts = [
-    [cx - size * 0.5, cy - size * 0.866],
-    [cx + size * 0.5, cy - size * 0.866],
-    [cx + size, cy],
-    [cx + size * 0.5, cy + size * 0.866],
-    [cx - size * 0.5, cy + size * 0.866],
-    [cx - size, cy],
-  ];
-  return pts.map((p) => p.join(",")).join(" ");
-}
 
 type PlacedTile = { tile_id: string; rotation: number };
 type HexEntry = { hex: MapCity | MapOffboard | MapTerrain; kind: "city" | "offboard" | "terrain" };
@@ -282,23 +254,8 @@ const EDGE_DIRECTIONS: { edge: number; short: string; full: string }[] = [
   { edge: 5, short: "NW", full: "North-west" },
 ];
 
-// JS port of app.engine.hex_grid's neighbor math (flat-top hexes, "odd-q"
-// column offset) - kept in sync deliberately with the same coordinate
-// convention so a direction picked here always names the same real
-// neighbor hex the backend would compute for a tile lay there.
-const EVEN_COL_DELTAS: [number, number][] = [[0, -1], [1, -1], [1, 0], [0, 1], [-1, 0], [-1, -1]];
-const ODD_COL_DELTAS: [number, number][] = [[0, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
-const GRID_MIN_ROW = 1;
-const GRID_MAX_ROW = 44;
-
-function neighborHexId(columns: string[], col: number, row: number, edge: number): string | null {
-  const deltas = col % 2 === 1 ? ODD_COL_DELTAS : EVEN_COL_DELTAS;
-  const [dCol, dRow] = deltas[edge];
-  const nCol = col + dCol;
-  const nRow = row + dRow;
-  if (nCol < 0 || nCol >= columns.length || nRow < GRID_MIN_ROW || nRow > GRID_MAX_ROW) return null;
-  return `${columns[nCol]}${nRow}`;
-}
+// neighborHexId (doubled-height coordinates, matching the backend) now
+// lives in ./hexGeometry - see this file's import and that module's comment.
 
 // Fills in any field missing from a stored correction with its blank
 // default - guards against a correction saved by an older version of this
@@ -903,34 +860,14 @@ export default function MapTab({
   // not just the ~120 named/catalogued ones.
   const photoGrid = useMemo(() => {
     if (!mapData) return [];
-    const list: { hexId: string; col: number; row: number }[] = [];
-    const seen = new Set<string>();
-    for (let col = 0; col < mapData.columns.length; col++) {
-      for (let row = 1; row <= PHOTO_MAX_ROW; row++) {
-        if (col % 2 === row % 2) {
-          const hexId = `${mapData.columns[col]}${row}`;
-          list.push({ hexId, col, row });
-          seen.add(hexId);
-        }
-      }
-    }
     // A hex that's actually got a tile on it (or is mid-placement) always
     // needs to be drawn, even if it falls on the "wrong" parity for the
-    // systematic grid above - that grid is a best-effort approximation of
-    // which positions exist on the real printed board, and a hex id typed
-    // into search or reached some other way isn't guaranteed to land on
-    // one of those positions, but a real placement on it is still real
-    // game state that has to be visible.
-    for (const hexId of Object.keys(effectiveBoardTiles ?? {})) {
-      if (seen.has(hexId)) continue;
-      const parsed = parseHexId(hexId, mapData.columns);
-      if (parsed) {
-        list.push({ hexId, ...parsed });
-        seen.add(hexId);
-      }
-    }
-    return list;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // systematic grid - that grid is a best-effort approximation of which
+    // positions exist on the real printed board, and a hex id typed into
+    // search or reached some other way isn't guaranteed to land on one of
+    // those positions, but a real placement on it is still real game state
+    // that has to be visible.
+    return photoGridPositions(mapData.columns, Object.keys(effectiveBoardTiles ?? {}));
   }, [mapData, effectiveBoardTiles]);
 
   const bounds = useMemo(() => {
