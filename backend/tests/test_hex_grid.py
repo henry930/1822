@@ -42,7 +42,31 @@ def test_out_of_bounds_edge_returns_none():
 def test_blocked_adjacency_from_rules_confirmed_pair():
     # rule 1.4.9: Holyhead (F23) and Mid Wales's northern hex (F25) do not connect.
     assert is_adjacency_blocked("F23", "F25") is True
-    assert is_adjacency_blocked("H20", "H21") is False
+    assert is_adjacency_blocked("H20", "H22") is False
+
+
+def test_doubled_height_same_column_neighbor_two_rows_away():
+    """Doubled-height coordinates (see hex_grid's module docstring): a
+    hex's straight N/S neighbor stays in the same column but is 2 rows
+    away, not 1. Confirmed directly against the rules-confirmed F23<->F25
+    blocked adjacency (rule 1.4.9, both textually and via a direct scan of
+    the board photo) - a same-column pair the rulebook says is adjacent
+    (that's the whole point of blocking it) is 2 rows apart, not 1."""
+    col_f23, row_f23 = parse_id("F23")
+    col_f25, row_f25 = parse_id("F25")
+    assert col_f23 == col_f25
+    assert row_f25 - row_f23 == 2
+
+
+def test_neighbor_uses_doubled_height_deltas():
+    # Straight N/S (edges 0/3): same column, 2 rows away.
+    assert neighbor("H20", 3) == "H22"
+    assert neighbor("H22", 0) == "H20"
+    # Diagonals (edges 1/2/4/5): 1 column and 1 row away.
+    assert neighbor("H20", 1) == "I19"  # NE
+    assert neighbor("H20", 2) == "I21"  # SE
+    assert neighbor("H20", 4) == "G21"  # SW
+    assert neighbor("H20", 5) == "G19"  # NW
 
 
 def test_edge_toll_is_symmetric_and_none_when_uncatalogued():

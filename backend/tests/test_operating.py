@@ -42,9 +42,11 @@ def test_lay_track_deducts_terrain_cost_from_treasury():
     major.treasury = 100
     # NBR's home is H5 - connect it to H13 first (rule 5.7.9: a company can
     # only lay on a hex its own track reaches), then lay the actual tile
-    # under test at the now-connected H13.
-    for row in range(5, 13):
-        apply_tile_lay(board, f"H{row}", "9", rotation=0)  # straight N-S chain, H5..H12
+    # under test at the now-connected H13. Doubled-height coordinates (see
+    # hex_grid's module docstring): a straight N-S chain in one column
+    # steps by 2 rows per hex, not 1.
+    for row in range(5, 12, 2):
+        apply_tile_lay(board, f"H{row}", "9", rotation=0)  # straight N-S chain, H5/H7/H9/H11
     cost = lay_track(state, board, "NBR", "major", "H13", "3", 0, treasury_field_owner=major)
     assert cost == 40  # H13 is a catalogued estuary hex
     assert major.treasury == 60
@@ -61,9 +63,9 @@ def test_lay_track_rejects_a_new_tile_rotated_away_from_the_network():
     board = BoardState(tile_pool={})
     major = state.majors["NBR"]
     major.treasury = 1000
-    for row in range(5, 13):
-        apply_tile_lay(board, f"H{row}", "9", rotation=0)  # straight N-S chain, H5..H12
-    # H12's track (edges {0,3}) reaches H13 via edge 3, so a new tile on
+    for row in range(5, 12, 2):
+        apply_tile_lay(board, f"H{row}", "9", rotation=0)  # straight N-S chain, H5/H7/H9/H11
+    # H11's track (edges {0,3}) reaches H13 via edge 3, so a new tile on
     # H13 needs an edge 0 (opposite_edge(3)) to actually connect. Tile "3"
     # (edges {0,1} at rotation 0) does; rotated to {1,2} it does not.
     with pytest.raises(OperatingError, match="doesn't orient any track toward"):
@@ -98,8 +100,10 @@ def test_reachable_hexes_includes_home_and_track_connected_neighbors():
     apply_tile_lay(board, "H5", "9", rotation=0)  # straight N-S: edges {0,3}
     reachable = reachable_hexes_for_tile_lay(state, board, "NBR", "major")
     assert "H5" in reachable  # home hex itself, always layable/upgradeable
-    assert "H4" in reachable  # empty hex the placed tile's track actually points at
-    assert "H6" in reachable
+    # Doubled-height coordinates (see hex_grid's module docstring): H5's
+    # same-column N/S neighbors are 2 rows away, not 1.
+    assert "H3" in reachable  # empty hex the placed tile's track actually points at
+    assert "H7" in reachable
     assert "J33" not in reachable  # nowhere near the network
 
 
@@ -107,8 +111,9 @@ def test_destination_connection_detected_and_token_placed():
     state = _game()
     board = BoardState(tile_pool={})
     # Build a straight track chain from NBR's home (H5, Edinburgh) toward
-    # its destination (H1, Aberdeen) - both in the same column, rows 5 and 1.
-    for row in range(1, 6):
+    # its destination (H1, Aberdeen) - both in the same column, rows 5 and 1
+    # apart by 2 each (doubled-height coordinates).
+    for row in range(1, 6, 2):
         apply_tile_lay(board, f"H{row}", "9", rotation=0)  # edges {0,3}: straight N-S
 
     assert check_destination_connection(board, state, "NBR") is True
