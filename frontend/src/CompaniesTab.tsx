@@ -8,6 +8,7 @@ import {
   type CompanyEntry,
   type MapCity,
 } from "./api";
+import MapHexPicker from "./MapHexPicker";
 
 // Setup tab for every major/minor company's home (and, for majors,
 // destination) hex - lists every company at once instead of having to hunt
@@ -17,6 +18,7 @@ import {
 // not something applied to live gameplay - merging it into the real
 // app.data source files is a separate step.
 type RowEdit = { homeHex: string; destinationHex: string };
+type FocusedField = { companyId: string; field: "homeHex" | "destinationHex" };
 
 function rowEditFor(c: CompanyEntry): RowEdit {
   return {
@@ -33,6 +35,8 @@ export default function CompaniesTab() {
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [savedMessage, setSavedMessage] = useState<Record<string, string>>({});
   const [rowError, setRowError] = useState<Record<string, string>>({});
+  const [focusedField, setFocusedField] = useState<FocusedField | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   function load() {
     fetchCompanies()
@@ -68,6 +72,20 @@ export default function CompaniesTab() {
     const name = nameByHexId.get(trimmed);
     return name ? `→ ${name}` : "→ not a catalogued hex";
   }
+
+  function handlePick(hexId: string) {
+    if (!focusedField) return;
+    const { companyId, field } = focusedField;
+    const edit = edits[companyId] ?? { homeHex: "", destinationHex: "" };
+    setEdits({ ...edits, [companyId]: { ...edit, [field]: hexId } });
+  }
+
+  const pickerHighlights = useMemo(() => {
+    if (!focusedField) return {};
+    const edit = edits[focusedField.companyId];
+    const hexId = edit?.[focusedField.field]?.trim().toUpperCase();
+    return hexId ? { [hexId]: focusedField.field === "homeHex" ? "home" : "destination" } : {};
+  }, [focusedField, edits]);
 
   async function saveRow(c: CompanyEntry) {
     const edit = edits[c.id] ?? rowEditFor(c);
@@ -127,6 +145,7 @@ export default function CompaniesTab() {
             <input
               value={edit.homeHex}
               onChange={(e) => setEdits({ ...edits, [c.id]: { ...edit, homeHex: e.target.value } })}
+              onFocus={() => setFocusedField({ companyId: c.id, field: "homeHex" })}
               placeholder="e.g. H5"
             />
             <span className="hint company-hex-hint">{hexHint(edit.homeHex)}</span>
@@ -144,6 +163,7 @@ export default function CompaniesTab() {
               <input
                 value={edit.destinationHex}
                 onChange={(e) => setEdits({ ...edits, [c.id]: { ...edit, destinationHex: e.target.value } })}
+                onFocus={() => setFocusedField({ companyId: c.id, field: "destinationHex" })}
                 placeholder="e.g. H1"
               />
               <span className="hint company-hex-hint">{hexHint(edit.destinationHex)}</span>
@@ -183,6 +203,20 @@ export default function CompaniesTab() {
         correction alongside it for review, the same way the map tab's region corrections work - it doesn't change
         live gameplay by itself.
       </p>
+      <div className="company-picker-toggle">
+        <button onClick={() => setShowPicker((v) => !v)}>{showPicker ? "Hide map picker" : "Show map picker"}</button>
+        <span className="hint">
+          {focusedField
+            ? `Clicking a hex fills in ${focusedField.companyId}'s ${focusedField.field === "homeHex" ? "home" : "destination"} hex.`
+            : "Focus a home/destination field, then click a hex to fill it in."}
+        </span>
+      </div>
+      {showPicker && (
+        <div className="company-picker-panel">
+          <MapHexPicker onPick={handlePick} highlights={pickerHighlights} />
+        </div>
+      )}
+
       {loadError && <p className="error">{loadError}</p>}
       {!data && !loadError && <p className="hint">Loading...</p>}
 
