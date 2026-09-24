@@ -36,7 +36,6 @@ export default function CompaniesTab() {
   const [savedMessage, setSavedMessage] = useState<Record<string, string>>({});
   const [rowError, setRowError] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<FocusedField | null>(null);
-  const [showPicker, setShowPicker] = useState(false);
 
   function load() {
     fetchCompanies()
@@ -203,52 +202,50 @@ export default function CompaniesTab() {
         correction alongside it for review, the same way the map tab's region corrections work - it doesn't change
         live gameplay by itself.
       </p>
-      <div className="company-picker-toggle">
-        <button onClick={() => setShowPicker((v) => !v)}>{showPicker ? "Hide map picker" : "Show map picker"}</button>
-        <span className="hint">
-          {focusedField
-            ? `Clicking a hex fills in ${focusedField.companyId}'s ${focusedField.field === "homeHex" ? "home" : "destination"} hex.`
-            : "Focus a home/destination field, then click a hex to fill it in."}
-        </span>
-      </div>
-      {showPicker && (
-        <div className="company-picker-panel">
-          <MapHexPicker onPick={handlePick} highlights={pickerHighlights} />
-        </div>
-      )}
 
       {loadError && <p className="error">{loadError}</p>}
       {!data && !loadError && <p className="hint">Loading...</p>}
 
       {data && (
-        <>
-          <h4>Major companies ({data.majors.length})</h4>
-          <table className="companies-table">
-            <thead>
-              <tr>
-                <th>Abbr</th>
-                <th>Name</th>
-                <th>Home hex</th>
-                <th>Destination hex</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>{data.majors.map(renderRow)}</tbody>
-          </table>
+        <div className="companies-layout">
+          <div className="companies-main">
+            <h4>Major companies ({data.majors.length})</h4>
+            <table className="companies-table">
+              <thead>
+                <tr>
+                  <th>Abbr</th>
+                  <th>Name</th>
+                  <th>Home hex</th>
+                  <th>Destination hex</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>{data.majors.map(renderRow)}</tbody>
+            </table>
 
-          <h4>Minor companies ({data.minors.length})</h4>
-          <table className="companies-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Home hex</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>{data.minors.map(renderRow)}</tbody>
-          </table>
-        </>
+            <h4>Minor companies ({data.minors.length})</h4>
+            <table className="companies-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Home hex</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>{data.minors.map(renderRow)}</tbody>
+            </table>
+          </div>
+
+          <div className="companies-map-panel">
+            <p className="hint company-picker-hint">
+              {focusedField
+                ? `Clicking a hex fills in ${focusedField.companyId}'s ${focusedField.field === "homeHex" ? "home" : "destination"} hex.`
+                : "Focus a home/destination field, then click a hex to fill it in."}
+            </p>
+            <MapHexPicker onPick={handlePick} highlights={pickerHighlights} />
+          </div>
+        </div>
       )}
     </div>
   );

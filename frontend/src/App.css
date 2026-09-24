@@ -1113,20 +1113,31 @@ label.hint {
   gap: 6px;
 }
 
-.company-picker-toggle {
+.companies-layout {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 10px 0;
+  gap: 16px;
+  align-items: flex-start;
 }
 
-.company-picker-panel {
-  margin-bottom: 14px;
+.companies-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.companies-map-panel {
+  width: 380px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 12px;
+}
+
+.company-picker-hint {
+  margin: 0 0 8px;
 }
 
 .hex-picker-scroll {
-  height: 60vh;
-  min-height: 360px;
+  height: 85vh;
+  min-height: 500px;
   overflow: auto;
   border: 1px solid #eee;
   border-radius: 6px;
