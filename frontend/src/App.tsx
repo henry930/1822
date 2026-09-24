@@ -9,6 +9,7 @@ import {
   wsUrl,
   type BoardMapData,
 } from "./api";
+import CompaniesTab from "./CompaniesTab";
 import MapTab from "./MapTab";
 import { BidTrackCard } from "./BidTrack";
 import "./App.css";
@@ -168,7 +169,7 @@ function App() {
   const [showRaw, setShowRaw] = useState(false);
   const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({});
   const [dividendChoice, setDividendChoice] = useState("withhold");
-  const [activeTab, setActiveTab] = useState<"bid" | "stocks" | "map" | "operate" | "players">("bid");
+  const [activeTab, setActiveTab] = useState<"bid" | "stocks" | "map" | "companies" | "operate" | "players">("bid");
   const [convertPrice, setConvertPrice] = useState<Record<string, string>>({});
   const [buyCompanyId, setBuyCompanyId] = useState("");
   const [buySource, setBuySource] = useState<"bank" | "treasury">("bank");
@@ -825,6 +826,7 @@ function App() {
                 ["bid", "Bidding & Concessions"],
                 ["stocks", "Trade Stocks"],
                 ["map", "Map & Tiles"],
+                ["companies", "Companies Setup"],
                 ["operate", "Operate Trains"],
                 ["players", "Players & Log"],
               ] as const
@@ -1011,6 +1013,8 @@ function App() {
               focusRequest={mapFocusRequest}
             />
           )}
+
+          {activeTab === "companies" && <CompaniesTab />}
 
           {activeTab === "operate" && (
             <div className="panel">

@@ -97,6 +97,21 @@ def test_bulk_merge_region_corrections_overwrites_only_patched_keys():
     assert corrections["H1"]["terrain"] == "hill"  # earlier bulk patch's field still present
 
 
+def test_company_correction_round_trip():
+    _fresh_conn()
+    db.upsert_company_correction("NBR", {"homeHex": "H5", "destinationHex": "H1"}, "2026-01-01T00:00:00Z")
+    corrections = db.get_company_corrections()
+    assert corrections["NBR"]["homeHex"] == "H5"
+    assert corrections["NBR"]["destinationHex"] == "H1"
+
+    db.upsert_company_correction("NBR", {"homeHex": "H5", "destinationHex": "H3"}, "2026-01-02T00:00:00Z")
+    corrections = db.get_company_corrections()
+    assert corrections["NBR"]["destinationHex"] == "H3"  # upsert, not duplicate
+
+    db.delete_company_correction("NBR")
+    assert "NBR" not in db.get_company_corrections()
+
+
 def test_room_persist_and_reload_round_trips_lobby_state():
     _fresh_conn()
     registry = RoomRegistry()

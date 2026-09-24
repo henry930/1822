@@ -197,6 +197,63 @@ def bulk_save_region_corrections(req: BulkRegionCorrectionRequest):
     return {"status": "saved", "count": len(req.hex_ids)}
 
 
+@app.get("/companies")
+def list_companies():
+    """Every major and minor company with its current home/destination hex
+    (read live from app.data - the same lookup app.engine.operating.
+    home_hex_for/destination_hex_for uses for real gameplay) and any saved
+    correction overlaid on top, for the companies setup tab."""
+    from app.data.major_companies import MAJOR_COMPANIES
+    from app.data.minor_companies import MINOR_COMPANIES
+    from app.engine.operating import destination_hex_for, home_hex_for
+
+    corrections = db.get_company_corrections()
+
+    majors = []
+    for c in MAJOR_COMPANIES:
+        corr = corrections.get(c.abbr, {})
+        majors.append({
+            "id": c.abbr, "name": c.name, "kind": "major",
+            "current_home_hex": home_hex_for(c.abbr, "major"),
+            "current_destination_hex": destination_hex_for(c.abbr),
+            "correction_home_hex": corr.get("homeHex"),
+            "correction_destination_hex": corr.get("destinationHex"),
+            "saved_at": corr.get("savedAt"),
+        })
+
+    minors = []
+    for c in MINOR_COMPANIES:
+        company_id = f"M{c.number}"
+        corr = corrections.get(company_id, {})
+        minors.append({
+            "id": company_id, "name": c.name, "abbr": c.abbr, "kind": "minor", "expansion": c.expansion,
+            "current_home_hex": home_hex_for(company_id, "minor"),
+            "correction_home_hex": corr.get("homeHex"),
+            "saved_at": corr.get("savedAt"),
+        })
+
+    return {"majors": majors, "minors": minors}
+
+
+class CompanyCorrectionRequest(BaseModel):
+    data: dict
+
+
+@app.put("/companies/{company_id}/correction")
+def save_company_correction(company_id: str, req: CompanyCorrectionRequest):
+    from datetime import datetime, timezone
+
+    saved_at = req.data.get("savedAt") or datetime.now(timezone.utc).isoformat()
+    db.upsert_company_correction(company_id, req.data, saved_at)
+    return {"status": "saved", "company_id": company_id}
+
+
+@app.delete("/companies/{company_id}/correction")
+def discard_company_correction(company_id: str):
+    db.delete_company_correction(company_id)
+    return {"status": "deleted", "company_id": company_id}
+
+
 @app.get("/rooms/{room_id}/tile_lay_options")
 def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major", company_id: str | None = None):
     """Every (tile, rotation) combination's legality for a lay on this hex

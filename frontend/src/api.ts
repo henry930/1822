@@ -118,6 +118,47 @@ export async function bulkSaveRegionCorrectionsToServer(hexIds: string[], data: 
   if (!res.ok) throw new Error("Failed to save bulk region corrections");
 }
 
+// Companies setup tab - every major/minor company's current home/
+// destination hex (read live from app.data, same lookup the engine uses)
+// plus any saved correction overlaid on top. The correction is a proposed
+// override collected here, not applied to actual gameplay - same staging
+// pattern as the map tab's region corrections.
+export type CompanyEntry = {
+  id: string;
+  name: string;
+  kind: "major" | "minor";
+  abbr?: string; // minors only - major's own id already is its abbr
+  expansion?: boolean; // minors only
+  current_home_hex: string | null;
+  current_destination_hex?: string | null; // majors only
+  correction_home_hex: string | null;
+  correction_destination_hex?: string | null; // majors only
+  saved_at: string | null;
+};
+export type CompaniesData = { majors: CompanyEntry[]; minors: CompanyEntry[] };
+
+export async function fetchCompanies(): Promise<CompaniesData> {
+  const res = await fetch(`${API_BASE}/companies`);
+  if (!res.ok) throw new Error("Failed to load companies");
+  return res.json();
+}
+
+export async function saveCompanyCorrection(companyId: string, data: Record<string, unknown>): Promise<void> {
+  const res = await fetch(`${API_BASE}/companies/${encodeURIComponent(companyId)}/correction`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data }),
+  });
+  if (!res.ok) throw new Error("Failed to save company correction");
+}
+
+export async function deleteCompanyCorrection(companyId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/companies/${encodeURIComponent(companyId)}/correction`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete company correction");
+}
+
 export type TileLayOption = {
   tile_id: string;
   rotation: number;
