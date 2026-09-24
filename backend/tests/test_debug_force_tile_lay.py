@@ -45,8 +45,9 @@ def test_debug_force_tile_lay_allows_multiple_lays_without_a_turn():
     client = TestClient(app)
     room_id = _create_and_start(client, ["Alice", "Bob", "Carol"])
 
-    # H1 (Aberdeen) is a catalogued city and needs a city tile; H2 is plain.
-    for row, tile_id in [(1, "57"), (2, "9")]:
+    # H1 (Aberdeen) is a catalogued city and needs a city tile; H3 (its
+    # doubled-height south neighbor - see hex_grid's module docstring) is plain.
+    for row, tile_id in [(1, "57"), (3, "9")]:
         resp = client.post(
             f"/rooms/{room_id}/debug/force_tile_lay",
             json={"hex_id": f"H{row}", "tile_id": tile_id, "rotation": 0, "company_id": "M1", "company_kind": "minor"},
@@ -70,8 +71,9 @@ def test_debug_force_tile_lay_rejects_exhausted_tile_supply():
     room_id = _create_and_start(client, ["Alice", "Bob", "Carol"])
 
     # H1 (home) is a city and needs a city tile to establish the network;
-    # H2 is a plain hex where tile "1" (only 1 copy in the physical supply)
-    # can be used to actually test supply exhaustion.
+    # H3 (its doubled-height south neighbor) is a plain hex where tile "1"
+    # (only 1 copy in the physical supply) can be used to actually test
+    # supply exhaustion.
     home = client.post(
         f"/rooms/{room_id}/debug/force_tile_lay",
         json={"hex_id": "H1", "tile_id": "57", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
@@ -80,13 +82,13 @@ def test_debug_force_tile_lay_rejects_exhausted_tile_supply():
 
     first = client.post(
         f"/rooms/{room_id}/debug/force_tile_lay",
-        json={"hex_id": "H2", "tile_id": "1", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
+        json={"hex_id": "H3", "tile_id": "1", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
     )
     assert first.status_code == 200, first.json()
 
     second = client.post(
         f"/rooms/{room_id}/debug/force_tile_lay",
-        json={"hex_id": "H3", "tile_id": "1", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
+        json={"hex_id": "H5", "tile_id": "1", "rotation": 0, "company_id": "M1", "company_kind": "minor"},
     )
     assert second.status_code == 400
     assert "supply" in second.json()["detail"]

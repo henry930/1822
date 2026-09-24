@@ -1,13 +1,33 @@
 """Hex grid adjacency for the 1822 board.
 
-Scope note: this module gives correct neighbor-finding math for the
-coordinate system already used by hex_map.py and docs/hex-map-board.html
-(flat-top hexes, "odd-q" column offset - odd 0-indexed columns are shifted
-half a row down). It does NOT yet know which of the ~300+ physical hexes
-actually exist (land vs sea, board edge) - hex_map.py only catalogs the
-~90 named/informational hexes. Until the full board is catalogued,
-`exists()` is permissive (true for any coordinate inside the printed
-column/row bounds) rather than authoritative; callers that need to know
+Coordinate system: "doubled-height" coordinates for flat-top hexes (see
+https://www.redblobgames.com/grids/hexagons/#coordinates-doubled) - the
+column letter is a plain index, but the row number is *doubled*: a real
+hex's straight N/S neighbor (same column) differs by 2 in row, and its
+diagonal neighbors (NE/SE/SW/NW) differ by 1 in column and 1 in row. Only
+coordinates where `col` and `row` share parity are real hexes (see
+`exists()`'s note on why that's not enforced here yet). This is the
+convention hex_map.py's ids actually use - confirmed directly against two
+rules-confirmed BLOCKED_ADJACENCIES pairs (F23<->F25, F31<->F33, both same-
+column pairs 2 rows apart) and against a scan of the real board photo,
+which also uses this numbering (see MapTab.tsx's own photo calibration
+notes on the frontend).
+
+This replaces an earlier "odd-q offset" implementation (±1-row deltas for
+the N/S edges) that was simply the wrong coordinate system for this board -
+found via a direct board-photo scan where hexes computed as adjacent under
+that formula (e.g. a hex 1 row from another in the same column) turned out
+to be two entirely different, non-adjacent physical hexes, while textually
+-confirmed adjacent pairs (F23/F25 etc.) came out as *not* adjacent under
+it. Every caller (tile-lay connectivity, route tracing, the map tab's
+region-correction tool) only ever goes through neighbor()/neighbors(), so
+fixing the formula here fixes all of them without any caller-side changes.
+
+It does NOT yet know which of the ~300+ physical hexes actually exist
+(land vs sea, board edge) - hex_map.py only catalogs the ~90 named/
+informational hexes. Until the full board is catalogued, `exists()` is
+permissive (true for any coordinate inside the printed column/row bounds,
+regardless of parity) rather than authoritative; callers that need to know
 "is this really a hex on the board" should not rely on it yet.
 
 Edge numbering matches app.data.tiles' path specs and the tile SVGs
@@ -25,10 +45,10 @@ _INDEX_COL = {i: letter for letter, i in _COL_INDEX.items()}
 MIN_ROW = 1
 MAX_ROW = 44
 
-# Directions 0-5 = N, NE, SE, S, SW, NW, as (d_col, d_row) offsets - two
-# variants depending on the hex's column parity (odd-q offset layout).
-_EVEN_COL_DELTAS = [(0, -1), (1, -1), (1, 0), (0, 1), (-1, 0), (-1, -1)]
-_ODD_COL_DELTAS = [(0, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
+# Directions 0-5 = N, NE, SE, S, SW, NW, as (d_col, d_row) offsets. One
+# uniform table - doubled-height coordinates don't need a column-parity
+# split the way odd-q offset coordinates do.
+_EDGE_DELTAS = [(0, -2), (1, -1), (1, 1), (0, 2), (-1, 1), (-1, -1)]
 
 
 def parse_id(hex_id: str) -> tuple[int, int]:
@@ -81,8 +101,7 @@ def neighbor(hex_id: str, edge: int) -> str | None:
     if not (0 <= edge <= 5):
         raise ValueError("edge must be 0-5")
     col, row = parse_id(hex_id)
-    deltas = _ODD_COL_DELTAS if col % 2 == 1 else _EVEN_COL_DELTAS
-    d_col, d_row = deltas[edge]
+    d_col, d_row = _EDGE_DELTAS[edge]
     n_col, n_row = col + d_col, row + d_row
     if not exists(n_col, n_row):
         return None
