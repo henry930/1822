@@ -218,7 +218,11 @@ type BulkPatch = {
   terrain: string;
   cost: string;
 
-  applyEdges: boolean;
+  // Each of the 6 directions (0=N..5=NW) is independently switched on -
+  // e.g. you can set North to Blocked and South to Toll in the same bulk
+  // pass while leaving the other 4 directions untouched on every selected
+  // hex, rather than one on/off for all 6 at once.
+  applyEdges: Partial<Record<number, boolean>>;
   edges: Partial<Record<number, EdgeCorrection>>;
 };
 
@@ -233,7 +237,7 @@ const BLANK_BULK_PATCH: BulkPatch = {
   isTerrain: true,
   terrain: "",
   cost: "",
-  applyEdges: false,
+  applyEdges: {},
   edges: {},
 };
 
@@ -253,7 +257,13 @@ function bulkPatchToServerData(patch: BulkPatch): Record<string, unknown> {
     data.terrain = patch.terrain;
     data.cost = patch.cost;
   }
-  if (patch.applyEdges) data.edges = patch.edges;
+  const appliedEdges: Partial<Record<number, EdgeCorrection>> = {};
+  for (const [edgeStr, on] of Object.entries(patch.applyEdges)) {
+    if (!on) continue;
+    const edge = Number(edgeStr);
+    appliedEdges[edge] = patch.edges[edge] ?? { status: "empty", cost: "" };
+  }
+  if (Object.keys(appliedEdges).length > 0) data.edges = appliedEdges;
   return data;
 }
 
@@ -1751,7 +1761,11 @@ function BulkEditPanel({
   onConfirm,
   onExit,
 }: BulkEditPanelProps) {
-  const anyCategoryOn = bulkPatch.applyDisabled || bulkPatch.applyCityOrTown || bulkPatch.applyTerrain || bulkPatch.applyEdges;
+  const anyCategoryOn =
+    bulkPatch.applyDisabled ||
+    bulkPatch.applyCityOrTown ||
+    bulkPatch.applyTerrain ||
+    Object.values(bulkPatch.applyEdges).some(Boolean);
 
   return (
     <div className="bulk-edit-panel">
@@ -1871,59 +1885,62 @@ function BulkEditPanel({
       </div>
 
       <div className="bulk-edit-category">
-        <label className="region-data-checkbox">
-          <input
-            type="checkbox"
-            checked={bulkPatch.applyEdges}
-            onChange={(e) => setBulkPatch({ ...bulkPatch, applyEdges: e.target.checked })}
-          />
-          Set a connection direction
-        </label>
-        {bulkPatch.applyEdges && (
-          <div className="bulk-edit-suboption">
-            {EDGE_DIRECTIONS.map(({ edge, short, full }) => {
-              const current = bulkPatch.edges[edge] ?? { status: "empty", cost: "" };
-              return (
-                <div className="region-edge-row" key={edge}>
+        <p className="region-data-checkbox bulk-edit-edges-heading">Set connections</p>
+        <p className="hint">
+          Each direction is independent - switch on only the ones you want to change (e.g. North to Blocked, South
+          to Toll) and leave the rest off to skip them entirely. Every direction you switch on is applied as that
+          same absolute direction (e.g. "North") on every selected hex, not as a connection between them.
+        </p>
+        <div className="bulk-edit-suboption">
+          {EDGE_DIRECTIONS.map(({ edge, short, full }) => {
+            const applied = bulkPatch.applyEdges[edge] ?? false;
+            const current = bulkPatch.edges[edge] ?? { status: "empty", cost: "" };
+            return (
+              <div className="region-edge-row" key={edge}>
+                <label className="region-data-checkbox region-edge-apply">
+                  <input
+                    type="checkbox"
+                    checked={applied}
+                    onChange={(e) =>
+                      setBulkPatch({ ...bulkPatch, applyEdges: { ...bulkPatch.applyEdges, [edge]: e.target.checked } })
+                    }
+                  />
                   <span className="region-edge-label">
                     {full} ({short})
                   </span>
-                  <select
-                    value={current.status}
+                </label>
+                <select
+                  value={current.status}
+                  disabled={!applied}
+                  onChange={(e) =>
+                    setBulkPatch({
+                      ...bulkPatch,
+                      edges: { ...bulkPatch.edges, [edge]: { ...current, status: e.target.value as EdgeStatus } },
+                    })
+                  }
+                >
+                  <option value="empty">Empty</option>
+                  <option value="normal">Normal</option>
+                  <option value="blocked">Blocked</option>
+                  <option value="toll">Toll</option>
+                </select>
+                {applied && current.status === "toll" && (
+                  <input
+                    className="region-edge-toll-input"
+                    value={current.cost}
                     onChange={(e) =>
                       setBulkPatch({
                         ...bulkPatch,
-                        edges: { ...bulkPatch.edges, [edge]: { ...current, status: e.target.value as EdgeStatus } },
+                        edges: { ...bulkPatch.edges, [edge]: { ...current, cost: e.target.value } },
                       })
                     }
-                  >
-                    <option value="empty">Empty</option>
-                    <option value="normal">Normal</option>
-                    <option value="blocked">Blocked</option>
-                    <option value="toll">Toll</option>
-                  </select>
-                  {current.status === "toll" && (
-                    <input
-                      className="region-edge-toll-input"
-                      value={current.cost}
-                      onChange={(e) =>
-                        setBulkPatch({
-                          ...bulkPatch,
-                          edges: { ...bulkPatch.edges, [edge]: { ...current, cost: e.target.value } },
-                        })
-                      }
-                      placeholder="£ toll"
-                    />
-                  )}
-                </div>
-              );
-            })}
-            <p className="hint">
-              Only the directions you touch above are included in the bulk change - each is applied as that same
-              absolute direction (e.g. "North") on every selected hex, not as a connection between them.
-            </p>
-          </div>
-        )}
+                    placeholder="£ toll"
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <p className="hint bulk-edit-count">
