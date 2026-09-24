@@ -391,6 +391,13 @@ type Props = {
   // outside this tab. A plain hexId prop wouldn't re-trigger for the same
   // hex picked twice in a row.
   focusRequest?: { hexId: string; nonce: number } | null;
+  // The treasury/cash a lay here would actually be billed against (rule
+  // 5.7.18-20) - the laying company's treasury when companyId is set,
+  // otherwise the acting player's personal cash (matches debug_force_tile_lay's
+  // own payer selection, see App.tsx's mapCompanyIdFor/availableFundsFor).
+  // null when unknown (e.g. no room/player yet) - the affordability check is
+  // simply skipped in that case rather than blocking everything.
+  availableFunds?: number | null;
 };
 
 export default function MapTab({
@@ -403,6 +410,7 @@ export default function MapTab({
   onQueueLay,
   queuedHexId,
   focusRequest,
+  availableFunds = null,
 }: Props) {
   const [mapData, setMapData] = useState<BoardMapData | null>(null);
   const [manifest, setManifest] = useState<TileManifestEntry[]>([]);
@@ -643,6 +651,44 @@ export default function MapTab({
     return report.every((r) => !r.valid && (r.reason?.includes("isn't connected") ?? false));
   }
 
+  // Per-tile summary of the fetched report, keyed by tile_id: every rotation
+  // that's actually legal right now (orientation/connectivity, blocked
+  // directions, phase/color, upgrade-must-preserve-track, city/town match -
+  // whatever validate_tile_lay checked), the cheapest of those (for display),
+  // and - when nothing about this tile is legal - one reason why, to show
+  // in the picker instead of just silently disabling it. This is what makes
+  // "which tiles are even offered" reflect rules 1/2/3/5/6 from the report
+  // the server already computed, instead of just phase-color filtering.
+  const tileValidity = useMemo(() => {
+    const map = new Map<
+      string,
+      { validRotations: number[]; minCost: number | null; reason: string | null }
+    >();
+    if (!report) return map;
+    for (const r of report) {
+      let entry = map.get(r.tile_id);
+      if (!entry) {
+        entry = { validRotations: [], minCost: null, reason: null };
+        map.set(r.tile_id, entry);
+      }
+      if (r.valid) {
+        entry.validRotations.push(r.rotation);
+        if (r.cost !== null && (entry.minCost === null || r.cost < entry.minCost)) entry.minCost = r.cost;
+      } else if (entry.reason === null && r.reason) {
+        entry.reason = r.reason;
+      }
+    }
+    return map;
+  }, [report]);
+
+  // The already-fetched report's verdict for one exact (tile, rotation) -
+  // what the pending-placement panel shows live as the player rotates,
+  // rather than only finding out after Enter is pressed.
+  function reportFor(tileId: string, rotation: number): TileLayOption | null {
+    if (!report) return null;
+    return report.find((r) => r.tile_id === tileId && r.rotation === rotation) ?? null;
+  }
+
   // null means unlimited (see new_board_state). Laying the tile already
   // sitting on the target hex back onto itself (e.g. just rotating it)
   // doesn't need a spare copy - the server returns the old one to the
@@ -658,22 +704,34 @@ export default function MapTab({
   // Lays the tile directly (debugForceTileLay) rather than going through a
   // real operate turn - no company-turn/director requirement, and no
   // round to end, so this never blocks a second placement right after the
-  // first the way a real operate action would. Connectivity (rule 5.7.9)
-  // and tile supply are checked once here against already-fetched data for
-  // an instant "Invalid move"; every rule (those two plus phase/color,
-  // city-town match, upgrade-must-preserve-track, and terrain cost vs.
-  // treasury) is enforced again server-side as the real gate.
+  // first the way a real operate action would. Connectivity (rule 5.7.9),
+  // this exact rotation's legality (orientation/blocked directions/upgrade/
+  // city-town/phase), tile supply, and affordability are all checked once
+  // here against already-fetched data for an instant, specific rejection
+  // instead of a round-trip; every one of those is enforced again
+  // server-side as the real gate regardless.
   async function confirmPendingPlacement() {
     const p = pendingPlacement;
     if (!p || placing) return;
     if (reportLoading) return;
     if (isDisconnected()) {
-      window.alert("Invalid move");
+      window.alert("Invalid move: not connected to this company's track network (rule 5.7.9).");
+      return;
+    }
+    const verdict = reportFor(p.tileId, p.rotation);
+    if (verdict && !verdict.valid) {
+      window.alert(`Invalid move: ${verdict.reason ?? "this tile/rotation isn't legal here."}`);
       return;
     }
     const remaining = remainingSupply(p.tileId, p.hexId);
     if (remaining !== null && remaining <= 0) {
-      window.alert("Invalid move");
+      window.alert("Invalid move: none of this tile left in supply.");
+      return;
+    }
+    if (availableFunds !== null && verdict?.cost != null && verdict.cost > availableFunds) {
+      window.alert(
+        `Invalid move: the £${verdict.cost} terrain cost exceeds the £${availableFunds} available (rule 5.7.18-20).`
+      );
       return;
     }
     if (!roomId) {
@@ -999,7 +1057,12 @@ export default function MapTab({
   function pickTile(tileId: string) {
     if (!selectedHexId) return;
     setModalOpen(false);
-    setPendingPlacement({ hexId: selectedHexId, tileId, rotation: 0 });
+    // Arm it already facing a legal orientation when one's known (rule 6:
+    // considers every rotation) instead of always starting at rotation 0,
+    // which for most tiles/hexes just lands on "Invalid move" until the
+    // player rotates their way to a working one.
+    const validRotations = tileValidity.get(tileId)?.validRotations ?? [];
+    setPendingPlacement({ hexId: selectedHexId, tileId, rotation: validRotations[0] ?? 0 });
   }
 
   return (
@@ -1262,6 +1325,34 @@ export default function MapTab({
                   <p className="hint">
                     Tile {pendingPlacement.tileId}, rotation {pendingPlacement.rotation} - not placed yet.
                   </p>
+                  {(() => {
+                    // Live verdict for exactly this rotation, from the same
+                    // report the picker was filtered from - covers
+                    // connectivity/orientation, blocked directions, phase,
+                    // upgrade preservation, and city/town match (rules
+                    // 1/2/3/5/6) as the player rotates, before Enter.
+                    if (isDisconnected()) {
+                      return (
+                        <p className="error">
+                          Not connected to this company's track network here (rule 5.7.9).
+                        </p>
+                      );
+                    }
+                    const verdict = reportFor(pendingPlacement.tileId, pendingPlacement.rotation);
+                    if (!verdict) return null;
+                    if (!verdict.valid) {
+                      return <p className="error">Invalid at this rotation: {verdict.reason}</p>;
+                    }
+                    const cantAfford =
+                      availableFunds !== null && verdict.cost != null && verdict.cost > availableFunds;
+                    return (
+                      <p className={cantAfford ? "error" : "hint"}>
+                        {verdict.cost ? `Terrain cost: £${verdict.cost}` : "No terrain cost"}
+                        {availableFunds !== null && ` (£${availableFunds} available)`}
+                        {cantAfford && " - can't afford this (rule 5.7.18-20)"}
+                      </p>
+                    );
+                  })()}
                   <p className="hint">
                     <strong>←</strong> / <strong>→</strong> rotate &nbsp;·&nbsp; <strong>Enter</strong> confirm
                     &nbsp;·&nbsp; <strong>Esc</strong> cancel
@@ -1704,6 +1795,11 @@ export default function MapTab({
             <div className="tile-modal-body">
               <div className="tile-modal-palette tile-modal-palette-only">
                 <h4>Pick a tile for phase {companyKind === "minor" ? "(minor)" : "(major)"} - click one to place it</h4>
+                <p className="hint">
+                  Every tile here is phase-color-legal; greyed-out ones are also shown so you can see why they're
+                  off (hover for the reason) - covering connectivity, blocked directions/orientation, upgrade
+                  compatibility, and city/town match (rules 5.7.9-5.7.16), checked across all 6 rotations.
+                </p>
                 {TILE_COLOR_ORDER.map((color) => {
                   const phaseAllows = TILE_COLOR_ORDER.indexOf(color) <= TILE_COLOR_ORDER.indexOf(maxTileColor);
                   const available = grouped[color].filter(() => phaseAllows);
@@ -1715,19 +1811,39 @@ export default function MapTab({
                         const url = tileUrl(t.file);
                         const remaining = remainingSupply(t.id, selectedHexId);
                         const outOfSupply = remaining !== null && remaining <= 0;
+                        // report is null until the hex's legality check comes
+                        // back (or there's no room yet) - treat that as
+                        // "unknown, don't block" rather than "illegal", since
+                        // the server-side confirm still enforces everything
+                        // regardless.
+                        const validity = tileValidity.get(t.id);
+                        const noLegalRotation = report != null && report.length > 0 && (validity?.validRotations.length ?? 0) === 0;
+                        const disabled = outOfSupply || noLegalRotation;
+                        const cantAfford =
+                          availableFunds !== null &&
+                          validity?.minCost != null &&
+                          validity.minCost > availableFunds &&
+                          !noLegalRotation;
+                        let title: string;
+                        if (outOfSupply) title = `Tile ${t.id}: none left in supply`;
+                        else if (noLegalRotation) title = `Tile ${t.id}: no legal orientation here - ${validity?.reason ?? "not a legal lay"}`;
+                        else {
+                          const costPart = validity?.minCost ? ` - min terrain cost £${validity.minCost}` : "";
+                          title = `Tile ${t.id} (${remaining === null ? "unlimited" : `${remaining} left`})${costPart}`;
+                        }
                         return (
                           <button
                             key={t.id}
-                            className={`tile-swatch modal-tile-swatch${outOfSupply ? " out-of-supply" : ""}`}
-                            onClick={() => pickTile(t.id)}
-                            title={
-                              outOfSupply
-                                ? `Tile ${t.id}: none left in supply`
-                                : `Tile ${t.id} (${remaining === null ? "unlimited" : `${remaining} left`})`
-                            }
+                            className={`tile-swatch modal-tile-swatch${disabled ? " out-of-supply" : ""}${
+                              cantAfford ? " cant-afford" : ""
+                            }`}
+                            onClick={() => !disabled && pickTile(t.id)}
+                            disabled={disabled}
+                            title={title}
                           >
                             {url ? <img src={url} alt={t.id} /> : t.id}
                             {remaining !== null && <span className="tile-swatch-count">{remaining}</span>}
+                            {validity?.minCost ? <span className="tile-swatch-cost">£{validity.minCost}</span> : null}
                           </button>
                         );
                       })}

@@ -524,6 +524,23 @@ function App() {
     return debugCompanyId || null;
   }
 
+  // What a tile lay right now would actually be billed against (rule
+  // 5.7.18-20) - mirrors debug_force_tile_lay's own payer selection: the
+  // laying company's treasury when one's selected, otherwise this seat's
+  // personal cash. Drives the Map tab's affordability check/preview so a
+  // player sees "can't afford this" before confirming, not just after.
+  function availableFundsFor(): number | null {
+    if (!gameState) return null;
+    const companyId = mapCompanyIdFor();
+    if (companyId) {
+      const isMinor = /^M\d+$/.test(companyId);
+      const treasury = isMinor ? gameState.minors[companyId]?.treasury : gameState.majors[companyId]?.treasury;
+      return treasury ?? null;
+    }
+    if (!playerId) return null;
+    return gameState.players[playerId]?.cash ?? null;
+  }
+
   function send(action: object) {
     const seat = activeSeat();
     if (!seat) {
@@ -997,6 +1014,7 @@ function App() {
               roomId={roomId}
               companyKind={mapCompanyIdFor() && /^M\d+$/.test(mapCompanyIdFor()!) ? "minor" : "major"}
               companyId={mapCompanyIdFor()}
+              availableFunds={availableFundsFor()}
               boardTiles={gameState.board?.tiles}
               tilePool={gameState.board?.tile_pool}
               canQueueLay={gameState.round_type === "operating"}
