@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  bulkSaveRegionCorrectionsToServer,
   debugForceTileLay,
   debugRemoveTile,
   deleteRegionCorrectionFromServer,
@@ -130,6 +131,10 @@ type EdgeStatus = "normal" | "blocked" | "toll" | "empty";
 type EdgeCorrection = { status: EdgeStatus; cost: string };
 
 type RegionForm = {
+  // No track tile may ever be placed here (still independently connectable
+  // via the edges below - a disabled hex can still carry through-track
+  // rules for its neighbors, it just never gets its own tile).
+  disabled: boolean;
   cityOrTown: CityOrTown;
   name: string;
   label: string;
@@ -165,6 +170,7 @@ type RegionForm = {
 type SavedRegionCorrection = RegionForm & { hexId: string; savedAt: string };
 
 const BLANK_REGION_FORM: RegionForm = {
+  disabled: false,
   cityOrTown: "",
   name: "",
   label: "",
@@ -188,6 +194,68 @@ const BLANK_REGION_FORM: RegionForm = {
 
 const LABEL_OPTIONS = ["BM", "Y", "C", "EC", "L", "S", "T"];
 const TERRAIN_OPTIONS = ["river_small", "river_large", "estuary", "rough", "hill", "mountain"];
+
+// --- Bulk region editor -----------------------------------------------
+// Set attribute categories once (which ones to touch, and what to set them
+// to), then click any number of hexes to select/deselect them, and Confirm
+// applies the same patch to all of them at once (merged server-side onto
+// each hex's existing correction - see app.db.bulk_merge_region_corrections
+// - so a per-hex field like name/label is never clobbered by a bulk edit).
+// Deliberately a narrower field set than the single-hex RegionForm: name/
+// label/home-of-company/etc. are unique per hex and make no sense to set
+// identically across a whole selection, so those aren't offered here.
+type BulkPatch = {
+  applyDisabled: boolean;
+  disabled: boolean;
+
+  applyCityOrTown: boolean;
+  cityOrTown: CityOrTown;
+  townCount: string;
+  cityCount: string;
+
+  applyTerrain: boolean;
+  isTerrain: boolean;
+  terrain: string;
+  cost: string;
+
+  applyEdges: boolean;
+  edges: Partial<Record<number, EdgeCorrection>>;
+};
+
+const BLANK_BULK_PATCH: BulkPatch = {
+  applyDisabled: false,
+  disabled: true,
+  applyCityOrTown: false,
+  cityOrTown: "",
+  townCount: "1",
+  cityCount: "1",
+  applyTerrain: false,
+  isTerrain: true,
+  terrain: "",
+  cost: "",
+  applyEdges: false,
+  edges: {},
+};
+
+// Only the categories actually switched on go into the patch sent to the
+// server - e.g. leaving "apply terrain" off means this bulk edit never
+// touches any selected hex's terrain, however applyDisabled/applyEdges etc. are set.
+function bulkPatchToServerData(patch: BulkPatch): Record<string, unknown> {
+  const data: Record<string, unknown> = {};
+  if (patch.applyDisabled) data.disabled = patch.disabled;
+  if (patch.applyCityOrTown) {
+    data.cityOrTown = patch.cityOrTown;
+    if (patch.cityOrTown === "town") data.townCount = patch.townCount;
+    if (patch.cityOrTown === "city") data.cityCount = patch.cityCount;
+  }
+  if (patch.applyTerrain) {
+    data.isTerrain = patch.isTerrain;
+    data.terrain = patch.terrain;
+    data.cost = patch.cost;
+  }
+  if (patch.applyEdges) data.edges = patch.edges;
+  return data;
+}
 
 // Edge numbering matches the backend (app.engine.hex_grid): 0=N, 1=NE,
 // 2=SE, 3=S, 4=SW, 5=NW - a tile's printed edges line up with these directly.
@@ -351,6 +419,12 @@ export default function MapTab({
   const [regionForm, setRegionForm] = useState<RegionForm>({ ...BLANK_REGION_FORM });
   const [regionSaved, setRegionSaved] = useState(false);
   const [regionCopied, setRegionCopied] = useState(false);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+  const [bulkPatch, setBulkPatch] = useState<BulkPatch>({ ...BLANK_BULK_PATCH });
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkSavedMessage, setBulkSavedMessage] = useState<string | null>(null);
 
   // What's actually drawn on the map: real server state, with the pending
   // (unconfirmed) placement overlaid on top of its hex so rotating it is
@@ -479,8 +553,64 @@ export default function MapTab({
   }, [placeConfirmed]);
 
   function selectHex(hexId: string) {
+    if (bulkMode) {
+      setBulkSelected((prev) => {
+        const next = new Set(prev);
+        if (next.has(hexId)) next.delete(hexId);
+        else next.add(hexId);
+        return next;
+      });
+      return;
+    }
     setSelectedHexId(hexId);
     setModalOpen(true);
+  }
+
+  function enterBulkMode() {
+    setModalOpen(false);
+    setPendingPlacement(null);
+    setBulkMode(true);
+    setBulkSelected(new Set());
+    setBulkPatch({ ...BLANK_BULK_PATCH });
+    setBulkError(null);
+    setBulkSavedMessage(null);
+  }
+
+  function exitBulkMode() {
+    setBulkMode(false);
+    setBulkSelected(new Set());
+  }
+
+  async function confirmBulkEdit() {
+    if (bulkSelected.size === 0) return;
+    const data = bulkPatchToServerData(bulkPatch);
+    if (Object.keys(data).length === 0) {
+      setBulkError("Turn on at least one attribute category above before confirming.");
+      return;
+    }
+    setBulkSaving(true);
+    setBulkError(null);
+    setBulkSavedMessage(null);
+    const hexIds = Array.from(bulkSelected);
+    try {
+      await bulkSaveRegionCorrectionsToServer(hexIds, data);
+      const savedAt = new Date().toISOString();
+      setRegionCorrections((prev) => {
+        const next = { ...prev };
+        for (const hexId of hexIds) {
+          const base = next[hexId] ?? regionFormFromCatalogued(hexEntriesById.get(hexId) ?? []);
+          next[hexId] = { ...BLANK_REGION_FORM, ...base, ...data, hexId, savedAt } as SavedRegionCorrection;
+        }
+        persistRegionCorrections(next);
+        return next;
+      });
+      setBulkSavedMessage(`Applied to ${hexIds.length} region${hexIds.length === 1 ? "" : "s"}.`);
+      setBulkSelected(new Set());
+    } catch (e) {
+      setBulkError((e as Error).message);
+    } finally {
+      setBulkSaving(false);
+    }
   }
 
   useEffect(() => {
@@ -884,6 +1014,9 @@ export default function MapTab({
         >
           Clickable schematic
         </button>
+        <button className={`tab-btn bulk-edit-toggle${bulkMode ? " active" : ""}`} onClick={bulkMode ? exitBulkMode : enterBulkMode}>
+          {bulkMode ? "Exit bulk edit" : "Bulk edit regions"}
+        </button>
       </div>
 
       <div className="map-layout">
@@ -903,6 +1036,7 @@ export default function MapTab({
                     const isSelected = hexId === selectedHexId;
                     const isQueued = hexId === queuedHexId;
                     const isPending = pendingPlacement?.hexId === hexId;
+                    const isBulkSelected = bulkSelected.has(hexId);
                     return (
                       <g key={hexId} onClick={() => selectHex(hexId)}>
                         <polygon
@@ -911,7 +1045,7 @@ export default function MapTab({
                             placed ? " placed" : ""
                           }${isSelected ? " selected" : ""}${isQueued ? " queued" : ""}${
                             isPending ? " pending" : ""
-                          }`}
+                          }${isBulkSelected ? " bulk-selected" : ""}`}
                         />
                         {placed && tileUrl(`tile_${placed.tile_id}.svg`) && (
                           <image
@@ -973,6 +1107,7 @@ export default function MapTab({
                 <ul>
                   {Object.values(regionCorrections).map((c) => {
                     const tags = [
+                      c.disabled && "disabled",
                       c.cityOrTown && (c.cityOrTown === "town" ? "town" : "city"),
                       c.isOffboard && "offboard",
                       c.isTerrain && "terrain",
@@ -1012,13 +1147,16 @@ export default function MapTab({
                 const isSelected = hex.id === selectedHexId;
                 const isQueued = hex.id === queuedHexId;
                 const isPending = pendingPlacement?.hexId === hex.id;
+                const isBulkSelected = bulkSelected.has(hex.id);
                 return (
                   <g key={`${kind}-${hex.id}`} onClick={() => selectHex(hex.id)} className="map-hex">
                     <polygon
                       points={hexPoints(x, y, SIZE)}
-                      fill={colorFor(kind, hex)}
-                      stroke={isPending ? "#d4a017" : isSelected ? "#c0392b" : isQueued ? "#2c6e49" : "#333"}
-                      strokeWidth={isPending || isSelected || isQueued ? 3 : 1}
+                      fill={isBulkSelected ? "#f6c944" : colorFor(kind, hex)}
+                      stroke={
+                        isPending ? "#d4a017" : isBulkSelected ? "#c07a00" : isSelected ? "#c0392b" : isQueued ? "#2c6e49" : "#333"
+                      }
+                      strokeWidth={isPending || isSelected || isQueued || isBulkSelected ? 3 : 1}
                       strokeDasharray={isPending ? "4 2" : undefined}
                     />
                     {placed && tileUrl(`tile_${placed.tile_id}.svg`) && (
@@ -1048,10 +1186,23 @@ export default function MapTab({
         )}
 
         <div className="map-side-panel">
-          {!selectedHexId && (
+          {bulkMode && (
+            <BulkEditPanel
+              bulkSelected={bulkSelected}
+              bulkPatch={bulkPatch}
+              setBulkPatch={setBulkPatch}
+              bulkSaving={bulkSaving}
+              bulkError={bulkError}
+              bulkSavedMessage={bulkSavedMessage}
+              onClearSelection={() => setBulkSelected(new Set())}
+              onConfirm={confirmBulkEdit}
+              onExit={exitBulkMode}
+            />
+          )}
+          {!bulkMode && !selectedHexId && (
             <p className="hint">Click a hexagon on the map (or search above) to inspect or lay a tile on it.</p>
           )}
-          {selectedHexId && (
+          {!bulkMode && selectedHexId && (
             <>
               <h4>
                 {selectedHexId}
@@ -1256,6 +1407,15 @@ export default function MapTab({
                     A hex can be more than one of these at once (e.g. Aberdeen is both a city and an off-board
                     revenue area) - check everything that's actually printed there.
                   </p>
+
+                  <label className="region-data-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={regionForm.disabled}
+                      onChange={(e) => setRegionForm({ ...regionForm, disabled: e.target.checked })}
+                    />
+                    Disabled - no track tile can ever go here (edges below still apply)
+                  </label>
 
                   <label>
                     City / town on this hex?
@@ -1564,6 +1724,223 @@ export default function MapTab({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+type BulkEditPanelProps = {
+  bulkSelected: Set<string>;
+  bulkPatch: BulkPatch;
+  setBulkPatch: (patch: BulkPatch) => void;
+  bulkSaving: boolean;
+  bulkError: string | null;
+  bulkSavedMessage: string | null;
+  onClearSelection: () => void;
+  onConfirm: () => void;
+  onExit: () => void;
+};
+
+function BulkEditPanel({
+  bulkSelected,
+  bulkPatch,
+  setBulkPatch,
+  bulkSaving,
+  bulkError,
+  bulkSavedMessage,
+  onClearSelection,
+  onConfirm,
+  onExit,
+}: BulkEditPanelProps) {
+  const anyCategoryOn = bulkPatch.applyDisabled || bulkPatch.applyCityOrTown || bulkPatch.applyTerrain || bulkPatch.applyEdges;
+
+  return (
+    <div className="bulk-edit-panel">
+      <h4>Bulk edit regions</h4>
+      <p className="hint">
+        Turn on the attribute(s) you want to change below, then click hexes on the map to select them (click again
+        to deselect) - highlighted in yellow. Confirm applies your change to every selected hex at once, leaving
+        everything else about those hexes untouched.
+      </p>
+
+      <div className="bulk-edit-category">
+        <label className="region-data-checkbox">
+          <input
+            type="checkbox"
+            checked={bulkPatch.applyDisabled}
+            onChange={(e) => setBulkPatch({ ...bulkPatch, applyDisabled: e.target.checked })}
+          />
+          Set disabled (no track tile can ever go here)
+        </label>
+        {bulkPatch.applyDisabled && (
+          <label className="region-data-checkbox bulk-edit-suboption">
+            <input
+              type="checkbox"
+              checked={bulkPatch.disabled}
+              onChange={(e) => setBulkPatch({ ...bulkPatch, disabled: e.target.checked })}
+            />
+            Disabled
+          </label>
+        )}
+      </div>
+
+      <div className="bulk-edit-category">
+        <label className="region-data-checkbox">
+          <input
+            type="checkbox"
+            checked={bulkPatch.applyCityOrTown}
+            onChange={(e) => setBulkPatch({ ...bulkPatch, applyCityOrTown: e.target.checked })}
+          />
+          Set city / town
+        </label>
+        {bulkPatch.applyCityOrTown && (
+          <div className="bulk-edit-suboption">
+            <select
+              value={bulkPatch.cityOrTown}
+              onChange={(e) => setBulkPatch({ ...bulkPatch, cityOrTown: e.target.value as CityOrTown })}
+            >
+              <option value="">none</option>
+              <option value="city">City</option>
+              <option value="town">Town</option>
+            </select>
+            {bulkPatch.cityOrTown === "town" && (
+              <label>
+                Towns per hex
+                <select
+                  value={bulkPatch.townCount}
+                  onChange={(e) => setBulkPatch({ ...bulkPatch, townCount: e.target.value })}
+                >
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                </select>
+              </label>
+            )}
+            {bulkPatch.cityOrTown === "city" && (
+              <label>
+                Cities per hex
+                <select
+                  value={bulkPatch.cityCount}
+                  onChange={(e) => setBulkPatch({ ...bulkPatch, cityCount: e.target.value })}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="bulk-edit-category">
+        <label className="region-data-checkbox">
+          <input
+            type="checkbox"
+            checked={bulkPatch.applyTerrain}
+            onChange={(e) => setBulkPatch({ ...bulkPatch, applyTerrain: e.target.checked })}
+          />
+          Set terrain difficulty
+        </label>
+        {bulkPatch.applyTerrain && (
+          <div className="bulk-edit-suboption">
+            <label>
+              Terrain type
+              <select
+                value={bulkPatch.terrain}
+                onChange={(e) => setBulkPatch({ ...bulkPatch, terrain: e.target.value })}
+              >
+                <option value="">— pick one —</option>
+                {TERRAIN_OPTIONS.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Cost to cross (£)
+              <input
+                value={bulkPatch.cost}
+                onChange={(e) => setBulkPatch({ ...bulkPatch, cost: e.target.value })}
+                placeholder="e.g. 40"
+              />
+            </label>
+          </div>
+        )}
+      </div>
+
+      <div className="bulk-edit-category">
+        <label className="region-data-checkbox">
+          <input
+            type="checkbox"
+            checked={bulkPatch.applyEdges}
+            onChange={(e) => setBulkPatch({ ...bulkPatch, applyEdges: e.target.checked })}
+          />
+          Set a connection direction
+        </label>
+        {bulkPatch.applyEdges && (
+          <div className="bulk-edit-suboption">
+            {EDGE_DIRECTIONS.map(({ edge, short, full }) => {
+              const current = bulkPatch.edges[edge] ?? { status: "empty", cost: "" };
+              return (
+                <div className="region-edge-row" key={edge}>
+                  <span className="region-edge-label">
+                    {full} ({short})
+                  </span>
+                  <select
+                    value={current.status}
+                    onChange={(e) =>
+                      setBulkPatch({
+                        ...bulkPatch,
+                        edges: { ...bulkPatch.edges, [edge]: { ...current, status: e.target.value as EdgeStatus } },
+                      })
+                    }
+                  >
+                    <option value="empty">Empty</option>
+                    <option value="normal">Normal</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="toll">Toll</option>
+                  </select>
+                  {current.status === "toll" && (
+                    <input
+                      className="region-edge-toll-input"
+                      value={current.cost}
+                      onChange={(e) =>
+                        setBulkPatch({
+                          ...bulkPatch,
+                          edges: { ...bulkPatch.edges, [edge]: { ...current, cost: e.target.value } },
+                        })
+                      }
+                      placeholder="£ toll"
+                    />
+                  )}
+                </div>
+              );
+            })}
+            <p className="hint">
+              Only the directions you touch above are included in the bulk change - each is applied as that same
+              absolute direction (e.g. "North") on every selected hex, not as a connection between them.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <p className="hint bulk-edit-count">
+        {bulkSelected.size} region{bulkSelected.size === 1 ? "" : "s"} selected
+      </p>
+
+      <div className="region-data-actions">
+        <button onClick={onConfirm} disabled={bulkSaving || bulkSelected.size === 0 || !anyCategoryOn}>
+          {bulkSaving ? "Applying..." : `Confirm (${bulkSelected.size})`}
+        </button>
+        <button onClick={onClearSelection} disabled={bulkSelected.size === 0}>
+          Clear selection
+        </button>
+        <button onClick={onExit}>Exit bulk edit</button>
+      </div>
+      {bulkError && <p className="error">{bulkError}</p>}
+      {bulkSavedMessage && <p className="place-confirmed">✓ {bulkSavedMessage}</p>}
     </div>
   );
 }

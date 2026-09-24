@@ -177,6 +177,26 @@ def discard_region_correction(hex_id: str):
     return {"status": "deleted", "hex_id": hex_id}
 
 
+class BulkRegionCorrectionRequest(BaseModel):
+    hex_ids: list[str]
+    data: dict
+
+
+@app.put("/board/corrections")
+def bulk_save_region_corrections(req: BulkRegionCorrectionRequest):
+    """The map tab's bulk region editor: applies the same attribute patch
+    (e.g. "disabled", an edge's status, terrain, city/town) to every hex
+    in hex_ids at once, merged onto whatever each hex already has saved -
+    a per-hex field like name/label is never touched by this."""
+    from datetime import datetime, timezone
+
+    if not req.hex_ids:
+        raise HTTPException(status_code=400, detail="hex_ids must not be empty")
+    saved_at = datetime.now(timezone.utc).isoformat()
+    db.bulk_merge_region_corrections(req.hex_ids, req.data, saved_at)
+    return {"status": "saved", "count": len(req.hex_ids)}
+
+
 @app.get("/rooms/{room_id}/tile_lay_options")
 def tile_lay_options(room_id: str, hex_id: str, company_kind: str = "major", company_id: str | None = None):
     """Every (tile, rotation) combination's legality for a lay on this hex
