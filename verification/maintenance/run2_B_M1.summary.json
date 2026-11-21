@@ -1,0 +1,34 @@
+{
+ "arm": "B",
+ "change": "M1",
+ "modules": [
+  "shares",
+  "company_formation",
+  "bidding",
+  "turn_order",
+  "trains",
+  "scoring"
+ ],
+ "bind_changed": true,
+ "tokens_in": 294031,
+ "tokens_out": 31048,
+ "cost": 0.0129,
+ "secs_max": 75,
+ "oracle_match": false,
+ "pass_n": 107,
+ "oracle_pass": 115,
+ "diff_vs_oracle": [
+  "FAILED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_2_second_operating_round_applies_only_after_following_stock_round",
+  "FAILED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_3_rusted_trains_removed_without_compensation",
+  "FAILED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_4_excess_trains_after_limit_drop_go_to_bank_pool",
+  "FAILED verification/rule-tests/test_ch2_3_rules.py::test_r2_2_3_first_2_train_bought_starts_phase_2",
+  "FAILED verification/rule-tests/test_ch2_3_rules.py::test_r2_2_4_first_3_train_starts_phase_3_and_rusts_L",
+  "FAILED verification/rule-tests/test_ch2_3_rules.py::test_r2_2_5_phase_4_rusts_2_and_lowers_limits",
+  "FAILED verification/rule-tests/test_ch5a_rules.py::test_r5_13_6_company_below_limit_may_buy_even_if_phase_change_puts_it_over",
+  "FAILED verification/rule-tests/test_ch5a_rules.py::test_r5_13_8_company_chooses_L_or_2_side_when_buying",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_2_second_operating_round_applies_only_after_following_stock_round",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_3_rusted_trains_removed_without_compensation",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_4_excess_trains_after_limit_drop_go_to_bank_pool",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_2_3_first_2_train_bought_starts_phase_2"
+ ]
+}

@@ -1,0 +1,28 @@
+{
+ "arm": "B",
+ "change": "M2",
+ "modules": [
+  "shares",
+  "certificates",
+  "company_formation",
+  "round_manager"
+ ],
+ "bind_changed": false,
+ "tokens_in": 188595,
+ "tokens_out": 16153,
+ "cost": 0.0234,
+ "secs_max": 37,
+ "oracle_match": false,
+ "pass_n": 112,
+ "oracle_pass": 114,
+ "diff_vs_oracle": [
+  "FAILED verification/rule-tests/test_ch4_rules.py::test_r4_4_1_bank_pool_cap_50_percent",
+  "FAILED verification/rule-tests/test_ch4_rules.py::test_r4_4_2_director_changes_when_holding_drops_below_other",
+  "FAILED verification/rule-tests/test_ch4_rules.py::test_r4_4_2_tie_goes_to_player_closest_after_outgoing_director",
+  "FAILED verification/rule-tests/test_maint.py::test_M2_pool_may_reach_6_units",
+  "PASSED verification/rule-tests/test_ch4_rules.py::test_r4_4_1_bank_pool_cap_50_percent",
+  "PASSED verification/rule-tests/test_ch4_rules.py::test_r4_4_2_director_changes_when_holding_drops_below_other",
+  "PASSED verification/rule-tests/test_ch4_rules.py::test_r4_4_2_tie_goes_to_player_closest_after_outgoing_director",
+  "PASSED verification/rule-tests/test_maint.py::test_M2_pool_may_reach_6_units"
+ ]
+}

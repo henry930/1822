@@ -1,0 +1,17 @@
+{
+ "arm": "B",
+ "change": "M3",
+ "modules": [
+  "company_formation",
+  "bidding"
+ ],
+ "bind_changed": false,
+ "tokens_in": 103804,
+ "tokens_out": 12576,
+ "cost": 0.0082,
+ "secs_max": 83,
+ "oracle_match": true,
+ "pass_n": 115,
+ "oracle_pass": 115,
+ "diff_vs_oracle": []
+}

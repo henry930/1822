@@ -16,3 +16,6 @@ Affected modules (computed locally from graph diff, 0 tokens): M1 6 (BINDING cha
 | M3 | D | 8 | 126,278 | 19,309 | 0.0039 | YES |
 
 Findings: (1) contract-diff patching (C) matched the oracle 3/3 with 6-17x fewer input tokens than source-upload (D); (2) partial regeneration from contract alone (B) breaks 3/3: regenerated modules drop test-facing aliases (e.g. `_face_value`) that other modules/tests rely on and that are not in the graph -> whole-module regeneration needs those conventions as graph nodes, or patch mode; (3) D also matches but uploads all source (privacy cost). Caveats: n=1, 3 changes, small engine, output tokens dominated by full-file rewrites, cost via OpenRouter.
+
+## Follow-up: alias conventions added to graph (arm B2)
+Added 5 test-facing aliases as graph attrs (bidding._face_value, certificates.certificate_count/certificate_limit, round_manager.start_operating_round_set, turn_order.compute_operating_order) and regenerated contracts. Arm B (regenerate affected modules from contract only) then: M1 107/115 (no match), M2 112/114 (no match), M3 115/115 (match). Collection errors disappeared, so the missing conventions were the cause of the total failure; the rest is regeneration drift (nondeterministic whole-module rewrites). Conclusion: patch mode (C) is reliable 3/3; regeneration is 1/3 and needs the test/repair loop.
