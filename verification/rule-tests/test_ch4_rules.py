@@ -19,12 +19,18 @@ def game(n=3):
     return new_game("g", [f"P{i}" for i in range(n)], seed=1)
 
 
-def major(state, cid="GWR", pos=START, pool=0, treasury=0, operated=True, director=None):
+def major(state, cid="GWR", pos=START, pool=0, treasury=0, operated=True, director="auto"):
+    """A floated major. By default it has a director (rule 4.5.2: a company has no buyable ordinary
+    shares until a player holds the director's certificate): the last player in order holds it (2 units).
+    Pass director=None for a company without director."""
     m = state.majors[cid]
     m.floated = True
     m.has_operated = operated
     m.shares_in_bank_pool = pool
     m.shares_in_treasury = treasury
+    if director == "auto":
+        director = state.player_order[-1]
+        state.players[director].shares[cid] = 2
     m.director_player_id = director
     place_token(state, cid, *pos)
     return m
