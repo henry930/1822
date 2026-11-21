@@ -160,3 +160,11 @@
 - 耗時節省約 38%，但 token 約 3.4 倍：每個 agent 都要重讀契約、規則與給定程式碼（重複上下文）。依賴最重的模組（bidding）決定總耗時，不能再縮短。
 - 結論：平行化對「時間」有幫助，對「成本」不利；且要求契約把跨模組的行為（旗標、呼叫順序、誰負責什麼）寫得更清楚。
 - 限制：各一次運行；耗時含啟動與讀檔；兩次實驗的契約相同；沒有重複以估計隨機差異。
+
+## Run 3: parallel generation with contract v2 (cross-module behaviour + provisional rulings)
+- 5 agents in parallel, wall-clock ~2.2 min after launch, ~495k agent tokens total (shares 103k, certificates 91k, formation 96k, bidding 113k, turn_order 92k); 669 lines.
+- Rule tests (verification/rule-tests): 5 failed / 111 passed. Same 5 as runs 1 and 2 (all outside the stock-round scope: 3.1.2, 3.4.4 revenue, 5.12.13, 5.13.7, 5.13.11).
+- Original backend tests: 13 failed / 151 passed (run 1 single: 13; run 2 parallel v1: 15). 9 are missing-docs/frontend sandbox artifacts; the remaining 4 are legacy tests that contradict the rulebook (loans/director/price-drop payment, certificate limit).
+- Coupling failures of run 2 (`any_sale_this_stock_round` not set by bids) are gone: v2 contract item fixed it; bidding agent sets it.
+- Conclusion: making cross-module behaviour explicit in the contract removed the parallel-only failures; parallel v2 equals single-agent quality on tests, faster in wall-clock, ~3-4x tokens.
+- New agent-reported ambiguities (not ruled yet): P16 handling in certificate count; 4.4.7 over-limit after sale not enforced; sell does not set any_sale_this_stock_round (actions.py); unaffordable winner fallback; concession bids in phase 5+.
