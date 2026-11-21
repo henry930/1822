@@ -1,0 +1,6 @@
+129a130,134
+> 
+> # --- eval adapter 2 (diagnostic) ---
+> _gen_buy = buy_share
+> def buy_share(state, player_id, company_id, source=None):  # noqa: F811
+>     return _gen_buy(state, player_id, company_id, "pool" if source == "bank" else source)

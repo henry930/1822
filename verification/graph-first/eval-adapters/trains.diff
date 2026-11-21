@@ -1,0 +1,5 @@
+69,70c69
+<     if not company.floated:
+<         raise TrainError(f"ERR_TRAIN_NOT_FLOATED: {company_id} has not floated")
+---
+>     pass

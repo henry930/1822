@@ -1,0 +1,10 @@
+279a280,288
+> 
+> # --- eval adapter (test-facing names; not part of the generated module) ---
+> _face_value = face_value
+> 
+> # --- eval adapter 2 (diagnostic) ---
+> _gen_resolve = resolve_stock_round
+> def resolve_stock_round(state):  # noqa: F811
+>     state.consecutive_passes = max(state.consecutive_passes, len(state.player_order))
+>     return _gen_resolve(state)

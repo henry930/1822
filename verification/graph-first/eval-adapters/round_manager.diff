@@ -1,0 +1,10 @@
+112a113,121
+> 
+> # --- eval adapter ---
+> start_operating_round_set = start_operating_round
+> 
+> # --- eval adapter 2 (diagnostic) ---
+> _gen_end = end_stock_round
+> def end_stock_round(state):  # noqa: F811
+>     state.consecutive_passes = max(state.consecutive_passes, len(state.player_order))
+>     return _gen_end(state)

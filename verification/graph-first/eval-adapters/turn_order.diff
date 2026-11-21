@@ -1,0 +1,10 @@
+168a169,177
+> 
+> # --- eval adapter ---
+> compute_operating_order = operating_order
+> def stock_round_order(state):
+>     return state.player_order[state.player_order.index(state.priority_deal_player_id):] + state.player_order[:state.player_order.index(state.priority_deal_player_id)]
+> _gen_reorder = reorder_players_by_cash
+> def reorder_players_by_cash(state):  # noqa: F811
+>     _gen_reorder(state)
+>     return list(state.player_order)

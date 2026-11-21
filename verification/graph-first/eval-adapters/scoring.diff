@@ -1,0 +1,7 @@
+56a57,62
+> 
+> # --- eval adapter ---
+> final_wealth = player_wealth
+> def final_standings(state):
+>     s = [(p, player_wealth(state, p)) for p in state.players]
+>     s.sort(key=lambda t: -t[1]); return s
