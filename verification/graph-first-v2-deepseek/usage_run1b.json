@@ -1,0 +1,16 @@
+{
+ "company_formation": {
+  "secs": 34,
+  "prompt": 42688,
+  "completion": 3387,
+  "cost": 0.00072016672,
+  "lines": 193
+ },
+ "scoring": {
+  "secs": 43,
+  "prompt": 43620,
+  "completion": 4124,
+  "cost": 0.00075519808,
+  "lines": 231
+ }
+}
