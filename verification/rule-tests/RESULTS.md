@@ -171,3 +171,9 @@
 
 ## Rulings (2026-11-21) - see verification/RULINGS.md
 Kept: items 1-5,7,8,11-15,17. Changed: bid-only round is not a sale (bids must not set the flag); concessions cleared from phase 5; forced discard when over limit after selling (4.4.7); sell_shares sets any_sale flag.
+
+## Run 4: batch 2 (trains, scoring, round_manager, earnings + ruling patch to bidding/shares), contract v3
+- 4 agents in parallel (~1.5 min each, ~386k tokens total; 562 new lines in trains/scoring/round_manager/earnings). Code: verification/regenerated_batch2/engine/.
+- Rule tests as delivered: 9 failed / 107 passed. All 9 trace to ONE guard the trains agent added that the contract did not ask for: `buy_train_from_bank` refuses companies that are not `floated` (tests and legacy tests buy trains for unfloated companies as setup). Legacy tests: 21 failed (9 sandbox-artifact, rest = same guard, minor-earnings choice check, and the earlier 4 legacy-vs-rule conflicts).
+- Diagnostic with the two extra guards relaxed (eval copy only): rule tests 1 failed / 115 passed (the leftover is 2.1.4 test using an unfloated company, setup artifact). The 5 previously failing out-of-scope tests (3.1.2, 3.4.4, 5.12.13, 5.13.7, 5.13.11) now pass.
+- Finding: the 10.1.1 ruling (bids do not count as a sale) means a phase-1 first stock round, where only bids are possible, always ends the game. Needs the owner's decision.
