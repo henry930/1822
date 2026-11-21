@@ -168,3 +168,6 @@
 - Coupling failures of run 2 (`any_sale_this_stock_round` not set by bids) are gone: v2 contract item fixed it; bidding agent sets it.
 - Conclusion: making cross-module behaviour explicit in the contract removed the parallel-only failures; parallel v2 equals single-agent quality on tests, faster in wall-clock, ~3-4x tokens.
 - New agent-reported ambiguities (not ruled yet): P16 handling in certificate count; 4.4.7 over-limit after sale not enforced; sell does not set any_sale_this_stock_round (actions.py); unaffordable winner fallback; concession bids in phase 5+.
+
+## Rulings (2026-11-21) - see verification/RULINGS.md
+Kept: items 1-5,7,8,11-15,17. Changed: bid-only round is not a sale (bids must not set the flag); concessions cleared from phase 5; forced discard when over limit after selling (4.4.7); sell_shares sets any_sale flag.
