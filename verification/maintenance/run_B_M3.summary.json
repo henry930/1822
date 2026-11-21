@@ -1,0 +1,30 @@
+{
+ "arm": "B",
+ "change": "M3",
+ "modules": [
+  "company_formation",
+  "bidding"
+ ],
+ "bind_changed": false,
+ "tokens_in": 103780,
+ "tokens_out": 10538,
+ "cost": 0.0073,
+ "secs_max": 43,
+ "oracle_match": false,
+ "pass_n": 0,
+ "oracle_pass": 115,
+ "diff_vs_oracle": [
+  "ERROR verification/rule-tests/test_ch2_3_rules.py",
+  "FAILED verification/rule-tests/test_ch4b_rules.py::test_r4_11_9_turn_order_by_cash_ties_keep_previous_order",
+  "FAILED verification/rule-tests/test_ch4b_rules.py::test_r4_1_2_stock_round_starts_with_player_1_card_holder",
+  "FAILED verification/rule-tests/test_ch5a_rules.py::test_r5_12_13_token_at_row_end_follows_arrow_instead_of_staying",
+  "FAILED verification/rule-tests/test_maint.py::test_M1_interest_is_25_percent_rounded_up",
+  "FAILED verification/rule-tests/test_maint.py::test_M1_interest_rounds_up",
+  "FAILED verification/rule-tests/test_maint.py::test_M2_pool_may_reach_6_units",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_2_second_operating_round_applies_only_after_following_stock_round",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_3_rusted_trains_removed_without_compensation",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_4_excess_trains_after_limit_drop_go_to_bank_pool",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_2_2_game_starts_in_phase_1",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_2_3_first_2_train_bought_starts_phase_2"
+ ]
+}

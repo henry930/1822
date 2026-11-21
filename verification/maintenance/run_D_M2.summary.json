@@ -1,0 +1,23 @@
+{
+ "arm": "D",
+ "change": "M2",
+ "modules": [
+  "shares",
+  "certificates",
+  "company_formation",
+  "bidding",
+  "turn_order",
+  "trains",
+  "scoring",
+  "round_manager"
+ ],
+ "bind_changed": false,
+ "tokens_in": 126190,
+ "tokens_out": 18717,
+ "cost": 0.0113,
+ "secs_max": 22,
+ "oracle_match": true,
+ "pass_n": 114,
+ "oracle_pass": 114,
+ "diff_vs_oracle": []
+}

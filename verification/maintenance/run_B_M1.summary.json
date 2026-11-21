@@ -1,0 +1,34 @@
+{
+ "arm": "B",
+ "change": "M1",
+ "modules": [
+  "shares",
+  "company_formation",
+  "bidding",
+  "turn_order",
+  "trains",
+  "scoring"
+ ],
+ "bind_changed": true,
+ "tokens_in": 293979,
+ "tokens_out": 29698,
+ "cost": 0.0168,
+ "secs_max": 62,
+ "oracle_match": false,
+ "pass_n": 0,
+ "oracle_pass": 115,
+ "diff_vs_oracle": [
+  "ERROR verification/rule-tests/test_ch2_3_rules.py",
+  "ERROR verification/rule-tests/test_ch4_rules.py",
+  "ERROR verification/rule-tests/test_ch4b_rules.py",
+  "ERROR verification/rule-tests/test_ch5a_rules.py",
+  "ERROR verification/rule-tests/test_maint.py",
+  "FAILED verification/rule-tests/test_ch4b_rules.py::test_r4_11_10_interest_50_percent_rounded_up_on_loans",
+  "FAILED verification/rule-tests/test_ch4b_rules.py::test_r4_11_9_turn_order_by_cash_ties_keep_previous_order",
+  "FAILED verification/rule-tests/test_ch4b_rules.py::test_r4_1_2_stock_round_starts_with_player_1_card_holder",
+  "FAILED verification/rule-tests/test_ch5a_rules.py::test_r5_12_13_token_at_row_end_follows_arrow_instead_of_staying",
+  "FAILED verification/rule-tests/test_maint.py::test_M2_pool_may_reach_6_units",
+  "FAILED verification/rule-tests/test_maint.py::test_M3_phase3_minor_treasury_is_half_the_bid",
+  "PASSED verification/rule-tests/test_ch2_3_rules.py::test_r2_1_2_second_operating_round_applies_only_after_following_stock_round"
+ ]
+}
