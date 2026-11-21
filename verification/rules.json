@@ -1,0 +1,1872 @@
+[
+ {
+  "id": "1.1.1",
+  "section": null,
+  "text": " The game consists of an alternating series of stock rounds and operating rounds. Initially, there is one operating round after each stock round. Once the first 2-train is bought, there are two operating rounds after each subsequent stock round."
+ },
+ {
+  "id": "1.1.2",
+  "section": null,
+  "text": " In stock rounds, players act as investors, buying and selling shares in the various companies. The player with the most shares in each company is the company’s director."
+ },
+ {
+  "id": "1.1.3",
+  "section": null,
+  "text": " In operating rounds, players, as company directors, run the various companies that they control, deciding all actions that the companies take. They choose whether and how to build track and place station tokens, which trains to run on which routes, whether to pay or withhold dividends, and whether to invest in more trains."
+ },
+ {
+  "id": "1.2.1",
+  "section": "1.2 etiquette",
+  "text": " Players should try to speed play as much as possible. Deciding what share to buy and which track tile(s) to lay should as much as possible be done during other players’ turns. Other players should help the banker(s) by claiming payments promptly. All personal and company assets are public knowledge and must be disclosed to any player upon request. Assets should be arranged neatly so that the need for explicit requests is minimised. Players may negotiate with each other and strike deals. Such deals are not binding."
+ },
+ {
+  "id": "1.3.1",
+  "section": "1.3 about these rules",
+  "text": " The abilities of the private companies often create rules exceptions, or allow rules to be “broken.” In these instances, the ability of the private company overrides the normal rules. These exceptions are noted in the rules where appropriate, but are not described in detail. Full rules covering each private company are in the table beginning on page 36."
+ },
+ {
+  "id": "1.3.2",
+  "section": "1.3 about these rules",
+  "text": " When the rules refer to specific minor or private companies, they use the format Mx and Px respectively, where x is the number of the company."
+ },
+ {
+  "id": "1.4.1",
+  "section": "1.4 the map",
+  "text": " The map shows most of Great Britain. A hex grid is superimposed to show where hexagonal track tiles may be laid. Some hexes are coloured yellow or grey denoting pre-built track."
+ },
+ {
+  "id": "1.4.2",
+  "section": "1.4 the map",
+  "text": " Cities are represented by one or more large open circles. Some cities bear a label (BM, Y, S, C, T, or EC) upon which only corresponding track tiles may be placed. Each large circle in a city represents a station."
+ },
+ {
+  "id": "1.4.3",
+  "section": "1.4 the map",
+  "text": " A station with a company logo printed on it is that company’s home station. A station with a number printed in it is the home station of the correspondingly-numbered minor company."
+ },
+ {
+  "id": "1.4.4",
+  "section": "1.4 the map",
+  "text": " Stations are “occupied” if they contain a station token, otherwise they are “unoccupied.”"
+ },
+ {
+  "id": "1.4.5",
+  "section": "1.4 the map",
+  "text": " A company logo with a black banner printed in a hex but not in a station denotes that company’s destination city. EXAMPLE. Edinburgh (hex H5) contains two stations. One is the home station of the North British Railway (NBR), and the other is the home of minor company M3, the Edinburgh & Dalkeith Railway. It is also the destination city for the North Eastern Railway (NER). alkirk £40 NER NBR"
+ },
+ {
+  "id": "1.4.6",
+  "section": "1.4 the map",
+  "text": " Towns are represented by small solid black circles"
+ },
+ {
+  "id": "1.4.7",
+  "section": "1.4 the map",
+  "text": " The London hex is coloured black with pre-printed track extensions from each station to the adjacent hex. There is also an off-board rondel, located in the Thames estuary, showing the London hex. The rondel shows the location of minor company M14, The Metropolitan Railway, in London. The London value tokens are also placed here. Sections 6 and 7 provide more information on London."
+ },
+ {
+  "id": "1.4.8",
+  "section": "1.4 the map",
+  "text": " There are also various grey off-board areas around the edges of the map, such as Aberdeen and Cornwall. Off-board areas have two or three stations. Some off-board areas are destinations, and some contain the home stations of various companies."
+ },
+ {
+  "id": "1.4.9",
+  "section": "1.4 the map",
+  "text": " There is no direct connection between Mid Wales (hexes F25-F31) and either Holyhead to the north (hex F23) or Pontypool to the south (hex F33). Edinburgh Y"
+ },
+ {
+  "id": "1.4.10",
+  "section": "1.4 the map",
+  "text": "The connection between Merthyr Tydfil and Pontypool is discussed in Section 9."
+ },
+ {
+  "id": "1.5.1",
+  "section": "1.5 the bank pool",
+  "text": " The bank pool holds shares sold to the bank and trains discarded to the bank. Players or companies may purchase bank pool items per the normal rules."
+ },
+ {
+  "id": "1.6.1",
+  "section": "1.6 the stock market",
+  "text": " The stock market is shown as a grid. The value of a company’s shares (also known as the share price) is shown by the position of the company’s stock market token on this chart."
+ },
+ {
+  "id": "1.6.2",
+  "section": "1.6 the stock market",
+  "text": " “Descending share price order” is the order of companies based on their share price, from the highest to the lowest. If one or more companies have the same share price, the company’s whose stock market token is furthest to the right takes precedence. If several companies’ stock market tokens are in the same space, the order is from the topmost token to the bottommost."
+ },
+ {
+  "id": "1.6.3",
+  "section": "1.6 the stock market",
+  "text": " There is one space shaded solid red at £50. Only minor companies may start at this price."
+ },
+ {
+  "id": "1.6.4",
+  "section": "1.6 the stock market",
+  "text": " There are five red-outlined spaces at £60, £70, £80, £90 or £100. Major and minor companies may start at these prices. Section 4.11 covers starting minor companies."
+ },
+ {
+  "id": "1.6.5",
+  "section": "1.6 the stock market",
+  "text": " Several spaces in the lower left area of the stock market are shaded in yellow. Stock certificates of a company whose stock market value token is in this area do not count against the certificate limit (See section 4.2 for more information on certificate limits)."
+ },
+ {
+  "id": "1.7.1",
+  "section": "1.7 setting up the game",
+  "text": " Lay the map board on the table between the players. Place the major company share certificates nearby."
+ },
+ {
+  "id": "1.7.2",
+  "section": "1.7 setting up the game",
+  "text": " The bank is £12,000, including players’ starting money. The starting money is £2100 divided equally among the players. Distribute the appropriate number of bidding tokens to each player. number of players certificate limit start money per player £700 £525 £420 £350 £300 bidding tokens"
+ },
+ {
+  "id": "1.7.3",
+  "section": "1.7 setting up the game",
+  "text": " Sort the track tiles by type, and place them by the board. At the start of the game, only the yellow track will be used, but the other tiles should be available for inspection. Place the company charters and station tokens by the board."
+ },
+ {
+  "id": "1.7.4",
+  "section": "1.7 setting up the game",
+  "text": " Take the set of company concession certificates. Remove the London & North West Railway (LNWR) concession and shuffle the remaining concession certificates. Place the concession certificates in a face-up pile with the LNWR on top. The players may examine the order of the concession stack, but they cannot change it. Exception: P17 The Lancashire Union Railway."
+ },
+ {
+  "id": "1.7.5",
+  "section": "1.7 setting up the game",
+  "text": " Take the set of minor company director’s certificates. Remove M24, the Swansea & Mumbles Railway (S&MR) certificate and shuffle the remaining certificates. Place the certificates in a separate face up pile with the S&MR on top. The players may examine the order of the minor company stack, but they cannot change it. Exception: P17 The Lancashire Union Railway."
+ },
+ {
+  "id": "1.7.6",
+  "section": "1.7 setting up the game",
+  "text": " Take the set of private company certificates. Remove the P1, the Butterley Engineering Company (BEC) certificate and shuffle the remaining certificates. Place the certificates in a separate face up pile with the BEC certificate on top. The players may examine the order of the private company stack, but they cannot change it. Exception: P17 The Lancashire Union Railway."
+ },
+ {
+  "id": "1.7.7",
+  "section": "1.7 setting up the game",
+  "text": " Fill each bidding box with certificates from its corresponding stack, starting with the lowest-numbered box. For example, the certificate on top of the concession stack goes on concession bidding box 1, the next on box 2, etc."
+ },
+ {
+  "id": "1.7.8",
+  "section": "1.7 setting up the game",
+  "text": " Place the round marker on the space marked SR (“Stock Round”)."
+ },
+ {
+  "id": "1.7.9",
+  "section": "1.7 setting up the game",
+  "text": " Appoint one or more players to be banker and be responsible for conducting transactions with the bank."
+ },
+ {
+  "id": "1.7.10",
+  "section": "1.7 setting up the game",
+  "text": "Players may find it useful to place one reminder station token for each minor and major company near its home station. These tokens show reserved station spaces and have no impact on the game; only that company may place a station token in this space. They are not in play on the board and hence they do not count as station tokens for the purpose of blocking routes. A minor company’s home station is no longer reserved if it is removed from the game. Remove any reminder token it may have on the board. EXAMPLE. The figure below illustrates that M12 has not started operating, but its reserved token space is indicated by its token. Ipswich Hertford Colchester £40 £40 LNWR £20 London GWR L £20 £40 SECR LBSCR £20 Canterbury £40 Maidstone"
+ },
+ {
+  "id": "1.7.11",
+  "section": "1.7 setting up the game",
+  "text": "Arrange the trains in ascending order from top to bottom with the double-sided L/2-trains on top and the double-sided 7/E-trains on the bottom."
+ },
+ {
+  "id": "1.7.12",
+  "section": "1.7 setting up the game",
+  "text": "Shuffle and deal out the player number cards, one to each player, to randomly determine player order."
+ },
+ {
+  "id": "1.7.13",
+  "section": "1.7 setting up the game",
+  "text": "Place the “20” value London token in the rondel."
+ },
+ {
+  "id": "1.7.14",
+  "section": "1.7 setting up the game",
+  "text": "Play then begins with a stock round. game phases"
+ },
+ {
+  "id": "2.1.1",
+  "section": "2.1 overview",
+  "text": " The game starts in Phase 1. As the first of each new type of train is bought or exported the game phase advances correspondingly. The phase affects the availability of track tiles, the revenue from off-board areas and grey pre-printed cities, the train limit, and the number of operating rounds after each stock round."
+ },
+ {
+  "id": "2.1.2",
+  "section": "2.1 overview",
+  "text": " Phase change effects take place immediately, except when the number of operating rounds per stock round increases to two; this change only applies after the following stock round. The full effects of phase changes are shown in the table below."
+ },
+ {
+  "id": "2.1.3",
+  "section": "2.1 overview",
+  "text": " If a phase change causes trains of a prior type to rust, those trains are removed from the game immediately without compensation."
+ },
+ {
+  "id": "2.1.4",
+  "section": "2.1 overview",
+  "text": " The “train limit” is the number of trains a company is allowed to own. If a phase change lowers the train limit, companies with more trains than the new limit must discard the excess without compensation. Discarded trains go into the bank pool (doublesided trains retain their orientation at time of discard). This check is made after rusted trains have been discarded."
+ },
+ {
+  "id": "2.1.5",
+  "section": "2.1 overview",
+  "text": " If more than one company has excess trains, they decide which to discard in descending share price order. phase Triggered by Game start Purchase of first 2-train Purchase of first 3-train Purchase of first 4-train Purchase of first 5-train Purchase of first 6-train Trains rusted Train limit (minor) Train limit (major) - - L - Purchase of first 7/E train Buying trains ORs between SRs From bank only From bank or other company Tiles available Yellow Y + Green Y + G + Brown Y+G + B + Grey Off-board area value Yellow Green Brown Grey Tile Lay Per Turn: Major Tile Lay Per Turn: Minor N/A 1 Yellow 2 yellow or 1 upgrade 1 Yellow 1 yellow or 1 green upgrade Float at between £50 and £100 with capital of 2× stock value Minor companies Float at £50 with capital of £100 Acquisition of Minor Companies Not possible Can be acquired by major companies Can be acquired by major companies or directly from the bid boxes for £200 Concession Certificates Cannot be converted Provide a £100 discount against the cost of director’s certificate when converted. For LNWR straight exchange for director’s certificate Removed from play Major Company Flotation Not possible Floated once director’s certificate is exchanged by conversion of concession certificate Floated once 50% sold Capitalisation on Flotation Not applicable Float at between £50 and £100 with capital of sum bid Incremental capitalisation 100% capitalisation"
+ },
+ {
+  "id": "2.2.1",
+  "section": "2.2 phase descriptions",
+  "text": " As the game phase progresses, rule changes come into effect. Unless otherwise stated, once a phase introduces a new rule, the rule is in place for the rest of the game."
+ },
+ {
+  "id": "2.2.2",
+  "section": "2.2 phase descriptions",
+  "text": " The game starts in Phase 1."
+ },
+ {
+  "id": "2.2.3",
+  "section": "2.2 phase descriptions",
+  "text": "Phase 2 starts when the first L-train is converted to a 2-train, or the first 2-train is bought from the bank. • A minor company’s starting stock price is the winning bid amount divided by 2, then rounded down to the nearest starting value. The company’s starting treasury is 2× the stock value. • Concessions may be converted to director’s certificates during stock rounds. This floats the associated major company. • Major companies may now acquire operational minor companies for the remainder of the game. • The major company train limit is 4. • Two operating rounds will follow each stock round, starting from the stock round following the start of this phase, and continuing for the remainder of the game."
+ },
+ {
+  "id": "2.2.4",
+  "section": "2.2 phase descriptions",
+  "text": " Phase 3 starts when the first 3-train is bought. • L-trains rust. • Trains may now be bought from the bank, the bank pool, or from another company. • Yellow and green tiles are now available. • Minor companies may lay one yellow or one green upgrade tile for the remainder of the game. • Major companies may lay two yellow tiles or upgrade one tile to green. • A minor company’s starting stock value is the winning bid amount divided by 2, then rounded down to the nearest starting value, but now the full amount bid is given to the starting treasury. • Off-board areas use the second (green) value for earnings calculations."
+ },
+ {
+  "id": "2.2.5",
+  "section": "2.2 phase descriptions",
+  "text": "Phase 4 starts when the first 4-train is bought. • 2-trains rust. • The minor company train limit is 1. • The major company train limit is 3."
+ },
+ {
+  "id": "2.2.6",
+  "section": "2.2 phase descriptions",
+  "text": " • L-trains and 2-trains are available for purchase. • Trains may only be bought from the bank. • Yellow tiles are available. • Off-board areas use the first (yellow) value for earnings calculations. • Minor companies start at stock value £50 (worth £100) with £100 starting treasury, irrespective of the amount bid. • Companies may only lay one yellow tile per turn. • The train limit is 2 for minor companies. • There is one operating round after each stock round. • Major companies may not be floated."
+ },
+ {
+  "id": "2.2.7",
+  "section": "2.2 phase descriptions",
+  "text": ""
+ },
+ {
+  "id": "2.2.8",
+  "section": "2.2 phase descriptions",
+  "text": " Phase 5 starts when the first 5-train is bought. • Unconverted concessions are removed from play. • Yellow, green, and brown tiles are now available. • Major companies may lay two yellow tiles, or upgrade one tile to green or brown. • Minor companies’ track laying is unchanged from Phase 3. They may never upgrade track past green. • Major companies require 50% sold to float (still incremental capitalization). • Major companies may now acquire unfloated minor companies directly from the bidding boxes for the remainder of the game. • Major company train limit is 2 for the remainder of the game. • Off-board areas use the third (brown) value for earnings calculation. Phase 6 starts when the first 6-train is bought. • 3-trains rust. • Major companies require 50% sold to float, but receive full capitalization (the remaining five shares are placed in the bank pool upon flotation). Phase 7 starts when the first 7-train or E-train is bought. • 4-trains rust. • Yellow, green, brown, and grey tiles are now available. • Major companies may now lay two yellow tiles or one green, brown, or grey upgrade tile. • Minor companies’ track laying is unchanged. • Off-board areas use the fourth (grey) value for earnings calculation. corporate entities"
+ },
+ {
+  "id": "3.1.1",
+  "section": "3.1 private companies",
+  "text": " There are 18 private companies (21 if the 1822+ expansion is used) in the game. The Company Table beginning on page 36 provides specific information on each. In the case where a private company’s rules contradict the rules elsewhere, the private company’s rules take precedence."
+ },
+ {
+  "id": "3.1.2",
+  "section": "3.1 private companies",
+  "text": " While open, a private company pays its owner a fixed revenue (which in some cases is £0) at the start of each operating round."
+ },
+ {
+  "id": "3.1.3",
+  "section": "3.1 private companies",
+  "text": " The face value of all private companies is £0."
+ },
+ {
+  "id": "3.1.4",
+  "section": "3.1 private companies",
+  "text": " A private company can only be bought by players through the bidding mechanism in a stock round."
+ },
+ {
+  "id": "3.1.5",
+  "section": "3.1 private companies",
+  "text": " Private companies held by players count against the certificate limit. Exception: P16 off-shore tax haven does not."
+ },
+ {
+  "id": "3.1.6",
+  "section": "3.1 private companies",
+  "text": " Private companies may not be traded between players or sold to the bank. Private companies may not be transferred between companies."
+ },
+ {
+  "id": "3.1.7",
+  "section": "3.1 private companies",
+  "text": " Private companies are never forced to close. Exception: P15 Highland Railway and P20 Canterbury & Whitstable (1822+) must close at the start of Phase 7 (but may be closed earlier)."
+ },
+ {
+  "id": "3.1.8",
+  "section": "3.1 private companies",
+  "text": " Generally, a major or minor company may acquire private companies from consenting players at the start of its turn in an operating round. Players receive no compensation from the acquiring company for this transaction. See sections 5.16 - 5.18 for private company acquisitions."
+ },
+ {
+  "id": "3.1.9",
+  "section": "3.1 private companies",
+  "text": " Private company revenue is paid to the owning company treasury during the “pay the private companies” phase of each operating round. (Some private companies cease paying revenue once acquired by a major or minor company.) Thus, the revenue cannot be received by the owning player pre-acquisition and then again by the acquiring company on the turn in which it is acquired. P6 and P7 (mail contracts) are exceptions as this operation-based income is paid during the run trains phase."
+ },
+ {
+  "id": "3.1.10",
+  "section": "3.1 private companies",
+  "text": "The powers of private companies can generally only be exercised by their owning company, during the owning company’s operating turn. Exceptions: P9 Midland and Great Northern Joint Railway, P16 off-shore tax haven. EXAMPLE. The left and center diagrams show that the SECR has used the powers of private company P11 to place plain brown track before Phase 5, and has also used the powers of private company P2 to upgrade a green tile with a small town to a plain brown track tile with no town. The tile replaced is highlighted in diagrams. The right diagram shows how private company P5 can be used to place a station token in the English Channel. If there is no space for the token, P5 allows the owning company to lay track in the English Channel hex (for the standard £100 cost and following phase restrictions). In the right diagram, the Caledonian Railway has used P5 to upgrade the English Channel tile to brown and then place a station token there. N O English Channel EC X4 0 60 90 120 France 141 Folkstone X4 M £40 English Channel EC Portsmouth SECR SECR LBSCR 40LBSCR Dover 0 £100£100 T SECR SECR Brighton T Folkstone 0 £100£100 LBSCR 40LBSCR Dover T Brighton SECR Maidstone SECR SECR 405 405 T Folkstone LBSCR 40LBSCR Dover T Brighton Canterbury £40 SECR SECR £20 SECR Maidstone Maidstone T £40 £40 T Canterbury SECR £20 £40 LBSCR LBSCR Canterbury L SECR SECR GWR Reading £20 £20 £40 £40 LBSCR LBSCR LBSCR LBSCR £20 London 405 £40 £40 L SECR SECR T London GWR £40 LNWR LBSCR LNWR £20 £20 £20 L SECR SECR GWR £20 London £40 LNWR LBSCR LNWR £40 LNWR LBSCR LNWR £100 0 CR SECR £100 English Channel EC X9"
+ },
+ {
+  "id": "3.2.1",
+  "section": "3.2 minor companies",
+  "text": " There are 24 minor companies (30 if the 1822+ expansion is used) as listed in the Company Table beginning on page 36."
+ },
+ {
+  "id": "3.2.2",
+  "section": "3.2 minor companies",
+  "text": " A minor company only has a 50% director’s certificate (worth two shares). The other 50% of the company is effectively embedded in the company. There are no other shares of minor companies available to buy."
+ },
+ {
+  "id": "3.2.3",
+  "section": "3.2 minor companies",
+  "text": " The director of each company controls its actions."
+ },
+ {
+  "id": "3.2.4",
+  "section": "3.2 minor companies",
+  "text": " Players can only buy minor companies through the bidding mechanism in a stock round. See sections 4.10 and 4.11 for information on starting minor companies."
+ },
+ {
+  "id": "3.2.5",
+  "section": "3.2 minor companies",
+  "text": " Once bought, a minor company may never be sold, though it can be acquired by a major company during its acquisition phase."
+ },
+ {
+  "id": "3.2.6",
+  "section": "3.2 minor companies",
+  "text": " Minor companies can only acquire private companies whose cards have a green background."
+ },
+ {
+  "id": "3.2.7",
+  "section": "3.2 minor companies",
+  "text": " Minor companies can only lay one yellow tile, or upgrade one tile to green, per operating round. Minor companies can never upgrade tiles past green, even with the use of a private company power."
+ },
+ {
+  "id": "3.2.8",
+  "section": "13.3 north regional scenario",
+  "text": ", 5.12.1 upgrading, 5.7 Pullman cars acquiring, 5.10.8 and E-trains, 5.11.15 and LP-trains,"
+ },
+ {
+  "id": "3.2.9",
+  "section": "3.2 minor companies",
+  "text": " A minor company must own a train at the end of its operating turn."
+ },
+ {
+  "id": "3.3.1",
+  "section": "3.3 major companies",
+  "text": " There are ten major companies, as listed in the Company Tables starting on page 36."
+ },
+ {
+  "id": "3.3.2",
+  "section": "3.3 major companies",
+  "text": " Each company’s stock consists of nine share certificates, one of which (the director’s certificate) represents 20% (two shares) of the total shares in the company. All other share certificates represent a single 10% share. Exception: the LNWR has 10 certificates each representing a 10% share, including the director’s certificate."
+ },
+ {
+  "id": "3.3.3",
+  "section": "3.3 major companies",
+  "text": " The director’s certificate is always owned by the majority stockholder in the company. This player is the director of that company. If another player acquires more shares than the director, or the director sells enough shares to bring their holding below that of another player, the director’s certificate is swapped for two 10% certificates belonging to that other player (or one in the case of the LNWR) and the other player becomes the director."
+ },
+ {
+  "id": "3.3.4",
+  "section": "3.3 major companies",
+  "text": " The director of each company controls the company’s actions."
+ },
+ {
+  "id": "3.3.5",
+  "section": "3.3 major companies",
+  "text": " Each major company has a total of eight tokens (the LNWR has nine); one each to represent its share price and latest earnings, and six (the LNWR has seven) to represent stations on the map."
+ },
+ {
+  "id": "3.3.6",
+  "section": "3.3 major companies",
+  "text": " Major companies each have a destination city. These are printed on the board (as described in 1.4.5) and on the company charters. They are also listed in the table on page 40."
+ },
+ {
+  "id": "3.3.7",
+  "section": "13.3 north regional scenario",
+  "text": ", 4.5.6 private company acquisitions, 5.6 station tokens, 5.9 acquisitions, 3.2.6, 5.6 requirement, 5.11.19 first turn housekeeping, 5.5 revenue locations, 5.11.2 minor company routes, 5.4 stock certificates, 3.3.2 setup, 1.7.5 tile placements, 3.3.8 shares of, 3.2.2 tokens, 3.3.5 tile placements, 3.2.7 number of, 5.1.1 train ownership train ownership private company Pontypool, 9.1.2–3 acquisitions, 5.6 and minor company requirement, 3.3.10 requirement, 3.2.9 acquisitions, 5.16–18 definition of, 5.4.1 Merthyr Tydfil- major company formation minor company acquisitions routes, 5.4 acquisitions, 5.16.3 overview of, 4.6 from bid boxes, 5.18 station token off-board areas, 5.4.6 buying director’s and Merthyr Tydfil and placements, 5.9 certificates, 4.8 Pontypool, 9.1.6 stock, issuing and and station token redeeming, 5.19 placement, 5.9.6 capitalization, 4.8.4–5 the Metropolitan Railway, 7 completion of, 4.9 from players, 5.17 track, laying and converting concessions, 4.7 requirements, 5.16 upgrading, 5.7 the map, 1.4 medium regional scenario, 13.2 Pontypool, 9 and minor company acquisitions, 9.1.6 restrictions on, 5.4.3–5 station token requirement, 5.4.2 train purchases, 5.13–15 north regional scenario, 13.3 Merthyr Tydfil and trains, running, 5.11 turn order, 5.2 off-board areas overview of, 1.4.8 scenarios, 13 2-player variant, 13.4 phases, 2 medium regional, 13.2 player order cards north regional, 13.3 and routes, 5.4.2–3, 5.4.6 setup, 1.7.12 routes between, 9.1.2–3 value of, 5.11.10 stock round end, 4.11.9 station tokens, placing, operating rounds, 5 Pontypool. See Merthyr Tydfil selling shares, 4.4 overview of, 4.4.1 directorship"
+ },
+ {
+  "id": "3.3.8",
+  "section": "3.3 major companies",
+  "text": " Major companies can lay one yellow tile per operating round in Phase 2. From Phase 3 on they may either lay one or two yellow tiles, or upgrade one tile, per operating round."
+ },
+ {
+  "id": "3.3.9",
+  "section": "3.3 major companies",
+  "text": " A major company’s earnings may be withheld in the treasury, paid out as a dividend, or half withheld and half paid."
+ },
+ {
+  "id": "3.3.10",
+  "section": "3.3 major companies",
+  "text": "A major company must own a train at the end of its operating turn."
+ },
+ {
+  "id": "3.4.1",
+  "section": "3.4 concessions",
+  "text": " Each major company has an associated concession certificate (on the back of the director’s certificate). Concessions are used to start major companies in Phases 2-4, as described in section 4.7. Director’s certificates may not be purchased while the corresponding concession is still in play."
+ },
+ {
+  "id": "3.4.2",
+  "section": "3.4 concessions",
+  "text": " Concessions are bought through the bidding boxes as described in section 4.10. The face value of a concession is £100."
+ },
+ {
+  "id": "3.4.3",
+  "section": "3.4 concessions",
+  "text": " Concessions count towards the owning player’s certificate limit."
+ },
+ {
+  "id": "3.4.4",
+  "section": "3.4 concessions",
+  "text": " Each concession pays a dividend of £10 per operating round to the owning player."
+ },
+ {
+  "id": "3.4.5",
+  "section": "3.4 concessions",
+  "text": " At the start of Phase 5 the concession certificates are removed from play. Flip the concessions to the director’s certificate side and place them with the company’s other shares. From then on, director’s certificates may be bought as a stock round buy action. stock rounds"
+ },
+ {
+  "id": "4.1.1",
+  "section": "4.1 introduction",
+  "text": " At the start and end of each stock round, if there are any vacancies in the bidding boxes, all the certificates present are shifted to the lowest numbered boxes, and then the concession certificates, minor company director’s certificates, and private company certificates on the top of their respective piles are placed in any appropriate empty bidding boxes (filling lowest numbered vacancies first). Thus, in the first stock round, four of the minor company director’s certificates, and three each of the major company concession certificates and the private company certificates are moved from their respective stacks to empty bidding boxes."
+ },
+ {
+  "id": "4.1.2",
+  "section": "4.1 introduction",
+  "text": " The stock round starts with the holder of the Player 1 card and proceeds in player number order until all players pass in turn. All share certificate transfers in a stock round are made between a player and either the bank or a company. Players may never buy shares directly from one another."
+ },
+ {
+  "id": "4.1.3",
+  "section": "4.1 introduction",
+  "text": " During a player’s stock round turn, a player may perform one or more of the following actions in the order listed below. A player may choose to take no action and pass instead. A. Sell any number of certificates subject to the limits set out below in section 4.4. B. Repay loans. C. Do one of the following:"
+ },
+ {
+  "id": "4.1.4",
+  "section": "4.1 introduction",
+  "text": " • Buy one major company share certificate. • Convert a concession certificate to a director’s certificate. • Place or increase up to three bids on the concession certificates, minor company director’s certificates, and/or private companies, using the bidding boxes. The stock round ends when all players have passed consecutively. At this point bids are resolved, share prices may change, and the player order for the next stock round is determined."
+ },
+ {
+  "id": "4.2.1",
+  "section": "4.2 certificate limit",
+  "text": " Each certificate a player owns counts against the player’s certificate limit, which is determined by the number of players in the game. number of players certificate limit"
+ },
+ {
+  "id": "4.2.2",
+  "section": "4.2 certificate limit",
+  "text": " Private companies, concessions, and stock certificates owned by players count against the certificate limit. Exception: P16 offshore tax haven does not."
+ },
+ {
+  "id": "4.2.3",
+  "section": "4.2 certificate limit",
+  "text": " Share certificates for a company whose stock market value token is in the yellow area of the stock market do not count against the certificate limit."
+ },
+ {
+  "id": "4.2.4",
+  "section": "4.2 certificate limit",
+  "text": " A player at certificate limit may not make any purchases that would cause them to exceed the limit. Exception: buying a share for P16 off-shore tax haven."
+ },
+ {
+  "id": "4.2.5",
+  "section": "4.2 certificate limit",
+  "text": " A player may not place a bid on an item if they are at the certificate limit. Each item on which a player currently has the highest bid counts as a certificate against the certificate limit."
+ },
+ {
+  "id": "4.2.6",
+  "section": "4.2 certificate limit",
+  "text": " A player owning more stock than the certificate limit will be required to sell down to meet the limit. See rule 4.4.7."
+ },
+ {
+  "id": "4.3.1",
+  "section": "4.3 player loans",
+  "text": " Over the course of the game, a player may be forced to take loans to fund train purchases (see sections 5.14 Forced Train Purchase and 5.15 Emergency Money Raising). A player may not buy any shares, convert a concession, or place a bid whilst they have loans."
+ },
+ {
+  "id": "4.3.2",
+  "section": "4.3 player loans",
+  "text": " After their “sell shares” step, a player may make a payment on outstanding loans. This may be for the full amount or a partial amount. The money is paid to the bank."
+ },
+ {
+  "id": "4.3.3",
+  "section": "4.3 player loans",
+  "text": " A player is not obliged to sell shares to raise money to pay off loans."
+ },
+ {
+  "id": "4.3.4",
+  "section": "4.3 player loans",
+  "text": " If a player still has debt at the end of a stock round, a further 50% interest (rounded up) is charged by the bank. Any debt still held by a player at the end of the game is subtracted from their wealth."
+ },
+ {
+  "id": "4.3.5",
+  "section": "4.3 player loans",
+  "text": " The sum of any loans in play does not count towards the bank limit of £12,000 (i.e. treat the loan as coming from a separate source, not the bank)."
+ },
+ {
+  "id": "4.4.1",
+  "section": "4.4 selling shares",
+  "text": " In their stock round turn, a player may sell any number of stock certificates, transferring them from their holdings into the bank pool subject to the constraints set out below: Private companies, minor companies, and concessions may not be sold."
+ },
+ {
+  "id": "4.4.2",
+  "section": "4.4 selling shares",
+  "text": " • Shares cannot be sold in a company that has not completed an operating round. • A maximum of 50% of a company’s stock is allowed in the bank pool. • The director’s certificate cannot be sold into the bank pool. • Shares held by P16 Tax Haven may not be sold. If due to selling shares, the share holding of a company director drops below that of another player (who must own at least 20% of the company, or 10% in the case of the LNWR) that other player becomes the new director. If there is more than one eligible player, the new director is the player with the largest holding, or, in the case of a tie, the tying player closest to the outgoing director in next player order. The outgoing director exchanges their director’s certificate for two ordinary 10% shares (or one share in the case of the LNWR) belonging to the new director. This exchange occurs before resolving the rest of the sale. This mechanism allows the director of a company to divest themselves of the directorship without the director’s certificate entering the bank pool."
+ },
+ {
+  "id": "4.4.3",
+  "section": "4.4 selling shares",
+  "text": " The player receives the current share price from the bank for each share sold."
+ },
+ {
+  "id": "4.4.4",
+  "section": "4.4 selling shares",
+  "text": " The company’s price now drops. Move its share market token down one space vertically per share sold. If the token is at or reaches the bottommost space then it does not move further."
+ },
+ {
+  "id": "4.4.5",
+  "section": "4.4 selling shares",
+  "text": " If the token moves to a space on the stock market which is already occupied by other stock market tokens, it is placed at the bottom of the pile; if the token stays on its original space it stays in its relative position in the pile."
+ },
+ {
+  "id": "4.4.6",
+  "section": "4.4 selling shares",
+  "text": " A player who sells shares in more than one company in a single turn decides on the order in which to sell them; this will decide the relative order of companies whose stock market tokens move to the same space."
+ },
+ {
+  "id": "4.4.7",
+  "section": "4.4 selling shares",
+  "text": " A player who owns more certificates than the certificate limit allows must sell stock, if possible, to bring themselves within the limit at their first opportunity in a stock round. If they can sell some stock but not enough to be within the limit, then they must sell what they can. They may choose freely which stock to sell but all rules covering sales must be respected."
+ },
+ {
+  "id": "4.5.1",
+  "section": "4.5 buying shares",
+  "text": " To buy stock, the active player transfers one certificate from the bank pool or a company treasury into their own holdings, paying the stock market value. If the certificate is from the bank pool, the payment is made to the bank; if the certificate is from the company treasury, the payment is made to the company treasury."
+ },
+ {
+  "id": "4.5.2",
+  "section": "4.5 buying shares",
+  "text": " Only shares that have a stock market value can be bought in this way. The director’s certificate of a company cannot be bought by a “buy” action until Phase 5, and ordinary shares of a company cannot be bought until some player holds the director’s certificate. From Phase 5, the stock market value is set by the purchasing player when taking the director’s certificate. See section 4.8 for more information."
+ },
+ {
+  "id": "4.5.3",
+  "section": "4.5 buying shares",
+  "text": " Buying stock does not cause the current share price to change."
+ },
+ {
+  "id": "4.5.4",
+  "section": "4.5 buying shares",
+  "text": " Only one certificate may be bought per stock round turn."
+ },
+ {
+  "id": "4.5.5",
+  "section": "4.5 buying shares",
+  "text": " A player cannot buy stock in a company if they sold any of its stock earlier in the same stock round."
+ },
+ {
+  "id": "4.5.6",
+  "section": "4.5 buying shares",
+  "text": " Players may not buy additional certificates in a company once they hold 60% of that company (exception: P16 Tax Haven). However, it is possible for a player to acquire up to 100% of a major company’s stock through share exchange during the acquisition of minor companies (see section 5.17)."
+ },
+ {
+  "id": "4.5.7",
+  "section": "4.5 buying shares",
+  "text": " A player cannot buy any share certificate that would cause them to exceed the certificate limit, even if the purchase would cause a change of directorship and at once reduce the player’s holding back to the limit. Exception: buying a share certificate to put into P16 off-shore tax haven."
+ },
+ {
+  "id": "4.5.8",
+  "section": "4.5 buying shares",
+  "text": " Stock from a company whose share price token is in the yellow zone of the stock market does not count against the certificate limit. A player at the certificate limit may purchase stock in such a company."
+ },
+ {
+  "id": "4.5.9",
+  "section": "4.5 buying shares",
+  "text": " If, because of a share purchase, the player’s holding exceeds that of the current director, they become the new director, exchanging the director’s certificate for two 10% certificates (or one in the case of the LNWR) of their own."
+ },
+ {
+  "id": "4.6.1",
+  "section": "4.6 major company formation overview",
+  "text": " The procedure for forming major companies depends on the phase."
+ },
+ {
+  "id": "4.6.2",
+  "section": "4.6 major company formation overview",
+  "text": " Major companies may not be formed in Phase 1."
+ },
+ {
+  "id": "4.6.3",
+  "section": "4.6 major company formation overview",
+  "text": " In Phases 2-4, players cannot buy director’s certificates directly. Instead, they acquire them by converting the associated concession as a stock round action. This procedure is covered in section 4.7."
+ },
+ {
+  "id": "4.6.4",
+  "section": "4.6 major company formation overview",
+  "text": " Starting in Phase 5, players buy director’s certificates directly, and the newly formed company does not become operational until 50% of its shares are sold. This procedure is covered in section 4.8, 4.7 converting a concession to a director’s certificate (phases 2-4)"
+ },
+ {
+  "id": "4.7.1",
+  "section": "4.6 major company formation overview",
+  "text": " In Phases 2-4, a player may start a major company by converting its concession to the director’s share."
+ },
+ {
+  "id": "4.7.2",
+  "section": "4.6 major company formation overview",
+  "text": " For all companies except the LNWR, the concession holder announces that they are converting the concession. They then turn over the concession certificate to the 20% director’s certificate. They then announce the starting share price by putting the share price token in the corresponding red-outlined space (between £60 and £100) on the stock market, underneath any tokens already there."
+ },
+ {
+  "id": "4.7.3",
+  "section": "4.6 major company formation overview",
+  "text": " The director now takes the appropriate company charter and places £100 from the bank into the company treasury on its charter. They then pay the balance of twice the starting price less £100 into the company treasury from their own funds. The company is now floated and will operate in the next operating round. The remaining certificates are placed in the company treasury and are available for purchase by players."
+ },
+ {
+  "id": "4.7.4",
+  "section": "4.6 major company formation overview",
+  "text": " For the LNWR: The concession holder announces that they are converting the concession. They then turn over the concession certificate to the 10% director’s certificate side. They then announce the starting share price by putting the share price token in the corresponding red-outlined space (between £60 and £100) on the stock market, underneath any tokens already there. They then take the LNWR charter and take the initial starting price from the bank and place it in the company treasury on its charter. The company is now floated."
+ },
+ {
+  "id": "4.7.5",
+  "section": "4.6 major company formation overview",
+  "text": " Note that concessions can only be bought through the bidding mechanism. At the end of a stock round, those items that have bids on them are bought. A player therefore does not gain possession of a concession they have bid on until the stock round has finished; they therefore cannot convert it until the following stock round. See section 4.11 for more details."
+ },
+ {
+  "id": "4.7.6",
+  "section": "4.6 major company formation overview",
+  "text": " The company has now floated. Proceed to section 4.9 to complete major company setup. EXAMPLE. Alice is converting the GWR concession to the director’s certificate. She first turns the concession over to the director’s certificate side. Next, she sets the initial share price at £80 by placing a GWR token in the £80 red-outlined box on the stock market. The company will start with twice this value (£160) in its treasury, because the director’s certificate is worth two shares. To put this amount into the treasury she first takes £100 from the bank (the face value of the concession), and then adds £60 of her own funds. The GWR now has £160 in its treasury, twice the starting price of £80."
+ },
+ {
+  "id": "4.8.1",
+  "section": "4.8 forming a major company directly (phases 5-7)",
+  "text": " At the start of Phase 5, the concession certificates are removed from play and the director’s certificates may be bought as a buy action. Flip the concessions to the director’s certificate side and place them with each company’s other shares."
+ },
+ {
+  "id": "4.8.2",
+  "section": "4.8 forming a major company directly (phases 5-7)",
+  "text": " To form a major company in Phase 5 or later, the forming player sets the initial share price (placing a token on the corresponding £60, £70, £80, £90 or £100 space), and purchases the director’s share for twice that price, paying the money into the company treasury."
+ },
+ {
+  "id": "4.8.3",
+  "section": "4.8 forming a major company directly (phases 5-7)",
+  "text": " The newly formed company does not float and become operational until 50% of its shares are sold."
+ },
+ {
+  "id": "4.8.4",
+  "section": "4.8 forming a major company directly (phases 5-7)",
+  "text": " Starting in Phase 6, once 50% of the shares are sold, the company receives an additional five times its starting value from the bank into its treasury, and the remaining 50% of shares (five 10% certificates) are placed in the bank pool. This does not affect the share price. In total the company will now have ten times its starting value in the treasury: half from share purchases, and half from the bank."
+ },
+ {
+  "id": "4.8.5",
+  "section": "4.8 forming a major company directly (phases 5-7)",
+  "text": " Thus a company that floats before Phase 6 will be funded through incremental capitalization as players buy its shares, whereas a company that floats in Phase 6 or 7 has full capitalization (with five shares placed in the pool)."
+ },
+ {
+  "id": "4.8.6",
+  "section": "4.8 forming a major company directly (phases 5-7)",
+  "text": " The flotation conditions depend on the current phase when the company floats (i.e. converts its concession or reaches 50% sold), not when it first operates. A company floats during a stock round, but phase changes occur at the end of a stock round (due to train exports) or during an operating round (due to train purchases)."
+ },
+ {
+  "id": "4.8.7",
+  "section": "4.8 forming a major company directly (phases 5-7)",
+  "text": " Proceed to 4.9 to complete major company setup."
+ },
+ {
+  "id": "4.9.1",
+  "section": "4.9 completing major company formation",
+  "text": " Whether formed by converting a concession or directly, the rest of the setup is the same."
+ },
+ {
+  "id": "4.9.2",
+  "section": "4.9 completing major company formation",
+  "text": " The director takes the six station tokens and places them on the charter in the spaces that match the type of token. Each company has five regular tokens (the LNWR has six) and one black banner destination token. The spaces on the charter that are blank are not filled at this time."
+ },
+ {
+  "id": "4.9.3",
+  "section": "4.9 completing major company formation",
+  "text": " They then place an additional token on the revenue track."
+ },
+ {
+  "id": "4.9.4",
+  "section": "4.9 completing major company formation",
+  "text": " Note that the company’s home station is not placed on the map until first turn housekeeping (section 5.5)."
+ },
+ {
+  "id": "4.10.1",
+  "section": "4.10 bidding",
+  "text": "There are four bidding boxes for the minor company director’s certificates, and three of each for the concessions and private company certificates."
+ },
+ {
+  "id": "4.10.2",
+  "section": "4.10 bidding",
+  "text": "At the start and end of each stock round, if there are any vacancies in the bidding boxes, the remaining certificates are all shifted to the lowest available numbered boxes, and then the top concession certificates, minor company director’s certificates, and private company certificates are placed in any corresponding empty bidding boxes (filling lowest numbered vacancies first)."
+ },
+ {
+  "id": "4.10.3",
+  "section": "4.10 bidding",
+  "text": "Each player has a limited number of bidding tokens (based on the number of players in the game, rule 1.7.2), which also represents the maximum number of the items available that they may bid on during any stock round."
+ },
+ {
+  "id": "4.10.4",
+  "section": "4.10 bidding",
+  "text": "To place a bid, a player either • Places an unallocated bidding token in an empty space on a bidding box • Moves a previously-placed bidding token to a higher-valued empty space on the same item. This is only allowed if another player has placed a higher bid on that item."
+ },
+ {
+  "id": "4.10.5",
+  "section": "4.10 bidding",
+  "text": "Players may place and/or move up to three bids in a stock turn."
+ },
+ {
+  "id": "4.10.6",
+  "section": "4.10 bidding",
+  "text": "The opening bid on any item must be equal to or greater than the face value. All bids must be in whole multiples of £5."
+ },
+ {
+  "id": "4.10.7",
+  "section": "4.10 bidding",
+  "text": "A bid must be higher than any previously placed bids for that item, and the bid must not take the player’s committed resources to more than their available cash in hand. A player’s committed resources are the sum of the amounts bid for those items for which they have the highest bid. Note that a player’s committed resources may go down if they are outbid by another player on an item for which their bid was previously highest."
+ },
+ {
+  "id": "4.10.8",
+  "section": "4.10 bidding",
+  "text": "A player may not place or move a bid on an item if they are at the certificate limit. Each item on which a player currently has the highest bid counts as a certificate against the certificate limit. (This applies to P16 tax haven as well.)"
+ },
+ {
+  "id": "4.10.9",
+  "section": "4.10 bidding",
+  "text": "If a player wishes to bid £100 or more over face value for an item, they may do so. A spare token (i.e. not one of the players’ actual bidding tokens), or a £100 chip is placed on the item each time the bidding goes “round the clock.”"
+ },
+ {
+  "id": "4.10.10",
+  "section": "4.10 bidding",
+  "text": "A player who has bid on an item cannot withdraw that bid by taking the bidding token back into their hand or by moving it to make a bid on another item, even if they are later overbid by another player. 18 1 125120115110105 00 195 190 185 80 50% Director’s Certificate Two Shares London, Brighton and South Coast Railway Cost £100 Revenue £10 N Scarborough LBSCR CR Concession 3 M Concession Discount £100 for LBSCR Director’s Certiﬁcate Start: London, Destination: Brighton £20 NER L 11 1 125120115110105 Revenue £10 Cost £100 125120115110105 Caledonian Railway 00 195 190 185 80 100 195 190 185 80 0 195 190 185 180 00 195 190 185 180 Concession Discount £100 for CR Director’s Certiﬁcate Start: Glasgow, Destination: Carlisle 0 195 190 185 180 00 195 190 185 180 175170165160155 125120115110105 175170165160155 CR Concession 2 50% London and Southampton Railway Company 17 Minor 175170165160155 175170165160155 Concession 175170165160155 Start: London (NW) & Manchester, Destination: Manchester 175170165160155 Revenue £10 125120115110105 Director’s Certificate Two Shares 175170165160155 Cost £100 125120115110105 50% 0 145 140 135 130 London and North Western Railway Director’s Certificate Two Shares Newcastle and North Company Shields Railway 4 Minor LNWR CR Concession 1 Penarth Harbour and Railway2 Company 19 MinorDock 0 145 140 135 130 50 145 140 135 130 125120115110105 50% 0 145 140 135 130 50 145 140 135 130 0 145 140 135 130 50 145 140 135 130 Director’s Certificate Two Shares Swansea and Mumbles Railway Company 24 Minor EXAMPLE. The figure illustrates a series of bids (in the first stock round) as summarised in the table below. The private company bidding track is not illustrated. We can assume that all players apart from grey (who has 5 bidding tokens in play on the minor company and concession bidding tracks) might have placed some bids on the private companies. The pink and white players have been competing for the Welsh minor companies, and pink has won M19 at a price of £140, while white has won M24 at a price of £120. M19 is pink’s only winning bid, but at least M19 will operate first, as it had the highest bid value. The white player can content themselves with M24 and the LNWR concession. After a four-way fight for the LBSCR concession, the grey player has dropped out of all their expensive battles and has opted for the low cost, lower return strategy: buying M4 and the Caledonian concession both at face value. Conversely, the blue player has decided to pay the price of winning the better companies, and has won the LBSCR concession for £150 and M17 for £125. Without knowing what is coming up next in the bidding stacks we cannot judge these bids, but none of them seem unreasonable. player m24 m19 m4 m17 c: lnwr c: cr c: lbscr Pink 115 140 - - 125 - 140 White 120 125 - - 130 - 120 Grey - - 100 120 100 100 115 Blue - - - 125 - - 150"
+ },
+ {
+  "id": "4.11.1",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "Once all players pass consecutively, the stock round is over."
+ },
+ {
+  "id": "4.11.2",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "Each player pays for and takes the items on which they were the highest bidder. All players remove their bidding tokens."
+ },
+ {
+  "id": "4.11.3",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "Minor companies purchased from the bid boxes are then floated. Flotation order is from the highest sum bid to the lowest. In the case of a tie, the company from the lowest-numbered box takes precedence."
+ },
+ {
+  "id": "4.11.4",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "The player with the highest bid on a minor company must buy the 50% director’s certificate for the price bid. The starting price for the company and its initial capitalization depend upon the phase of the game in which it was bought: • In Phase 1, irrespective of the price bid, the minor company starts at £50 (the solid red colored space on the stock market) with £100 starting treasury. The certificate represents two shares, so is worth twice the stock market price; i.e. it is worth £100. • In Phase 2, the price bid is divided by two and rounded down to the highest value in the starting value space on the stock market (outlined red, including the solid red colored space). The company has twice this value as its starting treasury. For example, a bid of £100, £105, £110 or £115 will result in a price of £50, with £100 capital. A bid of £120, £125, £130, or £135 will result in a price of £60, with £120 capital. And so on, with any bid over £200 resulting in a price of £100 with £200 capital. • In Phase 3 and later, the price bid is divided by two and rounded down to the highest value in the starting value space on the stock market (outlined red, including the solid red colored space) as in Phase 2. The company starts with the sum bid as its starting treasury. For example, a bid of £135 would give a start price of £60 but with £135 capital, and a bid of £350 would give a start price of £100 (and therefore value £200), with £350 starting capital. The following table shows possible starting prices per phase. starting capital bid price share price $110-$115 $50 $100 $120-$135 $60 $120 $140-$155 $70 $140 $160-$175 $80 $160 $180-$195 $90 $180 $200+ $100 $200 phase 2 only phases 3 and up Price bid"
+ },
+ {
+  "id": "4.11.5",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "Because minor companies run before major companies, it is convenient to place minor company tokens on top of any major company tokens already on the relevant space. If any minor companies already occupy the relevant space, then the new tokens are placed beneath them."
+ },
+ {
+  "id": "4.11.6",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "After the purchased minor companies have been floated, check to see if any minor company certificates remain in the bid boxes. For each minor company with no bid placed upon it, one L/2-train is exported from the bank (not the bank pool); exported trains are removed from the game. If there are no L/2-trains remaining in the bank, then no action is taken."
+ },
+ {
+  "id": "4.11.7",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "Then, if the minor company in Bid Box 1 was not sold during the stock round, it is removed from play and the next available new train from the bank (not bank pool) is exported. Thus, a minor unsold in Bid Box 1 could export two trains from the bank if there is still at least one L/2 train remaining. This train export counts as a sale and can cause a phase change."
+ },
+ {
+  "id": "4.11.8",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "All other unsold items stay on the bidding boxes. Those in higher numbered boxes are moved to occupy lower numbered bidding boxes. For example, if a minor company in Bid Box 3 was the only item unsold, it would be moved to Bid Box 1 before repopulating the remaining bidding boxes. The bidding boxes are refilled at the end and again at the beginning of a stock round (this is only relevant after Phase 5, when companies can acquire minor companies directly from the bidding boxes during an operating round)."
+ },
+ {
+  "id": "4.11.9",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "The Player 1 player order card for the next stock turn is given to the player with the most cash. The Player 2 card is given to the player with the second most cash, and so on. If two players have equal cash, their stock turn order relative to each other stays unchanged from the previous stock round. Exception: P9 Midland and Great Northern Joint Railway."
+ },
+ {
+  "id": "4.11.10",
+  "section": "4.11 end of stock round and floating minor companies",
+  "text": "50% interest is charged on any outstanding loans."
+ },
+ {
+  "id": "4.12.1",
+  "section": "4.12 end of stock round share price movement",
+  "text": "At the end of the stock round, if 100% of a major company is in players’ hands (including P16 Tax Haven), its stock market token moves one space up on the stock market. If it is at the top of its column it does not move."
+ },
+ {
+  "id": "4.12.2",
+  "section": "4.12 end of stock round share price movement",
+  "text": "All affected stock market tokens move in descending share price order, and from top to bottom when stacked together. If a company’s token moves to a space which is already occupied, it goes to the bottom of the stack."
+ },
+ {
+  "id": "4.12.3",
+  "section": "4.12 end of stock round share price movement",
+  "text": "Minor companies are never 100% sold out, as only 50% of their share stock is available for sale. 5 operating rounds"
+ },
+ {
+  "id": "5.1.1",
+  "section": "5.1 overview",
+  "text": " Initially there is a single operating round after each stock round. Once the first 2-train has been bought, after the next stock round there will be two operating rounds after each stock round."
+ },
+ {
+  "id": "5.2.1",
+  "section": "5.2 operating round turn order",
+  "text": " During an operating round, companies run in the following order: A. Private companies and concessions pay their dividends to their owners (whether players or companies), if applicable (rules 3.1.2 and 3.4.4). B. Minor companies run in descending share price order. C. Major companies run in descending share price order."
+ },
+ {
+  "id": "5.2.2",
+  "section": "5.2 operating round turn order",
+  "text": " If the stock values of two or more companies are in the same space on the stock market, then the one whose stock market token is on top runs first. If the stock values of two or more companies are equal but in different spaces, the furthest to the right runs first. The determination of which company runs next is deferred until the end of the previous company’s operations; sales of stock during an operating round (which in practice rarely occurs) may affect this order."
+ },
+ {
+  "id": "5.3.1",
+  "section": "5.3 operating round actions",
+  "text": " All decisions made on behalf of a company are made solely by its director. When a company runs, it performs the following activities. Most are optional, but if done, they must occur in this order: A. Perform first turn housekeeping (first turn only, compulsory). B. Acquire private companies from (consenting) players. C. Lay/upgrade track. D. Check for connection to destination and place destination token if applicable (major companies only). E. Place one station token (major companies only). F. Run train(s), if any, to establish earnings (compulsory). G. Pay, split, or withhold dividends (minor companies must split earnings). H. Buy trains (usually optional but sometimes compulsory). I. Acquire a minor company from a (willing) player, or from Phase 5 onwards, from a bidding box (major companies only). J. Issue or redeem company stock (major companies only)."
+ },
+ {
+  "id": "5.4.1",
+  "section": "5.4 routes",
+  "text": " Many company activities revolve around routes. A route of a company is a continuous unbranched length of track, including at least one city or off-board area with a station token on it belonging to the company."
+ },
+ {
+  "id": "5.4.2",
+  "section": "5.4 routes",
+  "text": " A company’s route may only pass through a city or off-board area if it has a station token there, or if there is at least one unoccupied station present, or both."
+ },
+ {
+  "id": "5.4.3",
+  "section": "5.4 routes",
+  "text": " A route is blocked by and cannot pass through any city or off-board area completely filled with station tokens belonging to other companies, although it may begin and/or end in such a city."
+ },
+ {
+  "id": "5.4.4",
+  "section": "5.4 routes",
+  "text": " A route may not use any segment of track more than once."
+ },
+ {
+  "id": "5.4.5",
+  "section": "5.4 routes",
+  "text": " For the purposes of running a train, a route must not reach or pass through any city or town more than once. It is permissible for a train to pass through both towns in a double town hex, so long as the route uses different track segments each time (section 5.11 covers train runs)."
+ },
+ {
+  "id": "5.4.6",
+  "section": "5.4 routes",
+  "text": " Most grey off-board areas are termini. A route can begin or end at one of these locations, but cannot pass through. In all other respects, the pointed pre-printed track functions as normal track linking the stations in the off-board area to the adjoining hex. These off-board locations have multiple routes leading to/from them. Despite this, the locations, if included in routes, must be termini. Glasgow, Merthyr Tydfil and Pontypool are exceptions and are treated like a normal city for determining routes. Exceptions pertaining to Merthyr Tydfil and Pontypool are covered in section 9. EXAMPLE. Minor company M2 can run from the Highlands to Glasgow (and beyond) on pre-printed track, and can also lay track out towards Stirling (and beyond). However, even with a token in the Highlands, there is no route from Glasgow, through the Highlands, and out to Stirling. E D F 10 10 20 20 Highlands"
+ },
+ {
+  "id": "5.5.1",
+  "section": "5.5 first turn housekeeping",
+  "text": " Stirling On a major or minor company’s first turn of operation, the company director places the company’s free home station token on its home city, which is marked on the map. Castlecary The LNWR also places its destination token on the map, in Manchester. This is treated as a normal station token until a route can be traced to its home station in London, at which 40 50 60 70 point it becomes a destination token."
+ },
+ {
+  "id": "5.5.2",
+  "section": "5.5 first turn housekeeping",
+  "text": " F Coatbridge"
+ },
+ {
+  "id": "5.5.3",
+  "section": "13.3 north regional scenario",
+  "text": ", 5.10.2 overview of, 1.6.1 overview of, 2.1.4 France restriction, 8.5 descending share price and Butterley Engineering running, 5.11.11–12 order, 1.6.2 Company, 5.6.7 starting price areas, 1.6.3–4 exceeding, 2.1.5, 5.17.6 yellow area, 1.6.5 and LP-train, 12.5.3 stock rounds, 4 and Pullman cars, 5.11.20 and train limit, 5.10.4 and train ownership requirement, 5.10.5 variants, 11 upgrading, 5.13.9 trains, permanent-L (LP), 12.5 earnings distribution, 12.5.6–8 overview of, 4.1 and special trains, 5.10.4 and Pullman cars, bidding, 4.10 train ownership requirement"
+ },
+ {
+  "id": "5.5.4",
+  "section": "5.5 first turn housekeeping",
+  "text": " D Note that when emergency money raising to buy a train from the bank or bank pool, the cheapest available train must be purchased (section 5.15). Thus, a minor company starting with £100 in its treasury (for example) cannot choose to buy a 2-train at the end of its turn using emergency money raising, but must buy an L-train."
+ },
+ {
+  "id": "5.6.1",
+  "section": "5.6 acquire private companies",
+  "text": " During this step, a company (major or minor) may acquire private companies from one or more consenting players, providing the phase acquisition requirement has been met. The phase requirement is indicated on the private company certificate. (Unlike most 18xx games, private companies can only be acquired in this step of the operating turn.)"
+ },
+ {
+  "id": "5.6.2",
+  "section": "5.6 acquire private companies",
+  "text": " No compensation is paid by the acquiring company to the player."
+ },
+ {
+  "id": "5.6.3",
+  "section": "5.6 acquire private companies",
+  "text": " Once acquired by a minor or major company, the private company certificate is flipped over and placed reverse-side up on the purchasing company’s charter; or is removed from play, giving the acquiring company the associated power, token, or tile."
+ },
+ {
+  "id": "5.6.4",
+  "section": "5.6 acquire private companies",
+  "text": " Private company certificates are color coded red, green, or blue. Red-colored private companies may only be acquired by major companies. Green-colored private companies may be acquired by either major or minor companies. The blue private company (P16 Off-Shore Tax Haven) cannot be acquired."
+ },
+ {
+  "id": "5.6.5",
+  "section": "5.6 acquire private companies",
+  "text": " There is no restriction on the number of private companies that may be acquired by a minor or major company on its turn."
+ },
+ {
+  "id": "5.6.6",
+  "section": "5.6 acquire private companies",
+  "text": " Some private companies continue to pay their revenue of £10 per operating round after they have been acquired and flipped, until they are closed by using their powers. This is noted on the reverse of the certificates and their revenue values are colored gold."
+ },
+ {
+  "id": "5.6.7",
+  "section": "5.6 acquire private companies",
+  "text": " A major company may acquire P1, which becomes a 5-train, even if it is already at train limit. If the company is then over the train limit it must discard trains accordingly."
+ },
+ {
+  "id": "5.7.1",
+  "section": "5.7 lay track/upgrade track",
+  "text": " In this part of its turn, a company may place or upgrade track tiles on the map. This step is optional."
+ },
+ {
+  "id": "5.7.2",
+  "section": "5.7 lay track/upgrade track",
+  "text": " Yellow tiles are laid on, and aligned with, the pale green colored hexes on the map. These may be upgraded successively to green, brown, and grey, when those colors become available due to phase changes. Development proceeds in order; intermediate colors must not be skipped. The upgraded tile is returned to the bank and is available for reuse elsewhere."
+ },
+ {
+  "id": "5.7.3",
+  "section": "5.7 lay track/upgrade track",
+  "text": " A company may choose to play no track at all, or may place less than its full allowance. If two tiles are being played they do not have to connect to each other."
+ },
+ {
+  "id": "5.7.4",
+  "section": "5.7 lay track/upgrade track",
+  "text": " In order to place or upgrade a tile, a company must be able to trace a route that uses track on the tile after it has been placed."
+ },
+ {
+  "id": "5.7.5",
+  "section": "5.7 lay track/upgrade track",
+  "text": " If there is no track in the hex where a company’s home station token resides, the company may lay any suitable yellow city tile there."
+ },
+ {
+  "id": "5.7.6",
+  "section": "5.7 lay track/upgrade track",
+  "text": " The placement of yellow tiles is differentiated from upgrading tiles because the various companies have different building allowances: • In Phases 1/L and 2, each company may place one yellow tile. • From Phase 3 on, minor companies may either place one yellow tile or upgrade a tile to green. • From Phase 3 on, major companies may either place two yellow tiles, or upgrade one tile. • Exception: P12 Leicester & Swannington Railway."
+ },
+ {
+  "id": "5.7.7",
+  "section": "13.3 north regional scenario",
+  "text": "–8, 5.7.22 acquisitions, 5.17.7 limit, per-turn, 5.9.3 route requirement, 5.7.4 in London, 5.9.8, 6 Swansea/ Merthyr Tydfil and Pontypool, 5.9.12, 9.1.4 Oystermouth, 5.7.24 ownership limit,"
+ },
+ {
+  "id": "5.7.8",
+  "section": "5.7 lay track/upgrade track",
+  "text": " Tiles must not be placed so that track runs off the hex grid, into a blank grey hex edge, nor so that track runs to a redbordered hex edge."
+ },
+ {
+  "id": "5.7.9",
+  "section": "5.7 lay track/upgrade track",
+  "text": " Off-shore arrows (adjacent to various coastal towns) allow greater flexibility in track placement and upgrading, but have no other effect on the game."
+ },
+ {
+  "id": "5.7.10",
+  "section": "5.7 lay track/upgrade track",
+  "text": "Towns are represented on the map by small solid black circles, and on track tiles by a solid black bar (yellow tiles) or a small solid black circle (upgrade tiles)."
+ },
+ {
+  "id": "5.7.11",
+  "section": "5.7 lay track/upgrade track",
+  "text": "Cities are represented by large open circles, and are either unlabeled or labeled (BM, Y, C, EC, S or T). City tiles must match the city’s label (or lack thereof)."
+ },
+ {
+  "id": "5.7.12",
+  "section": "5.7 lay track/upgrade track",
+  "text": "For cities labelled S and T, unlabeled yellow city tiles are placed on them as if they were unlabelled. There are labeled tiles for these cities in green, brown and grey. Six “T” markers are provided to place on the plain yellow city tile to mark them as a play aid until players become familiar with the locations of the “T” cities. There are only five “T” cities so there is one spare marker."
+ },
+ {
+  "id": "5.7.13",
+  "section": "5.7 lay track/upgrade track",
+  "text": "The EC, BM, Y and C cities are pre-printed yellow on the map; there are no yellow tiles for them."
+ },
+ {
+  "id": "5.7.14",
+  "section": "5.7 lay track/upgrade track",
+  "text": "Pre-printed yellow hexes may be upgraded by placing green tiles directly onto them (when available)."
+ },
+ {
+  "id": "5.7.15",
+  "section": "5.7 lay track/upgrade track",
+  "text": "In Phase 3, green tiles become available. In Phase 5, brown tiles become available. In Phase 7, gray tiles become available. Exception: P11 Bristol & Exeter Railway."
+ },
+ {
+  "id": "5.7.16",
+  "section": "5.7 lay track/upgrade track",
+  "text": "When upgrading tiles all of the previous track must be preserved in the upgrade. In other words, the same routes must exist after the upgrade as did before, and it is never possible to remove track once it has been placed. The tile upgrade chart (back cover) shows all allowable upgrades."
+ },
+ {
+  "id": "5.7.17",
+  "section": "5.7 lay track/upgrade track",
+  "text": "Track placements and upgrades are free, except in hexes with difficult terrain. Exceptions: P8 Edinburgh and Glasgow Railway, P10 Glasgow and South-Western Railway, P21 Humber Suspension Bridge Company (1822+)."
+ },
+ {
+  "id": "5.7.18",
+  "section": "5.7 lay track/upgrade track",
+  "text": "Hexes with geographical features are collectively referred to as “difficult terrain.” Placing yellow track tiles in these hexes costs the laying company the respective fee. The fees are printed on the hexes. • Large rivers are shown by a marsh symbol and cost £40. • Small rivers are shown by a marsh symbol and cost £20. • Estuaries are denoted as a thick blue line between hexes. It is possible to build normally on the hexes on either side of the estuary, but to place a track tile that has a track segment leading up to it costs £40 (thus to build an estuary crossing costs a total of £80). • Rough terrain is denoted by an outlined domed box (cost £40). • Hills are denoted by a solid black triangle (cost £60). • Mountains are denoted by a solid double black triangle (cost £80). • All upgrades to London cost £20 (section 6) • All upgrades to the English Channel cost £100 (section 8)"
+ },
+ {
+  "id": "5.7.19",
+  "section": "5.7 lay track/upgrade track",
+  "text": "Some of the pre-printed yellow tiles have difficult terrain upgrade costs associated with them (Birmingham, Manchester, and Bristol). This cost must be paid when upgrading the hex to a green tile."
+ },
+ {
+  "id": "5.7.20",
+  "section": "5.7 lay track/upgrade track",
+  "text": "A company with insufficient funds cannot lay a track tile in difficult terrain."
+ },
+ {
+  "id": "5.7.21",
+  "section": "5.7 lay track/upgrade track",
+  "text": "The supplied quantity of plain yellow track (tiles #7, #8, #9) is not intended to limit play; if the supply runs out during play find a substitute or use tiles from another game. The mix of all other tiles is intended to limit play. If a vital tile is in play, then it must first be upgraded to free it."
+ },
+ {
+  "id": "5.7.22",
+  "section": "5.7 lay track/upgrade track",
+  "text": "In the brown and grey-colored track tiles, there are tiles for cities with five track segments and equivalent tiles with six track segments. It is not allowed to place a 5-track city tile in a hex where a 6-track city tile could legally be placed, even if the company can afford the 5-track tile but not the 6-track (this can occur due to estuary fees)."
+ },
+ {
+  "id": "5.7.23",
+  "section": "5.7 lay track/upgrade track",
+  "text": "Sections 6 and 8 cover upgrading London and the English Channel, respectively."
+ },
+ {
+  "id": "5.7.24",
+  "section": "5.7 lay track/upgrade track",
+  "text": "The Swansea/Oystermouth hex is upgraded by a yellow #57 tile: this removes the track from Swansea to Oystermouth shown on the undeveloped hex, and is a legal exception to normal track preservation rules when upgrading tiles. At the start of the game, if it does not lay any track, minor company 24 can therefore run for £30. EXAMPLE. In the bidding example on page 13, minor companies M19 and M24 were started in the first stock round with M19 running before M24. In the first operating round, M19 may lay a #8 yellow track tile between Cardiff and Swansea. In the second operating round, it can then upgrade Swansea to a #57 yellow city tile. In the second operating round, minor company 24 can now only run for £20."
+ },
+ {
+  "id": "5.8.1",
+  "section": "5.8 check for connection to destination",
+  "text": " After its tile laying step, if the operating major company can trace a route of any length from its home city to its destination city, then it must place its destination station token in its destination; this is free of charge."
+ },
+ {
+  "id": "5.8.2",
+  "section": "5.8 check for connection to destination",
+  "text": " The destination station token has a black banner on it to identify it."
+ },
+ {
+  "id": "5.8.3",
+  "section": "5.8 check for connection to destination",
+  "text": " This must be done as part of the operating company’s turn at the first occasion on which the connection to the destination is made. The action cannot be deferred."
+ },
+ {
+  "id": "5.8.4",
+  "section": "5.8 check for connection to destination",
+  "text": " This check is only made on the operating company’s turn. It is possible that the connection will be made by another company, but the check will be delayed until the company in question operates."
+ },
+ {
+  "id": "5.8.5",
+  "section": "5.8 check for connection to destination",
+  "text": " Destination cities are not reserved; other companies may place station tokens in them. If this happens, the destination station location is still available to the owning company. If there is no unoccupied station in the city, the token is simply placed on the destination tile adjacent to the city. Until the tile is upgraded, or if further upgrades do not create additional token spaces, then the destination effectively creates an additional token space in the destination city. If the tile is upgraded to create an extra unoccupied station the destination token is at once moved into the space created, irrespective of which company upgraded the tile."
+ },
+ {
+  "id": "5.8.6",
+  "section": "5.8 check for connection to destination",
+  "text": " The LNWR begins with its destination token in Manchester. This is not treated as a destination token until LNWR can trace a route from this token to its home station in London."
+ },
+ {
+  "id": "5.9.1",
+  "section": "5.9 place station tokens",
+  "text": " Only major companies may place additional station tokens. Minor companies only have their home station tokens."
+ },
+ {
+  "id": "5.9.2",
+  "section": "5.9 place station tokens",
+  "text": " When each major company starts, it can utilise three station tokens: a home station token, a destination station token, and one “available” station token. (Exception: the LNWR starts with both its home station token and its destination station token in play.) The remaining station tokens are exchange tokens."
+ },
+ {
+  "id": "5.9.3",
+  "section": "5.9 place station tokens",
+  "text": " Each turn, a company may place a single available station token. It may never place more than one of these per turn. The home station token placed in first turn housekeeping does not count against this limit. Destination station tokens and exchange station tokens do not count against this limit."
+ },
+ {
+  "id": "5.9.4",
+  "section": "5.9 place station tokens",
+  "text": " Available station token placements cost £100. If the company has insufficient money in its treasury, it may not place the station token."
+ },
+ {
+  "id": "5.9.5",
+  "section": "5.9 place station tokens",
+  "text": " Home, destination, and exchange token placements are free."
+ },
+ {
+  "id": "5.9.6",
+  "section": "5.9 place station tokens",
+  "text": " To place an available station token in a city, the company must be able to trace a route to that city. No more than one station token of any company may be placed in any single city/off-board area (except London, see 5.9.8)."
+ },
+ {
+  "id": "5.9.7",
+  "section": "5.9 place station tokens",
+  "text": " One space on each company’s home hex is reserved for that company’s home station token, and other companies must leave a space free if that company has not yet had its first operating turn. (Note that there must really be space there; it is not enough to claim that the track tile might be upgraded to create a space)."
+ },
+ {
+  "id": "5.9.8",
+  "section": "5.9 place station tokens",
+  "text": " London has seven stations, the base six on the map plus the extra spot on the rondel. A company may have multiple station tokens in London, but it may not occupy both a spot on the map and the corresponding spot on the rondel. In other words, it may only have one station token per hex edge. See section 6 for more information."
+ },
+ {
+  "id": "5.9.9",
+  "section": "5.9 place station tokens",
+  "text": " Once placed, a station token may not be moved, although a minor company station token can be removed when acquired by a major company."
+ },
+ {
+  "id": "5.9.10",
+  "section": "5.9 place station tokens",
+  "text": "The South Eastern & Chatham Railway (SECR) may place an available station marker in the English Channel free of charge. The SECR must be able to trace a route to the English Channel and there must be an available space for the token placement. This counts as the SECR’s token placing step."
+ },
+ {
+  "id": "5.9.11",
+  "section": "5.9 place station tokens",
+  "text": "Exchange tokens can only be placed by acquisition of minor companies, as part of the operating company’s “Acquire a Minor Company” step, covered in sections 5.16-5.18. Exceptions: P5 London, Chatham and Dover Railway, P18 Cromford and High Peak Railway."
+ },
+ {
+  "id": "5.9.12",
+  "section": "13.3 north regional scenario",
+  "text": ", 9.1.4 actions overview, 5.3 and Pontypool changes, 4.4.2 trains running destination connection private companies emergency money between, 9.1.5 the Metropolitan checks, 5.8 overview of, 3.1 raising, 5.15 earnings distribution, 5.12 and certificate limit, 3.1.5 money received, 4.4.3 Railway (M14), 7 first turn housekeeping, 5.5 closing, 3.1.7 order of, 4.4.6 acquiring from bidding minor company companies acquiring, 5.6 price drops, 4.4.4–5 face value, 3.1.3 required, 4.4.7 restrictions on, 4.4.1 boxes, 7.4 acquisitions, 5.16–18 acquiring from number of, 5.1.1 players buying, 3.1.4, 4.10 players, 7.2–3 private company power use, 3.1.10 home station, 7.1 acquisitions, 5.6 revenue from, 3.1.2, track laying rights, 7.5 Mid Wales, 1.4.9 station token routes, 5.4"
+ },
+ {
+  "id": "5.10.1",
+  "section": "5.10 trains overview",
+  "text": "Trains come in several types. Trains available from the bank are labeled L, 2, 3, 4, 5, 6, 7, and E. There are also 2P-trains, an LPtrain (1822+ expansion only), Pullman “+” cars, and an additional 5-train, all available from private companies. The available trains sold by the bank are shown in the table below. train type number available L L/2 (double-sided) cost rusts rusted by £60 - L-trains can be flipped to upgrade to 2-trains for £80 - - £120 - £200 L £300 7/E £500 - Permanent £600 Permanent £750 Unlimited Express (E) £1,000 Permanent Permanent There are 22 double-sided L/2 train cards. The 7/E trains are also double-sided, but a 7-train may not be upgraded to an E train. There are 16 train cards provided. If you run out and need more, find a substitute. Note: A phase starts either when the first train of a type is purchased or when it is exported."
+ },
+ {
+  "id": "5.10.2",
+  "section": "5.10 trains overview",
+  "text": "Both major and minor companies may own L-trains, but only a minor company may buy an L-train as part of its first turn housekeeping."
+ },
+ {
+  "id": "5.10.3",
+  "section": "5.10 trains overview",
+  "text": "The 2P-trains and LP-train (1822+ expansion only) are collectively known as “special trains.” They are acquired from private companies P3, P4, and P19. A company may only own one of these special trains at a time. If a company has one of them and acquires another, it must select one to discard from the game."
+ },
+ {
+  "id": "5.10.4",
+  "section": "5.10 trains overview",
+  "text": "Special trains are permanent and never rust. They do not count against the train limit."
+ },
+ {
+  "id": "5.10.5",
+  "section": "13.3 north regional scenario",
+  "text": ", 5.10.7 earnings distribution, 5.12.4–6 tile availability, 5.7.15 purchasing, 5.13.10 and minor company restrictions on, 5.9.6–7 tile limits, 5.7.21 running, 5.11.12–13 acquisitions, 5.17.8 route requirement, 5.9.6 towns, 5.7.10 running to France, 8.2, 8.4 SECR English Channel exception, 5.9.10 the stock market, 1.6 upgrading requirements,"
+ },
+ {
+  "id": "5.10.6",
+  "section": "5.10 trains overview",
+  "text": "Special trains can handle their revenue separately from other trains. See rules 5.12.4 through 5.12.6 for details."
+ },
+ {
+  "id": "5.10.7",
+  "section": "5.10 trains overview",
+  "text": "The 2P-trains come from P3 (Shrewsbury and Hereford Railway) and P4 (South Devon Railway). The LP-train comes from P19 (Avonside Engine Company)."
+ },
+ {
+  "id": "5.10.8",
+  "section": "5.10 trains overview",
+  "text": "Pullman cars come from P13 York, Newcastle and Berwick Railway, and P14 Kilmarnock and Troon Railway."
+ },
+ {
+  "id": "5.11.1",
+  "section": "5.11 run train(s)",
+  "text": "If the company has one or more trains, it now runs them on routes to establish earnings."
+ },
+ {
+  "id": "5.11.2",
+  "section": "5.11 run train(s)",
+  "text": "For most trains, the route used must include at least two “revenue locations” (towns, cities, or off-board locations), but no more locations than the number of the train. Intermediate revenue locations cannot be skipped."
+ },
+ {
+  "id": "5.11.3",
+  "section": "5.11 run train(s)",
+  "text": "A route must not reach or pass through any hex with a city or town on it more than once. However, a train may pass through both towns in a double town hex, so long as the route uses different track segments each time."
+ },
+ {
+  "id": "5.11.4",
+  "section": "5.11 run train(s)",
+  "text": "If a company owns more than one train, each must be run on a separate route. That is, the routes employed must not have any track segments in common, though they may use one or more common revenue locations, as long as they do so using different track."
+ },
+ {
+  "id": "5.11.5",
+  "section": "5.11 run train(s)",
+  "text": "Every route must include at least one of the company’s station tokens on it somewhere, and routes cannot pass through cities or off board areas filled with other companies’ station tokens (though they may start and/or end at them)."
+ },
+ {
+  "id": "5.11.6",
+  "section": "5.11 run train(s)",
+  "text": "A company may have more than one station token on the London hex, but a train’s route cannot include the London hex more than once."
+ },
+ {
+  "id": "5.11.7",
+  "section": "5.11 run train(s)",
+  "text": "Cities (besides London) and off-board areas with more than one station count as a single city. This is shown by an additional oval enclosing the stations."
+ },
+ {
+  "id": "5.11.8",
+  "section": "5.11 run train(s)",
+  "text": "The value of a route is equal to the sum of the values of the revenue locations it passes through or reaches. The value of a location is the number printed in the small circle, or the number in the colored rectangles. London’s value is on the value token in the rondel."
+ },
+ {
+  "id": "5.11.9",
+  "section": "5.11 run train(s)",
+  "text": "The pre-printed yellow tiles and grey off-board areas have a revenue value printed on the map. Large cities on the base map have a value of £0, unless otherwise indicated."
+ },
+ {
+  "id": "5.11.10",
+  "section": "5.11 run train(s)",
+  "text": "Gray off-board areas are preprinted with revenue income that varies by phase. The yellow value refers to Phases 1 and 2; the green value to Phases 3 and 4; brown to Phases 5 and 6 and grey to Phase 7."
+ },
+ {
+  "id": "5.11.11",
+  "section": "5.11 run train(s)",
+  "text": "An L (local) train runs in a city which has a station token of the owning company. It can additionally run to one town, but is not required to do so. It can thus be considered a 1+1 train (if you are familiar with that term from other 18xx games). Only one L-train may operate on each station token."
+ },
+ {
+  "id": "5.11.12",
+  "section": "5.11 run train(s)",
+  "text": "L-trains may not run to France."
+ },
+ {
+  "id": "5.11.13",
+  "section": "5.11 run train(s)",
+  "text": "For 2, 3, 4, 5, 6, and 7-trains, the number represents the maximum number of revenue locations the train may reach and earn revenue for. Each route that such a train runs must have a station with a token and at least one other revenue location."
+ },
+ {
+  "id": "5.11.14",
+  "section": "5.11 run train(s)",
+  "text": "A Pullman car (P13-P14) converts one normal N-train into an N+ train. An N+ train may count any number of towns in its run in addition to counting up to N cities and/or off-board locations. It earns the revenue from passing through these towns even though it does not count them toward the limit of N. It can begin and/or end at a town."
+ },
+ {
+  "id": "5.11.15",
+  "section": "13.3 north regional scenario",
+  "text": ", 12.5.5 buying shares, 4.5 ownership limit, 5.10.3 LP-train, 12.5.3 tile manifest tile # upgrades 1 None tile # upgrades 143 1 None S S 769 767 £100 X9 EC 769 X14 EC 005634 X15 144 X8 tile # upgrades ( ( ( ( 405 T 619 Y 2 None X11 611 Y 1 None C X5 C 169 619 X10 622 405 Y X16 2 None T 405 T 2 None X5 T T 619 X10 208 142 141 T X5 Y Y 207 143 142 141 Y Y BM C X1 X12 2 None X13 X6 S 1 None EC ( ( S 619 X3 143 142 769 611 544 545 546 545 546 544 546 545 142 546 545 767 169 X11 X5 C 768 767 169 X18 769 C X6 X12 768 769 X7 BM 544 BM 141 Y 169 611 Y 546 X17 X19 2 None 4 None X17 X18 X17 611 2 None X17 X19 768 2 None 767 1 None 1 None X16 T X9 EC 144 X15 005634 X8 £100 141 X4 X14 EC S X3 £100 X7 1 None S X2 1 None BM B M X13"
+ },
+ {
+  "id": "5.11.16",
+  "section": "5.11 run train(s)",
+  "text": "A Pullman car may be used with a 2P-train."
+ },
+ {
+  "id": "5.11.17",
+  "section": "5.11 run train(s)",
+  "text": "A Pullman car may be attached to a different train owned by the same company each operating round."
+ },
+ {
+  "id": "5.11.18",
+  "section": "5.11 run train(s)",
+  "text": "Pullman cars are permanent. A company may never own more than one Pullman car, nor may Pullman cars ever be sold between companies."
+ },
+ {
+  "id": "5.11.19",
+  "section": "5.11 run train(s)",
+  "text": "A Pullman car is not a train and does not count for the purpose of mandatory train ownership, i.e. a company with only a Pullman car is still forced to buy a train."
+ },
+ {
+  "id": "5.11.20",
+  "section": "5.11 run train(s)",
+  "text": "A Pullman car does not count against the train limit."
+ },
+ {
+  "id": "5.11.21",
+  "section": "5.11 run train(s)",
+  "text": "An Express (E) train only stops at cities and off-board locations with station tokens of the owning company. It can pass through other revenue locations on its route, NOT counting their revenue values, as long as the route is not blocked by opposing station tokens. It follows that an E-train can only stop at an off-board location or city if a station token of the owning company has been placed there, and can never stop at towns. The value of each location that the train counts is doubled. There is no limit to the number of locations that an E-train can stop at, other than that imposed by the number of tokens on the map and the route between them."
+ },
+ {
+  "id": "5.11.22",
+  "section": "5.11 run train(s)",
+  "text": "An E-train can run on the same track as other trains."
+ },
+ {
+  "id": "5.11.23",
+  "section": "13.3 north regional scenario",
+  "text": ", 5.13.11 and Pullman cars, 5.11.15 Pontypool, 8, 9.1.5 and Pullman cars,"
+ },
+ {
+  "id": "5.11.24",
+  "section": "5.11 run train(s)",
+  "text": "Minor companies can own E-trains, but because they only have one token, they cannot run them."
+ },
+ {
+  "id": "5.11.25",
+  "section": "5.11 run train(s)",
+  "text": "A company’s earnings are the sum of the values of the routes run by its trains. The highest legal earnings announced by any player must be declared, but players are not obliged to announce earnings higher than those declared by the director. There are two exceptions: • When running a train with a mail contract (P6 and P7), the run’s value may be reduced to increase the mail income to the operating company treasury. In particular, if a company is running a “+” train with a mail contract, the train may stop at a large station to maximise mail income, rather than running beyond the large station to small towns to maximise dividends, if the director so desires. • When running a special train, and paying its earnings differently from the earnings of the other trains, the total earnings must be maximised, but the relative value of the split between the special trains and the normal trains need not maximise either of the two separate amounts. See rules 5.12.4 through 5.12.6 for more details."
+ },
+ {
+  "id": "5.11.26",
+  "section": "5.11 run train(s)",
+  "text": "The earnings token should be placed on the revenue track to reflect the total amount earned. This step is optional, but it serves to remind players later what each company’s earnings were and hence speed up the game."
+ },
+ {
+  "id": "5.11.27",
+  "section": "13.3 north regional scenario",
+  "text": "–29 track lays in, 5.7.5 loans, 4.3, 4.11.10 London, 6–7 overview of, 1.4.7 hexes surrounding, 6.5 and the Metropolitan Railway, 7 stations on, 8.4 and minor company upgrading, 8.1 acquisitions, 5.16.4 E-trains. See trains, Express bidding on, 4.10 and certificate limit, 3.4.3 and destination runs, stations, 6.8–9 trains running to, 5.11.6, exchange tokens 6.1, 6.6–7 placing bids, 4.10.4–9 converting, 4.7 overview of, 5.9.11 resolving bids, 4.11 dividends from, 3.4.4 London rondel, 7.2–3 value of, 5.11.8, 6.1 tokens for, 4.10.3 face value of, 3.4.2 and minor company London and North West bidding boxes overview of, 4.10.1 phase 5 removal, 3.4.5, 4.8.1 setup, 1.7.4 acquisitions, 5.17.9–10 exporting trains, 4.11.6–7 acquiring minor companies from, 5.18 refilling, 4.1.1, 4.10.2, 4.11.8 setup, 1.7.7 unsold items, 4.11.6–8 buying shares, 4.5 overview of, 4.5.1 and certificate limit, 4.5.7–8 upgrading, 6.1 Railway (LNWR) destination token, 5.5.2, 5.8.6 director’s certificate, 3.3.3 descending share price order, 1.6.2 destination cities connection checks, 5.8 first turn housekeeping, 5.5 home station first turn housekeeping, 5.5.2 forming, 4.7.4 placement, 5.5.1 station tokens, 5.9.2 LNWR destination stock certificates, 3.3.2 identifying, 1.4.5 token, 5.5.2 running trains to, minor company"
+ },
+ {
+  "id": "5.11.28",
+  "section": "5.11 run train(s)",
+  "text": "If an E-train runs a destination route, then the doubled destination value of the city is doubled by the E-train, i.e. the destination city value is multiplied by 4. Hertford"
+ },
+ {
+  "id": "5.11.29",
+  "section": "5.11 run train(s)",
+  "text": "The route need not start or end at the home station or destination station. Colchester It may extend beyond either or both of them. £40 £20 London L SECR SECR GWR £40 £20 £40 LBSCR LBSCR £20 Canterbury SECR £40 Maidstone SECR X10 T M Dover LBSCR 40LBSCR T Folkstone SECR Brighton EXAMPLE. In the illustration, the LBSCR has placed its destination station token (in Brighton) and the SECR has placed its destination station token (in Dover). Both companies have also placed tokens in the English Channel and SECR has a token in Maidstone. LBSCR can run a train from London to Brighton and beyond, counting double the Brighton station value. SECR can run a train from its home station (SE London) through Maidstone to its destination in Dover (which counts double value), and beyond via the English Channel to France. It (and the LBSCR) can also run a second train through the English Channel from France on a different route. LNWR LBSCR LNWR N O £100 0 LBSCR SECR SECR £100 English Channel EC X9 0 60 90 120 France"
+ },
+ {
+  "id": "5.11.30",
+  "section": "5.11 run train(s)",
+  "text": "Section 6 covers running trains to London. Section 8 covers running trains to the English Channel and France. Section 9 covers running trains to Merthyr Tydfil and Pontypool."
+ },
+ {
+  "id": "5.12.1",
+  "section": "5.12 earnings distribution",
+  "text": "A minor company always splits the total earnings of all its trains: the bank pays half to the director and the other half is paid into the treasury."
+ },
+ {
+  "id": "5.12.2",
+  "section": "5.12 earnings distribution",
+  "text": "A major company may keep all its earnings in its treasury, pay all its earnings as dividends, or pay half as dividends (rounded up to the next multiple of £10) and keep the rest in its treasury."
+ },
+ {
+  "id": "5.12.3",
+  "section": "5.12 earnings distribution",
+  "text": "If dividends are paid, 10% is paid to the holder of each share. Payments for shares in the company treasury (including the half paid as dividends if the company pays half) go to the company, while payments for shares in the bank pool remain in the bank."
+ },
+ {
+  "id": "5.12.4",
+  "section": "5.12 earnings distribution",
+  "text": "For a major company, the earnings from a special train (2P and LP-trains) can either be added to the earnings of the company’s other trains and distributed altogether, or it may choose to distribute them separately. In either case, the total earnings of all the company’s regular trains are treated as one sum."
+ },
+ {
+  "id": "5.12.5",
+  "section": "5.12 earnings distribution",
+  "text": "If the earnings for a special train is added to those from a major company’s other trains, then the total of all the earnings is added before computing the amount paid out in dividends and the amount going into its treasury."
+ },
+ {
+  "id": "5.12.6",
+  "section": "5.12 earnings distribution",
+  "text": "If the earnings for a special train are distributed separately from that from the company’s regular train(s), each calculation is done separately, and then the resulting dividend and retained amounts are each added. When distributing revenue separately, different methods for paying out must be chosen (pay full, pay half, or withhold). EXAMPLE: The LWNR has a 3-train, a 4-train, and a 2P-train. The 3-train ran for £70, the 4-train ran for £80, and the 2P-train ran for £40. The earnings of the 3- and 4-trains are added together, making £150. The director can choose to add the £40 from the 2P-train to this total, making £190, and then pay-out, split, or withhold this amount. Alternatively, the director can handle the regular train and special train earnings separately. For instance, they could pay-out £150 as dividends (from the regular trains), and withhold the £40 from the special train. They cannot choose to handle the earnings separately, but then take the same action for each, for example, by paying half dividends on the £150 and then half dividends on the £40."
+ },
+ {
+  "id": "5.12.7",
+  "section": "5.12 earnings distribution",
+  "text": "Next, the total dividend paid determines if and how the company’s share price moves."
+ },
+ {
+  "id": "5.12.8",
+  "section": "5.12 earnings distribution",
+  "text": "If the dividend paid is £0, either because the company withheld its earnings or because the earnings were zero, its price token moves one space to the left on the stock market."
+ },
+ {
+  "id": "5.12.9",
+  "section": "5.12 earnings distribution",
+  "text": "For a major company, if the total dividend paid is less than its share price, the price token does not move."
+ },
+ {
+  "id": "5.12.10",
+  "section": "5.12 earnings distribution",
+  "text": "For a major company, if the total dividend paid is equal to or greater than its share price, but less than twice its share price, its price token is moved one space to the right."
+ },
+ {
+  "id": "5.12.11",
+  "section": "5.12 earnings distribution",
+  "text": "For a major company, if the total dividend paid is equal to or greater than twice its share price, the price token is moved two spaces to the right."
+ },
+ {
+  "id": "5.12.12",
+  "section": "5.12 earnings distribution",
+  "text": "A minor company must pay 50% to its treasury and 50% to its director. If it pays a dividend of any non-zero amount, its price token is moved one space to the right on the stock market. If it does not pay a dividend, it moves one space to the left."
+ },
+ {
+  "id": "5.12.13",
+  "section": "5.12 earnings distribution",
+  "text": "If the movement of a company’s price token would take it off the stock market, it follows the arrows (up or down) instead."
+ },
+ {
+  "id": "5.12.14",
+  "section": "5.12 earnings distribution",
+  "text": "In any case, if a share price token moves to a space which is already occupied, the token goes to the bottom of the pile. If it does not move, it retains its position in the stack."
+ },
+ {
+  "id": "5.13.1",
+  "section": "13.3 north regional scenario",
+  "text": ", 5.13.6–7 upgrading L-trains, 5.13.9 trains maximization requirement, 5.11.25 Merthyr Tydfil and overview of, 5.7.1–3 overview of, 5.10 building allowances, 5.7.6 exporting, 4.11.6–7 overview of, 5.9.1–2 cities, 5.7.11–13 rusted, 5.13.5 costs of, 5.9.4–5 difficult terrain, 5.7.17–20 setup, 1.7.11 route requirements, in destination cities, home cities, 5.7.5 trains, Express (E) 5.4, 5.11.1–5 station tokens, placing, 5.9"
+ },
+ {
+  "id": "5.13.2",
+  "section": "5.13 purchase trains",
+  "text": "If a company does not have a train at the beginning of this step, it must purchase one. If it cannot afford a train, a Forced Train Purchase occurs; see section 5.14."
+ },
+ {
+  "id": "5.13.3",
+  "section": "5.13 purchase trains",
+  "text": "When buying a train from another company the selling company must consent to the transaction. The price can be any amount from £1 to the amount in the purchasing company’s treasury."
+ },
+ {
+  "id": "5.13.4",
+  "section": "5.13 purchase trains",
+  "text": "When buying a train from the bank, the train may be any from the bank pool, or the next available new train in the bank. Trains from the bank must be bought in order; no train may be bought until all of the trains from the previous phase have been bought or exported. The price paid must be the face value. Trains are only placed into the bank pool when major or minor companies discard excess trains when the train limit falls, or when a major company has excess trains after a merger."
+ },
+ {
+  "id": "5.13.5",
+  "section": "5.13 purchase trains",
+  "text": "The purchase of trains from the bank advances the game’s phase. Each time the first of a new type of train is bought (or exported), the phase advances. At the start of certain phases some trains rust. A rusted train is removed from the game without compensation as soon as the phase change occurs. Section 2 covers phase changes in detail."
+ },
+ {
+  "id": "5.13.6",
+  "section": "5.13 purchase trains",
+  "text": "A company may buy multiple trains each operating round if it has the room and resources, but it must buy them one after another, and the effects of each train purchase apply at once after each is bought. A company that is below its train limit may buy a train even if this triggers a phase change which causes the company to be over the limit."
+ },
+ {
+  "id": "5.13.7",
+  "section": "5.13 purchase trains",
+  "text": "A company that is at the train limit cannot buy a train, even if the purchase would trigger a phase change and remove enough trains to make room."
+ },
+ {
+  "id": "5.13.8",
+  "section": "5.13 purchase trains",
+  "text": "The L and 2-trains are printed double-sided. When buying an L/2-train, the company’s director chooses which to buy."
+ },
+ {
+  "id": "5.13.9",
+  "section": "5.13 purchase trains",
+  "text": "During Phases 1 and 2, L-trains can be converted to 2-trains for the indicated price. When upgrading from an L-train to a 2-train the train card is flipped. Upgrading from an L to a 2-train counts as a train purchase."
+ },
+ {
+  "id": "5.13.10",
+  "section": "5.13 purchase trains",
+  "text": "Similarly, the 7-train and E-trains are printed double-sided: when buying a 7/E-train the company director chooses which option to buy. Once this decision has been made, it cannot be changed. 7-trains cannot be upgraded to E-trains (or E-trains downgraded to 7-trains)."
+ },
+ {
+  "id": "5.13.11",
+  "section": "5.13 purchase trains",
+  "text": "A company may own at most one E-train. Minor companies can own E-trains but may not run them."
+ },
+ {
+  "id": "5.14.1",
+  "section": "5.14 forced train purchases",
+  "text": "During the “Purchase Trains” step of its operating turn, if a company does not own a train it must buy one, even if it has insufficient money. The special trains do not satisfy the requirement to own a train."
+ },
+ {
+  "id": "5.14.2",
+  "section": "5.14 forced train purchases",
+  "text": "If a company that does not own a train has enough money to buy a train from the bank pool or bank, then it may do so. Alternatively, it may buy a train from another company, as described in section 5.13.3."
+ },
+ {
+  "id": "5.14.3",
+  "section": "5.14 forced train purchases",
+  "text": "If such a company cannot afford to buy a train from the bank pool or bank, it must buy either the cheapest train from the bank (including any trains in the bank pool) with help from the company’s director, or if the director wishes and can arrange a purchase, a train from another company. For the double-sided trains (L/2 and 7/E) this means that the cheaper version must always be the version bought if the purchase is made from the bank."
+ },
+ {
+  "id": "5.14.4",
+  "section": "5.14 forced train purchases",
+  "text": "When a company buys a train from another company, its director may not contribute any of their own money. A company that does not own a train is not compelled to buy a train from another company even if its price is lower than one from the bank or bank pool."
+ },
+ {
+  "id": "5.14.5",
+  "section": "5.14 forced train purchases",
+  "text": "When forced to buy a train from the bank or bank pool, the company first uses its own cash; stock in the company treasury is useless. If this is insufficient, then the director must make up the shortfall between the company’s treasury and the cost of the train using their own cash. If the director’s cash is insufficient they must use emergency money raising."
+ },
+ {
+  "id": "5.15.1",
+  "section": "5.15 emergency money raising",
+  "text": "If the director has insufficient funds, they must sell stock. The normal constraints on stock sales apply."
+ },
+ {
+  "id": "5.15.2",
+  "section": "5.15 emergency money raising",
+  "text": "Additionally, the director must keep the director’s certificate of the active company, and so may not sell shares in such a way that another player has more shares of the active company than the director."
+ },
+ {
+  "id": "5.15.3",
+  "section": "5.15 emergency money raising",
+  "text": "The sales may be done in any order, and must stop as soon as the necessary cash is raised, even if the director is exceeding the certificate limit after the sale."
+ },
+ {
+  "id": "5.15.4",
+  "section": "5.15 emergency money raising",
+  "text": "As with sales in a stock round, the director receives the full value of each share sold (i.e. its value at the start of the train-buying action), and the price drops one row per share sold."
+ },
+ {
+  "id": "5.15.5",
+  "section": "5.15 emergency money raising",
+  "text": "If the director is selling multiple shares of a single company, they sell them as usual but may not sell more shares than are needed in order to raise the needed funds."
+ },
+ {
+  "id": "5.15.6",
+  "section": "5.15 emergency money raising",
+  "text": "If the director, after selling all of the shares they are allowed to, still cannot contribute enough money to purchase the train, they must take a loan from the bank for the shortfall. In addition, the bank charges 50% interest (rounded up) on loans, so the amount of the debt will be 150% of the shortfall between the director’s disposable assets (cash and sellable shares) plus the company treasury and the purchase price of the train. EXAMPLE. During Phase 4, a company has £140 cash, but no train. The director has only £20 cash. The director chooses not to buy a train from another company. The company therefore enters the emergency money raising procedure. The director first adds their £20, for a total of £160. Then the director sells one share (all that they can sell), for £80, taking the total sum to £240. However, the next available train is a 4-train, costing £300. The director therefore takes a loan of £60 to make up the shortfall. 50% interest is applied to this, resulting in a total debt of £90. During the remainder of the operating round, the player earns a further £50. During their next stock round turn they pay £50 toward their loan (leaving £40 debt remaining). Since they have nothing that they can sell during the stock round, their debt remains and a 50% interest charge of £20 is added to it resulting in total debt of £60."
+ },
+ {
+  "id": "5.16.1",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "A major company may acquire one (and only one) minor company each operating turn."
+ },
+ {
+  "id": "5.16.2",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "An acquisition cannot be made in the operating round in which either company runs for the first time."
+ },
+ {
+  "id": "5.16.3",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "The major company must be able to trace a route from one of its station tokens to the home station token of the minor company, or be located within the same city."
+ },
+ {
+  "id": "5.16.4",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "London is an exception to the above. It is not sufficient for both companies to have a station in London, because the London stations are not connected. However, a major company may acquire M14 if they share a token space; in this instance they are considered to be colocated."
+ },
+ {
+  "id": "5.16.5",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "The directors of the two companies must agree to the acquisition. It is common for the same player to be the director of both companies."
+ },
+ {
+  "id": "5.16.6",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "All assets needed for the acquisition must be in place before the acquisition can be enacted. Cash acquired by the major company as a result of a merger may not be used to help pay for the merger."
+ },
+ {
+  "id": "5.16.7",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "If the requirements are met, the major company may acquire a minor company from a player (section 5.17, from Phase 2 onwards) or from the bid boxes (section 5.18, from Phase 5 onwards). 5.17 acquire a minor company from a player (phase 2 to phase 7)"
+ },
+ {
+  "id": "5.17.1",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "The major company buys the minor company director’s certificate from its owning player, and in doing so acquires all the minor company’s assets: its station token, cash, private companies, and trains."
+ },
+ {
+  "id": "5.17.2",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "To effect the acquisition, the major company buys the minor company from its owner for the value of the minor company, which is twice its share price. The major company may contribute zero, one, or two shares, with the price of these shares used to calculate the value of that portion of the payment. If this amount is less than the minor company’s value the major must also contribute cash to make up the difference. If shares are given in payment, and their value is greater than the value of the minor company, then the director of the minor company must pay the difference to the treasury of the major company. The major may not give shares in payment if the minor company director is unable to pay an owed difference. EXAMPLE. A major company with a current market value of £160 and at least two shares of treasury stock acquires a minor company with a market value of £90. The major company would have the following choices in how to compensate the director of the minor company: • Pay £180 in cash • Pay one share and £20 in cash • Pay two shares. The director of the minor company pays the major £140 in cash. (If the director does not have sufficient funds this method cannot be chosen.)"
+ },
+ {
+  "id": "5.17.3",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "A player who is at the certificate limit may exchange a maximum of one share certificate for the minor company director’s certificate since exchanging two shares would put the player over the certificate limit (unless the company is in the yellow zone of the stock market)."
+ },
+ {
+  "id": "5.17.4",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "Transfer the cash holding of the minor company to the major company treasury; transfer any trains held by the minor company to the major company."
+ },
+ {
+  "id": "5.17.5",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "Transfer any private companies that the minor company owns to the major company."
+ },
+ {
+  "id": "5.17.6",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "Trains in excess of the train limit must be discarded; all other trains must be kept. If forced to discard trains, the major company can discard trains that it or the minor company held before the acquisition (or possibly one of each). Trains so discarded are placed in the bank pool."
+ },
+ {
+  "id": "5.17.7",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "If a company owns two E-trains after the merger, one must be discarded to the bank pool."
+ },
+ {
+  "id": "5.17.8",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "If a company owns two special trains after the merger, one must be discarded from the game, not to the bank pool."
+ },
+ {
+  "id": "5.17.9",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "If the major company has any “exchange” tokens, it either exchanges the minor company token for one of its own “exchange” tokens, or removes the minor company token from the board and transfers one of its “exchange” tokens to the “available” station tokens area on its charter for future use. The acquiring company’s “available” tokens may not be used for this purpose."
+ },
+ {
+  "id": "5.17.10",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "A major company with no exchange tokens remaining may acquire a minor company, but does not get the minor company’s token. It may neither place a token on the board to replace the minor company’s token nor add an available token to its charter."
+ },
+ {
+  "id": "5.17.11",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "Once a minor company has been acquired, it is removed from play."
+ },
+ {
+  "id": "5.17.12",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "See section 7 for additional rules covering the acquisition of M14. 5.18 acquire a minor company from the bid boxes (phase 5 to phase 7)"
+ },
+ {
+  "id": "5.18.1",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "As an alternative to acquiring a minor company that is already operating, from Phase 5 onwards a company may instead buy one minor company (per operating round) from those remaining on the bidding boxes. The following restrictions apply: • An acquisition cannot be made in the operating round in which the major company runs for the first time. • The major company must be able to trace a route from one of its station tokens to the home station token of the minor company, or be located within the same city. • London is an exception to the above. It is not sufficient for both companies to have a station in London, because the London stations are not connected. However, a major may acquire M14 if they share a token space; in this instance they are considered to be colocated."
+ },
+ {
+  "id": "5.18.2",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "As its acquisition step, the major company pays £200 to the bank to acquire the minor company. If the major company has any exchange tokens it chooses whether to take the token for its station. • If its director chooses to take the station, they place one of its exchange tokens in the home station of the minor company. The acquiring company’s available tokens may not be used for this purpose. • If its director chooses to not take the station, the company must transfer one of its exchange tokens to the available station tokens area on its charter if it has one available."
+ },
+ {
+  "id": "5.18.3",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "Once a minor company has been acquired, it is removed from play."
+ },
+ {
+  "id": "5.18.4",
+  "section": "5.16 acquire a minor company - requirements",
+  "text": "See section 7 for additional rules covering the acquisition of M14."
+ },
+ {
+  "id": "5.19.1",
+  "section": "5.19 issue or redeem stock",
+  "text": "A major company may either issue or redeem its own stock, but not both in one turn."
+ },
+ {
+  "id": "5.19.2",
+  "section": "5.19 issue or redeem stock",
+  "text": "Issued stock is transferred from the company treasury to the bank pool. Issuing stock causes the company’s price to move down one step per 10% share issued. If the stock price token is at, or reaches, the bottom of the market, it does not move. The company receives from the bank the final resting price after this movement. Issuing stock must not cause more than 50% of the stock to be in the bank pool. If the token moves to a space on the stock market which is already occupied, it is placed at the bottom of the pile. EXAMPLE. A company is valued at £100 and issues three shares, the price drops three spaces to £70 and the company receives £210 (i.e. three times £70) treasury from the bank."
+ },
+ {
+  "id": "5.19.3",
+  "section": "5.19 issue or redeem stock",
+  "text": "A company may not issue stock in its first operating turn."
+ },
+ {
+  "id": "5.19.4",
+  "section": "5.19 issue or redeem stock",
+  "text": "To redeem stock, the company purchases it from the bank pool. Transfer the stock from the bank pool to the company. The current price must be paid from the company’s treasury to the bank. More than one certificate can be redeemed in a single operating turn. Redeeming stock does not cause the company’s price to change. 6 london"
+ },
+ {
+  "id": "6.1.1",
+  "section": "6.1 special rules",
+  "text": " At the start of the game London has a base value of 20. It is possible to “upgrade” London to yellow, and then green, brown, and grey per the normal rules. There are tokens provided to indicate London’s value in these colors; there are no London tiles."
+ },
+ {
+  "id": "6.1.2",
+  "section": "6.1 special rules",
+  "text": " Upgrading London costs £20 for each upgrade. Place the next token in the London track color upgrade sequence in the center of the London rondel."
+ },
+ {
+  "id": "6.1.3",
+  "section": "6.1 special rules",
+  "text": " “Upgrading” London to its yellow value counts as placing a yellow tile. Further upgrades are treated as normal upgrades."
+ },
+ {
+  "id": "6.1.4",
+  "section": "6.1 special rules",
+  "text": " Pre-existing track exists from each of the six stations to the adjacent hex."
+ },
+ {
+  "id": "6.1.5",
+  "section": "6.1 special rules",
+  "text": " The six unbuilt hexes around London are reserved for the adjoining companies and cannot have a yellow tile placed on them without the agreement of the director or concession holder of the respective company. If the company that controls such a hex has no director or concession holder, then a tile may only be laid if it connects the associated London station to existing track. There is no restriction on upgrading these tiles once placed."
+ },
+ {
+  "id": "6.1.6",
+  "section": "6.1 special rules",
+  "text": " It is not legal to run a train from one London station to another London station."
+ },
+ {
+  "id": "6.1.7",
+  "section": "6.1 special rules",
+  "text": " It is not possible to trace a route or run a train through London; it can only be a terminus."
+ },
+ {
+  "id": "6.1.8",
+  "section": "6.1 special rules",
+  "text": " London has seven stations: the six on the map plus the extra spot on the rondel. See section 7 for details on the rondel station."
+ },
+ {
+  "id": "6.1.9",
+  "section": "6.1 special rules",
+  "text": " A company may have multiple station tokens in London, but it may not occupy both a station on the map and the corresponding station on the rondel. In other words, it may only have one station token per track exit. 7 london and the metropolitan railway (m14)"
+ },
+ {
+  "id": "7.1.1",
+  "section": "6.1 special rules",
+  "text": " The off-board London rondel allows minor company M14 (Metropolitan Railway) to place its home station token. Placing the station token costs £20 and this also counts as the company’s track laying step. The Metropolitan Railway is the only company that can place a station token in the off-board London rondel. The London rondel effectively allows the Metropolitan Railway to convert one of the London stations into a double station."
+ },
+ {
+  "id": "7.1.2",
+  "section": "6.1 special rules",
+  "text": " If a major company acquires M14 then it may place an exchange token on the London rondel in M14’s home station as per the normal acquisition rules. If the major company chooses instead to move an exchange token to the available station area on its charter, then the space vacated by the M14 token becomes available for another company to place a station token. Rule 6.1.9 still applies."
+ },
+ {
+  "id": "7.1.3",
+  "section": "6.1 special rules",
+  "text": " If a major company has a station token in London, and acquires M14 when it has a station token in the matching rondel slot, it may not replace M14’s token with an exchange token because no company may have two station tokens in the same slot (rule 6.1.9). Instead, it must move an exchange token (if one is available) to the available tokens section of the charter."
+ },
+ {
+  "id": "7.1.4",
+  "section": "6.1 special rules",
+  "text": " If a major company acquires M14 from the bidding boxes, then it can place an exchange token on any of the six London rondel token spaces. It must pay £20 for the token placement. Rule 6.1.9 still applies. For the purposes of the six hexes with pre-existing track around London (rule Ipswich"
+ },
+ {
+  "id": "7.1.5",
+  "section": "6.1 special rules",
+  "text": " £40 LNWR LNWR SECR GWR LBSCR LBSCR £20 EXAMPLE. The figure illustrates placement of minor company 14’s home station token in south east London (co-located with SECR, the red line shows the virtual connection). It also shows that London is developed to green, with a value of £60. Canterbury SECR £40 Maidstone SECR SECR Dover T X10 8 the english channel and france"
+ },
+ {
+  "id": "8.1.1",
+  "section": "6.1 special rules",
+  "text": " The English Channel crossing hex is pre-printed yellow, so the first tile that can be placed there is a green upgrade. Each upgrade of the hex (to green, to brown, and to grey) costs £100."
+ },
+ {
+  "id": "8.1.2",
+  "section": "6.1 special rules",
+  "text": " The English Channel brown and grey tiles have two tracks leading to France. This allows companies to run two standard (i.e. non-E) trains to France – one from Dover and one from Folkestone – subject to the normal restrictions on routes. E trains run to France by stopping at a station token belonging to the operating company in the English Channel."
+ },
+ {
+  "id": "8.1.3",
+  "section": "6.1 special rules",
+  "text": " In addition to its destination station in Dover, the South Eastern & Chatham Railway (SECR) may place an available station token in an unoccupied station in the English Channel free of charge. The SECR must be able to trace a route to the English Channel to utilise this power, which counts as its standard token laying step."
+ },
+ {
+  "id": "8.1.4",
+  "section": "6.1 special rules",
+  "text": " The English Channel crossing hex and the France off-board area are a combined track, station token and off-board location. The Hertford revenue location on the English Channel track does not count against the Colchester run of a train and neither does it earn revenue. The off-board area does £40 LNWR LBSCR LNWR count as a revenue location and does earn revenue. The stations on the £20 £20 English Channel hex allow an E train to stop at the off-board location and London £40 L SECR SECR GWR offers the opportunity to place a station token to block other companies LBSCR LBSCR from running any train to the off-board location. £20 £40 Canterbury £40 SECR Maidstone X10 T M Dover 141 LBSCR 40LBSCR T Folkstone SECR Brighton EXAMPLE. With the track in this illustration, the SECR can run from its home in SE London, through Maidstone and Dover (its destination) and via the English Channel to France. If it had a second train it could also run a second train from France, through Folkestone, Brighton and beyond. Minor company 14, co-located with SECR cannot run to France as the English Channel is blocked by the tokens of LBSCR and SECR. SECR L-trains may not run to France."
+ },
+ {
+  "id": "8.1.5",
+  "section": "6.1 special rules",
+  "text": " N O £100 0 LBSCR SECR SECR £100 English Channel EC X9 0 60 90 120 France 9 merthyr tydfil and pontypool"
+ },
+ {
+  "id": "9.1.1",
+  "section": "6.1 special rules",
+  "text": " The tracks between Merthyr Tydfil and Pontypool are a special case for tracing routes and running trains."
+ },
+ {
+  "id": "9.1.2",
+  "section": "6.1 special rules",
+  "text": " When tracing routes, Merthyr Tydfil and Pontypool are termini if approached from the other city (Merthyr Tydfil for Pontypool, and Pontypool for Merthyr Tydfil). In other words, it is possible to trace a route directly from one to the other, but it is not possible to then continue the route beyond."
+ },
+ {
+  "id": "9.1.3",
+  "section": "6.1 special rules",
+  "text": " If a company has a station token in both cities it may trace routes out of each city per the normal rules, but the previous rule still applies."
+ },
+ {
+  "id": "9.1.4",
+  "section": "6.1 special rules",
+  "text": " A company with a route through Pontypool to Merthyr Tydfil may place a token into Merthyr Tydfil (and vice versa)."
+ },
+ {
+  "id": "9.1.5",
+  "section": "6.1 special rules",
+  "text": " Only a single train may make the crossing between Merthyr Tydfil and Pontypool in any given operating turn. The two tracks signify that routes may be traced from one of these cities to the other, but when running trains they are treated as a single track."
+ },
+ {
+  "id": "9.1.6",
+  "section": "6.1 special rules",
+  "text": " For the purposes of acquiring minors, the normal rules apply, but it is still not possible to trace a route from Merthyr Tydfil into Pontypool and beyond (or vice versa). £40 £20 Gloucester £20 £20 142 £40 Newport £40 7 130 SWR GWR SECR SWR Oystermouth Hereford EXAMPLE 1. In the figure to the right, the SWR can trace a Pontypool route into Merthyr Tydfil: the route goes from Gloucester to 20 40 30 10 20 Newport, into Pontypool, and then into Merthyr Tydfil. As such, it may place a station token in Merthyr Tydfil, and it 30 40 30 10 may acquire minor 21 from the bid box. It may NOT trace Merthyr Tydﬁl a route into Cardiff using the same route because the route Cardiﬀ C may not extend beyond Merthyr Tydfil. Of course it may Swansea 20 trace a route directly into Cardiff through Newport, per the GWR SECR normal rules. S Bristol EXAMPLE 2. Continuing with the previous example, the Y SWR can run a 5-train from Gloucester through Newport, Pontypool, and ending in Merthyr Tydfil. This is only four stops with the 5-train, but the train must stop after travelling between Pontypool and Merthyr Tydfil. However, if the SWR places a station token in Merthyr Tydfil, it could then may make the previous run and additionally run a different train between Cardiff and Merthyr Tydfil, but may not run this second train to Pontypool because the Merthyr Tydfil-Pontypool connection may only be used by one train per operating turn. 10 game end"
+ },
+ {
+  "id": "10.1.1",
+  "section": "6.1 special rules",
+  "text": "The game end is triggered as soon as one of the following conditions is met: • If the first stock round ends with nothing sold the game ends immediately. • If a company’s stock market token reaches the “game end” value on the market during an operating round, the game ends at the end of that operating round. • If a company’s stock market token reaches the “game end” value on the market during a stock round, the game ends after the next operating round. • If the bank runs out of money during an operating round, the game ends after the current set of operating rounds. If the bank later becomes solvent the game still ends at that point. The bank continues to pay out per normal, even when broken; players should record these, or add money to the bank. Complete these operating rounds even if a company’s market value subsequently reaches the game end value. • If the bank runs out of money during a stock round, the game ends after the next operating round. If the bank later becomes solvent the game still ends at that point. The bank continues to pay out per normal, even when broken; players should record these, or add money to the bank."
+ },
+ {
+  "id": "10.1.2",
+  "section": "6.1 special rules",
+  "text": "Once the game end has been triggered, the game will end at the indicated time, even if another end condition is triggered after the first."
+ },
+ {
+  "id": "10.1.3",
+  "section": "6.1 special rules",
+  "text": "Each player’s total wealth is the value of their stock at current prices, plus cash on hand, minus any loans that remain outstanding. Concession certificates, if they are still open and held by players, count for face value. Private company certificates and company assets count for nothing. The richest player wins. variants"
+ },
+ {
+  "id": "11.1.1",
+  "section": "6.1 special rules",
+  "text": "Players are allowed to inspect the three stacks of upcoming concession, minor company, and private company certificates. However, players could be forbidden from examining the stacks at all, or limited to only seeing the next batch of certificates (based on the assumption that the bidding boxes will need to be completely restocked each stock round). These variants might be particularly appropriate when a player who is familiar with 1822 is playing against players that are not familiar with the game."
+ },
+ {
+  "id": "11.1.2",
+  "section": "6.1 special rules",
+  "text": "An optional rule for P16 is that, once the owning player has used their own money to buy a single share, the cash that accumulates in the tax haven can be used to buy additional shares. The tax haven cannot hold more than one certificate of each company. It can only buy one share per stock round: doing so counts as a stock turn action for the controlling player. 12 1822+ expansion"
+ },
+ {
+  "id": "12.1.1",
+  "section": "12.1 expansion overview",
+  "text": "The 1822+ expansion introduces three additional private companies and changes the private company set up rules. Only 18 of the 21 available private companies are in play. The expansion also introduces an additional six minor companies. There are thus 30 minor companies in play in total."
+ },
+ {
+  "id": "12.3.1",
+  "section": "12.3 setup changes",
+  "text": "Arrange the “blue” bid box 1 companies: P1 (5-train); P3 (permanent 2-train); P4 (permanent 2-train); P13 (Pullman); P14 (Pullman) and P19 (LP-train). Place P1 in bid box number 1 and shuffle the remaining companies. This stack will be used to re-populate private company bid box 1 throughout the game."
+ },
+ {
+  "id": "12.3.2",
+  "section": "12.3 setup changes",
+  "text": "Arrange the “dark grey” bid box 2 companies: P2 (remove small station); P5 (token EC); P8 (Hill/mountain); P10 (estuary), P11 (advanced track), P12 (additional track); P21 (Humber Bridge). Place P5 to one side. Randomly remove one of the remaining companies. Shuffle all 6 companies together. Place the top company in private company bid box 2. This stack will be used to re-populate bid box 2 throughout the game."
+ },
+ {
+  "id": "12.3.3",
+  "section": "12.3 setup changes",
+  "text": "Arrange the “gold” bid box 3 companies: P6 (mail contract); P7 (mail contract); P9 (double cash SR order / treasury); P15 (£10 / phase based payments); P16 (tax haven); P17 (adjust certificate order); P18 (token exchange); P20 (£5 / phase based payments). Randomly remove two of the companies. Shuffle all remaining 6 companies together. Place the top company in private company bid box 3. This stack will be used to re-populate bid box 3 throughout the game."
+ },
+ {
+  "id": "12.4.1",
+  "section": "12.4 bid box filling",
+  "text": "The private companies do not shift left, but the boxes are instead filled from their respective stacks."
+ },
+ {
+  "id": "12.5.1",
+  "section": "13.3 north regional scenario",
+  "text": ", 12.5.9 player number cards, 1.7.12 private companies, 1.7.6 starting money, player, 1.7.2 trains, 1.7.11 share price movement earnings distribution, 5.12.7–14 formation, 4.6–9 minor company flotation, 4.11 stock sales, 4.4.4–5 the South Eastern & Chatham and train limit, 12.5.3 special trains, 5.10.5 and train ownership train purchases, 5.13 selling shares, 4.4 from the bank, 5.13.4 start of, 4.1.1 double-sided, 5.13.8, Swansea and Oystermouth, 5.7.24 end of stock round, 4.12 stock issues, 5.19.2 Pullman cars, 5.11.19"
+ },
+ {
+  "id": "12.5.2",
+  "section": "12.5 permanent l-train",
+  "text": "The LP-train cannot be purchased by another company."
+ },
+ {
+  "id": "12.5.3",
+  "section": "12.5 permanent l-train",
+  "text": "The LP-train does not count against train limit and does not count as a train for the purposes of mandatory train ownership."
+ },
+ {
+  "id": "12.5.4",
+  "section": "12.5 permanent l-train",
+  "text": "A company may not own both a permanent 2-train and the LP-train."
+ },
+ {
+  "id": "12.5.5",
+  "section": "12.5 permanent l-train",
+  "text": "Pullman cars may not be used with the LP-train."
+ },
+ {
+  "id": "12.5.6",
+  "section": "12.5 permanent l-train",
+  "text": "When running a permanent L-train and paying the revenue differently to the revenue from other trains, the total revenue must be maximised, but the relative value of the split between the L-train and the normal trains need not maximise either of the two different payouts."
+ },
+ {
+  "id": "12.5.7",
+  "section": "12.5 permanent l-train",
+  "text": "The revenue from a permanent L-train can be added to the revenue of the company’s other trains (if it has any), split, or retained separately. If the revenue is added to the revenue from its other trains then this is treated just as for any other multiple train revenue (i.e. the sum of each train’s revenue is added to determine the total revenue), which can be paid in full, split, or retained."
+ },
+ {
+  "id": "12.5.8",
+  "section": "12.5 permanent l-train",
+  "text": "However the revenue from the permanent L-train and all of the other trains operated is treated (i.e. retained, split, or paid), the revenue that is actually paid out to shareholders will affect share price movement normally. Any revenue that is retained will have no impact on the share price movement."
+ },
+ {
+  "id": "12.5.9",
+  "section": "12.5 permanent l-train",
+  "text": "If the acquiring major company has a permanent 2-train and the acquired minor company has a permanent L-train, then one of the two trains must be discarded without compensation and is permanently removed from play"
+ },
+ {
+  "id": "12.6.1",
+  "section": "12.6 variants",
+  "text": "Players may choose to use all 21 private companies instead of discarding down to 18 as per the set up instructions. Players may also choose not to allocate types of private companies to specific stacks / bid boxes, but may mix them all together as per the original 1822 set up. Be aware that if the LP is available in the first stock round, and if a high dividend minor company acquires it in OR1, it is possible for Phase 2 to start in OR1. This will probably have a significant impact on the gameplay. 13 scenarios"
+ },
+ {
+  "id": "13.1.1",
+  "section": "13.1 scenario overview",
+  "text": "1822 is one of the larger 18xx games available and is not particularly suited to evening games sessions (unless the players are nocturnal!). For those players wishing to play 1822, but operating with time constraints, there are two regional scenarios options that reduce the game length – at the expense of a loss of some of the complexity, variety, and strategy of the full game."
+ },
+ {
+  "id": "13.1.2",
+  "section": "13.1 scenario overview",
+  "text": "The Medium Regional Scenario and North Regional Scenario can both be played with the components provided in the 1822 game. An additional “print-and-play” overlay is needed and is available from All-Aboard Games. Alternatively, a combination board with integrated overlays for these scenarios is available from All-Aboard Games."
+ },
+ {
+  "id": "13.4.1",
+  "section": "13.3 north regional scenario",
+  "text": "This 2-player variant can be used with either regional scenario, but the Medium Regional Scenario is recommended."
+ },
+ {
+  "id": "13.4.2",
+  "section": "13.3 north regional scenario",
+  "text": "Overview: • 7 bidding tokens per player (combine two colors) • £750 starting capital • Certificate limit is 27 • Bank is £12,000"
+ },
+ {
+  "id": "13.4.3",
+  "section": "13.3 north regional scenario",
+  "text": "Private companies: • Recommended: P1 - P12. • If substituting other private companies, then replace like with like to avoid too great an impact on cash flow and train progression. For example, if introducing the permanent L-train then remove one of the 2P-trains. Or, if introducing the Highland Railway, then remove a mail contract or the cash doubling company). Players may wish to avoid using the tax haven to maintain balance between the players."
+ },
+ {
+  "id": "13.4.4",
+  "section": "13.3 north regional scenario",
+  "text": "Southwest Peninsula variant: add minor companies M22 and M23, and remove two others at random. Both of these minor companies will use the Southwest England offboard area for their home stations."
+ },
+ {
+  "id": "13.4.5",
+  "section": "13.3 north regional scenario",
+  "text": "General Comments: • The 2-player variant offers strategic options that would not be viable in a multiplayer scenario. • With just two players the game balance is even more dependent on active and responsive bidding than the multi player version. It requires a reasonable amount of experience with the game in general and particularly with the pace of the MRS. • This variant is not recommended for generally inexperienced players or those not familiar with 1822 as it may result in a brutal and off-putting outcome. However, it may be useful even for new players to understand the flow of the game before embarking on a multiplayer game. credits • Francis Tresham, for starting it all off with 1829. • Huw Webberley, Paul Heald, Steve Thomas, Bob Lecuyer for extensive assistance with the rules and map. • Leonhard Orgler, Helmut Ohley, Ian D Wilson, David Hecht and Peter Minder for the concept of Minor companies (1844, 1837, 1824, 18West, 18EU, 18Ardennes, 1861). • Steve Thomas and Chris Lawson for the auction mechanism and the concept of a Railroad Convention, which the early stock rounds mimic (1848). • Steve Thomas for issuing a set of game rules (1848) as a word document, allowing easy reuse, and digitising the original map and tile set. • Steve Thomas, Chris Lawson, Federico Vellani and Manlio Manzini for the concept of concessions (1848, 1841). • Leonhard Orgler, for the concept of player cash determining stock round order (1844). • David Hecht for minor company acquisitions (18West). • David Hecht for the idea of Electric trains (a cross between Electric and TGV in 1826). • Bill Dixon, Helmut Ohley, Peter Minder, David Hecht for the concept of destinations (1870, 1862, 1844, 1826). • Bob Lecuyer for creating a Cyber Board version of the game and extensive contributions to art work. • Bob Lecuyer and Jonathan Sabean for insisting on the scenario options, making me revisit them as a concept after originally discounting it. • Huw Webberley for planting the idea of a UK map. • Playtesters: David Nash, Huw Webberley, Jon Lawson, Paul Heald, Rob Turner, Steve Thomas, Chris Appleton, Caroline Sandford, Tony Bromley, Richard Clyne, Jon Draper, Peter Eldridge, Ian D Wilson, Danny Victor, Stephen Webb, Ken Simpson, Bob Lecuyer, Jonathan Sabean, and Jim Knight. And many more contributors to refine the rules to this version. I think that very little has changed from what I intended, but the written rules have hopefully become clearer and more comprehensive. The placement of up to three bids and the revised rules for private company 16 (the tax haven) are the only major changes. • Huw Webberley, David Nash, and Paul Heald have play tested so many times and made so many suggestions (a reasonable number of which have been adopted) that they could be considered Co-Designers. • And of course Scott Petersen/All Aboard Games for producing 1822, turning my ideas into reality. • I have played other 18xx titles by these and other designers. No doubt other ideas have been developed subliminally from these other titles, so I also thank those designers not listed above by whom I have been influenced. • 2020 rules editing and indexing by Jason Begy. designer’s notes My overarching goal was to create a game that did not have a scripted start or a combination of “the best opening.” I wanted to have a different opening with each outing. My second most important consideration was to create a game with minor companies in it, and to have flexibility in which minor companies merged into major companies. This offers an enhancement on the first goal and extends the games flexibility, and hence ineffectiveness of scripted plans, into the mid game – hopefully creating a game that has good replay potential. Of all the initial auction mechanisms I have come across, the “Lawsonian” mechanism utilising bidding boxes has always been my favourite. I personally think that the other mechanisms all have weaknesses because, in one way or another, they require a decision on some bids before other bid results are known. The adoption of the “Lawsonian” auction mechanism was therefore a matter of personal choice, but I also feel that it addresses any inherent instability in the random start packet by allowing the players to determine the value of each item in the start packet based on the specific combination of private companies, minor companies, and concessions available. The auction mechanism also allows the pace of the initial train buying to be set, with the intention that even the advent of the 3-trains is difficult and before the bottom of the stack of 3-trains is reached players are having to use their major companies to acquire their minor companies. on game balance Some of the companies in the game are much better than others. Some minors are good if floated in Phase 2 or later, but poor if floated in Phase 1. Some minors, if floated in Phase 1, will not merely under-perform, but actively lead the director into difficulty. Some minors will be fine if floated early in Phase 1, but will also be troublesome if floated just before Phase 2 starts. The minors can work in combination with other companies if they float at the right time, so which company is “good” and which is “bad” is not totally consistent from game to game, although some are inherently stronger than others. Subject to which minor companies start, Phase 2 might start in OR2, unless actively blocked it always can, (but might not) start in OR3, and if it has not already done so it will very likely start in OR4. As a general rule, the later Phase 2 starts, the more vulnerable companies starting late in Phase 1 will be. All of this is deliberate – the game is intended to be different each time it is played and to require careful consideration of the order in which minors will become available. on geographical and historical accuracy There are hundreds of historical railway companies, but there were only four big railway companies left by the time the game enters Phase 7, and only one of these (the GWR) kept its corporate identity through the grouping. Of these hundreds, I have tried to select larger and geographically appropriate companies, but where these criteria gave me a choice I have selected companies that I consider to be most appropriate. For the ten majors, I have selected from the larger rather than largest companies, perhaps at the expense of a company that really ought to have been included. Some of these largest companies feature as minor companies, but in some cases, it is only their precursors that are included as minor companies. The other three companies emerging from the Railways Act, namely the London, Midland and Scottish Railway; The London and North Eastern Railway; and the Southern Railway do not feature in the game as they postdate most of the game. easy to miss rules Setup and Map • Private company P1, M24, and the LNWR concession are always placed in the first bid boxes. All other company and concession certificates are shuffled in their stacks. Additionally, sort private companies by banner color if playing with 1822+. • Building into each side of an estuary costs £40 (thus a complete estuary crossing costs a total of £80). • London upgrades cost £20. • Although London counts as six separate stations, it is not allowed to run a train from one station to another. • M14 starts in London and pays £20 to place its home station marker. This counts as the company’s track lay. • The six hexes around London are protected for the adjacent London companies. • If the English Channel is not tokened out, any company running to the English Channel space can count the revenue from the France off-board area. If connected by track to the English Channel, the SECR may place an available token there free of charge. This counts as its token laying step for that round. End of Stock Round • End of stock round player cash determines player order for the next stock round. • Remove a 2/L-train from the bank for each unsold minor company. • If the minor company in bid box 1 is unsold, remove it and the next available train in the bank (not pool) from the game (applies throughout the game). • Minor company flotation order is determined by sum bid, tie break is by ascending bid box number. Concessions • Have a face value of £100 and contribute £100 to the conversion to the director’s certificate of the associated major company. • Cannot be started until the stock round after it is won at auction and after a 2-train has been purchased. • Are removed with no compensation at the start of Phase 5. • Pay a £10 dividend. Private Companies • Red private companies cannot be acquired by minor companies. • Are assigned, not sold, to minor/major companies. When assigning a private company, flip the private company over and it provides its special abilities to that company. Private companies stop paying revenue once owned by a company (exception: if the back of the private company still says “Revenue $10” then it will continue to pay $10 to the company). • Private companies in player hands count against a player’s certificate limit. The only time a player can assign a private company is during a major/minor company’s turn in the operating round (i.e. not during a stock round). Minor Companies • Must own a train (emergency fundraising if necessary). • Can buy an L-train at the start of their first turn. • May only lay one yellow or green track per turn (never brown or grey). • Earnings are split 50/50 between the company and the director. • Cannot acquire red private companies. Major Companies • May only start via concession conversion until Phase 5. They float immediately upon conversion. • From Phase 5, the director’s certificate can be purchased directly from the initial offering. They float when 50% of shares have been sold. • Are incrementally capitalised until Phase 6 and are fully capitalised in Phase 6 or later (place the remaining 50% of shares in the bank pool). • Have a destination token that is placed when they connect to their destination (exception LNWR). The destination marker doubles the value of the destination city for one train when running a route from home to destination. • LNWR has two home stations (London [N] and Manchester). When an unblocked connection is completed between the two stations, the station in Manchester becomes a destination station. • May only be sold once the company has completed one turn of operation. • Changes at the Start of Phase 5 • Remove concessions from the game with no compensation. The director’s certificates are available for direct purchase in a stock round. • Minor companies may be acquired from the auction row directly for £200 during the acquiring major company’s “Acquire a Minor Company” step. The major company must be able to trace a route to the minor company. The major company may exchange the token or make an exchange token “Available.” Minor Company Acquisition • This is the only way to close a player-owned minor company. • Acquisition happens during the operation of a major company. • Prerequisites • Both companies must have operated in a previous operating round. I.e. in OR B of a set of two ORs, both companies will have met this condition. In OR A of a set, newly formed companies will not have met this condition. • The minor company must be able to trace a legal route (of arbitrary length) to a token of the major company (station-blocking rules apply). • Compensation for the minor company • The major company must pay the full value of the minor company (minor stock value x2) to the player. • 0, 1, or 2 shares of the major may be exchanged as part of the transaction to offset the cost. Each share counts as its stock market value. Cash is exchanged one way or the other to make the transaction sum to zero. • If either the player or the company do not have the cash to make an equal exchange, no acquisition is possible. • This may not cause a player to exceed their certificate limit. It does allow a player to exceed 60% holding of a company. • Acquisition of minor company’s assets • After the exchange is complete, give all assets (trains, cash, and private companies) of the minor company to the major company. • Remember that the major can not use the minor company’s assets to fund the acquisition. • If the major company has an exchange token, either place it in the minor company’s home or move it into its available tokens. • Remove the minor company’s token, charter, stock token, and share certificate from the game. Trains • L-trains run only a single large station. In addition, they can include a single small station on their route. Only one L-train may run on each token. • E trains include every token of the owning company on its route, skipping all other stations. The value of each tokened station is doubled. (Destination stations are quadrupled if running from home to the destination). They can run on the same track as other trains. • 2P and P+ trains (and the LP train if playing with 1822+) • Do not count against a company’s train limit. • Do not satisfy a company’s requirement to own a train. • Cannot be bought by other companies. • The decision to pay in full, pay half, or full withhold revenue for a 2P (or LP) may be made independent of the decision made for a company’s combined other trains. If both the 2P and the other trains pay half, they are added together before halving, in order to minimise the amount of rounding. In any case, the dividend declared by a company (for the purposes of payout and stock chart movement) is equal to the sum of the dividends of ALL trains. • Pullman + Trains, when added to a normal train, allow it to include revenue from small stations but not count them against the train number (i.e. it only counts large stations). They do not count against the train limit. They do not relieve the owning company of the requirement to own a train. They cannot be sold. • The 5-train private company (P1) may be assigned to a company even if that company already has two trains. This will cause the company to discard a train. • Emergency Money for Forced Train Purchase • When emergency fundraising for a train, the player must buy the cheapest available train from the bank/bank pool. This means that if paying out of pocket and there is a 3-train that was discarded, the player must buy it. It also means that emergency money can never buy an E-train, because 7-trains are cheaper. • The emergency fundraising rules also mean that if a company has £0, it cannot buy a train from another company. Rather it must emergency fundraise the full price of the cheapest available train. • If the player still does not have enough money, they borrow the remaining shortfall from the bank. Interest, at 50%, is applied immediately, so their debt is 150% of the shortfall borrowed. • At the end of each SR, a further 50% interest is applied to any outstanding loan. A player may not buy or bid on anything whilst they have a loan. company tables - minor companies minor company name abbr. location M1 Great North of Scotland Railway GNoSR Aberdeen H1 M2 Lanarkshire & Dunbartonshire Railway L&DR Highlands E2-4 M3 Edinburgh & Dalkeith Railway E&DR Edinburgh H5 M4 Newcastle & North Shields Railway N&NSR Newcastle K10 M5 Stockton and Darlington Railway S&DR Darlington J15 M6 Furness Railway FR Barrow G16 M7 Warrington & Newton Railway W&NR Warrington H23 M8 Manchester, Sheffield & Lincolnshire Railway MS&LR Sheffield K24 M9 East Lincolnshire Railway ELR Grimsby N29 M10 Grand Junction Railway GJR Birmingham I30 M11 Great Northern Railway GNR Peterborough M30 M12 Eastern Union Railway EUR Ipswich P35 M13 Headcorn & Maidstone Junction Light Railway H&MJLR Maidstone O40 M14 Metropolitan Railway MetR London (Optional) M38 M15 London, Tilbury & Southend Railway LT&SR London (NE) M38 M16 London & Birmingham Railway L&BR London (NW) M38 M17 London & Southampton Railway L&SR Southampton J41 M18 Somerset & Dorset Joint Railway S&DJR Bournemouth I42 M19 Penarth Harbour & Dock Railway Company PH&DRC Cardiff F35 M20 Monmouthshire Railway & Canal Company MR&CC Pontypool F33 M21 Taff Vale Railway TVR Merthyr Tydfil E34 M22 Exeter and Crediton Railway E&CR Exeter D41 M23 West Cornwall Railway WCR Plymouth A42 M24 Swansea and Mumbles Railway S&MR Swansea D35 M25 Yarmouth & Norwich Railway Y&NR Norwich Q30 M26 Hull and Selby Railway H&SR Hull N21 M27 City of Glasgow Union Railway CGR Glasgow E6 M28 Maryport and Carlisle Railway M&CR Carlisle G12 M29 Shropshire and Montgomeryshire Railway S&MR Mid Wales F28 M30 Plymouth and Dartmoor Railway P&DR Plymouth B43 *M14 places its home station marker on the off-board London rondel: this costs £20 and counts as M14’s track lay. No other company may place a token on the London rondel. The London rondel effectively allows the MetR to convert one of the London stations into a double station. The MetR acquires the track laying rights adjacent to London of the company with which it is co-located. See section X for details. company tables - private companies See section 3.1 of the rules for additional information no name rev. acq. by minor acq. from special property / notes phase P1 Butterley Engineering Company (BEC) £5 N P2 Middleton Railway (MtonR) £10 Y P3 Shrewsbury and Hereford Railway (S&HR) £0 N P4 South Devon Railway (SDR) £0 N P5 London, Chatham and Dover Railway (LC&DR) £10 N P6 Leeds & Selby Railway (L&SR) £10 N P7 Shrewsbury and Birmingham Railway (S&BR) £10 N P8 Edinburgh and Glasgow Railway (E&GR) £10 Y 5-Train. This is a normal 5-train that is subject to all of the normal rules. Note that a company can acquire this private company at the start of its turn, even if it is already at its train limit as this counts as a private acquisition action, not a train buying action. However, once acquired the acquiring company needs to check whether it is at train limit and discard any trains held in excess of limit. May not be acquired until Phase 5. Remove A Town. Allows the owning company to place a plain yellow track tile directly on an undeveloped town hex, or upgrade a town tile of one colour to a plain track tile of the next colour. This may not be used on double-town hexes. This closes the company and counts as the company’s normal track laying step. All other normal track laying restrictions apply. Once acquired, the private company pays its revenue to the owning company until the power is exercised and the company is closed. May be used in conjunction with P11 as part of the same track placement step. Permanent 2-Train. 2P-train is a permanent 2-train. It cannot be sold to another company. It does not count against the train limit. It does not count as a train for the purpose of mandatory train ownership and purchase. A company may not own more than one 2P train. Dividends can be separated from other trains and may be split, paid in full, or retained. If a company runs a 2P-train and pays a dividend (split or full), but retains its dividend from other train operations this still counts as a normal dividend for stock price movement purposes. Vice-versa, if a company pays a dividend (split or full) with its other trains, but retains the dividend from the 2P, this also still counts as a normal dividend for stock price movement purposes. Does not close. Permanent 2-Train. Same as P3. English Channel. The owning company may place an exchange station token on the map, free of charge, in a token space in the English Channel. The company does not need to be able to trace a route to the English Channel to use this ability (i.e. any company can use this power to place a token in the English Channel). If no token spaces are available, but a space could be created by upgrading the English Channel track then this power may be used to place a token and upgrade the track simultaneously. This counts as the acquiring company’s tile lay action and incurs the usual costs for doing so. It does not count as the company’s token placing step. Alternatively, it can move an exchange station token to the available station token section on its company charter. Mail Contract. After running trains, the owning company receives income into its treasury equal to one half of the base value of the start and end stations from one of the trains operated. Doubled values (for E trains or destination tokens) do not count. The company is not required to maximise the dividend from its run if it wishes to maximise its revenue from the mail contract by stopping at a large city and not running beyond it to include small stations. Does not close. A company can own both mail contracts, but only one mail contract can be used per train. Mail Contract. Same as P6. Mountain/Hill Discount. Either: The acquiring company receives a discount token that can be used to pay the full cost of a single track tile lay on a rough terrain, hill or mountain hex. This closes the company. Or: The acquiring company rejects the token and receives a £20 discount off the cost of all hill and mountain terrain (i.e. NOT off the cost of rough terrain). The private company does not close. Closes if free token taken when acquired. Otherwise, flips when acquired and does not close. P9 Midland and Great Northern Joint Railway (M&GNR) £10 Y P10 Glasgow and South-Western Railway (G&SWR) £10 Y P11 Bristol & Exeter Railway (B&ER) £10 Y P12 Leicester & Swannington Railway (L&SR) £10 Y P13 York, Newcastle and Berwick Railway (YN&BR) £10 Y £10 Y £10x Y £0 N X P14 P15 P16 Kilmarnock and Troon Railway (K&TR) Highland Railway (HR) OffShore Tax Haven Declare 2x Cash Holding. If held by a player, the holding player may declare double their actual cash holding at the end of a stock round to determine player turn order in the next stock round. If held by a company it pays revenue of £20 (green)/£40 (brown)/£60 (grey). This revenue is paid to the owning company treasury during the “pay the private companies” phase of each operating round. Thus, the revenue cannot be received by the owning player pre-acquisition and then again by the acquiring company on the turn in which it is acquired. Does not close. River/Estuary Discount. The acquiring company receives two discount tokens each of which can be used to pay the cost for one track lay over an estuary crossing. They can be used on the same or different tile lays. Use of the second token closes the company. In addition, until the company closes it provides a discount of £10 against the cost of all river terrain (excluding estuary crossings). Advanced Tile Lay. The owning company may lay one plain or small station track upgrade using the next colour of track to be available, before it is actually made available by phase progression. The normal rules for progression of track lay must be followed (i.e. grey upgrades brown upgrades green upgrades yellow) it is not possible to skip a colour using this private. All other normal track laying restrictions apply. This is in place of its normal track lay action. Once acquired, the private company pays its revenue to the owning company until the power is exercised and the company closes. May be used in conjunction with P2 as part of the same track placement step. Extra Tile Lay. The owning company may lay an additional yellow tile (or two for major companies), or make one additional tile upgrade in its track laying step. The upgrade can be to a tile laid in its normal tile laying step. All other normal track laying restrictions apply. Once acquired, the private company pays its revenue to the owning company until the power is exercised and the company closes. Pullman. A “Pullman” carriage train that can be added to another train owned by the company. It converts the train into a + train, allowing it to include revenue from towns but not count them against the train number (i.e. it only counts cities and off-board areas). Does not count against train limit and does not count as a train for the purposes of train ownership. Cannot be sold to another company. Does not close. Pullman. Same as P13. £10x Phase. Pays revenue of £10 x phase number to the player, and pays treasury credits of £10 x phase number to the private company. This credit is retained on the private company charter. When acquired, the acquiring company receives this treasury money and this private company closes. If not acquired beforehand, this company closes at the start of Phase 7 and all treasury credits are returned to the bank. Tax Haven. As a stock round action, under the direction and funded by the owning player, the off-shore tax haven may purchase an available share certificate and place it onto P16’s charter. The certificate is not counted for determining directorship of a company. The share held in the tax haven does NOT count against the 60% share limit for purchasing shares. If at 60% (or more) ownership in a company, a player can still purchase an additional share in that company and place it in the tax haven. Similarly, if a player holds 50% of a company, plus has 10% of the same company in the tax haven, they can buy a further 10% share. The share in the tax haven does NOT count against the certificate limit. However, the power cannot be used to buy a share in a company if the owning player has already sold shares in that company in the same stock round. The share must be purchased (using the players cash) from the company treasury or bank pool; it cannot simply be transferred from the owning players holdings into the off-shore tax haven. P17 Lancashire Union Railway £10 N P18 Cromford and High Peak Railway £10 N P19 Avonside Engine Company £0 Y P20 Canterbury and Whitstable Railway £5x Y P21 Humber Suspension Bridge Company £10 Y A company with a share in the off-shore tax haven CAN be “all sold out” at the end of a stock round. Dividends paid to the share are also placed onto the off-shore tax haven charter. At the end of the game, the player receives the share certificate from the offshore tax haven charter and includes it in their portfolio for determining final worth. The player also receives the cash from dividend income accumulated on the charter. The tax haven can never hold the director’s certificate of the LNWR. If the director of the LNWR wishes to sell shares in the LNWR, and P16 holds an LNWR share, then the director cannot sell down to zero shares unless another player has one or more shares and could become the director. Cannot be acquired. Does not count against the certificate limit when owned by a player, but does count while in a bidding box. In other words, a player at certificate limit may NOT bid on P16. Variant: An optional rule for P16 is that, once the owning player has used their own money to buy a single share, the cash that accumulates in the tax haven can be used to buy additional shares. The tax haven cannot hold more than one certificate in each company. It can only buy one share per stock round: doing so counts as a stock turn action for the controlling player. Move Card. Allows the director of the owning company to select one concession, private company, or minor company from the relevant stack of certificates, excluding those items currently in the bidding boxes, and move it to the top or the bottom of the stack. Closes when the power is exercised. Station Marker Swap. Allows the owning company to move a token from the exchange token area of its charter to the available token area, or vice versa. This company closes when its power is exercised. Permanent L-Train. An L-train cannot be sold to another company. It does not count as a train for the purposes of mandatory train ownership. It does not count against train ownership limit A company cannot own a LP-train and a permanent 2-train. Dividends can be separated from other trains and may be split, paid in full, or retained. If a company runs a LP-train and pays a dividend (split or full), but retains its dividend from other train operations this still counts as a normal dividend for stock price movement purposes. Vice-versa, if a company pays a dividend (split or full) with its other trains, but retains the dividend from the LP, this also still counts as a normal dividend for stock price movement purposes. Does not close. £5x Phase. Pays revenue of £5 x phase number. Pays treasury of £5 x phase number. This credit is retained on the private company charter. When acquired, the acquiring company receives this treasury money and the private company closes. If not acquired beforehand, this company closes at the start of Phase 7 and all treasury credits are returned to the bank. Grimsby/Hull Bridge. Allows the owning company to lay yellow tiles in Grimsby and / or Hull, forming a direct track connection between the two cities over the Humber estuary. If one of the cities already has a yellow tile in place, then if used in Phase 3 or later, one of the tile lays may be a green upgrade. No terrain costs apply for these tile lays. These tile lays count as the normal track laying phase for the operating company. The owning company must have a token in Hull or Grimsby to use this power. Closes when its power is exercised. company tables - major companies major company name location destination LNWR London and North West Railway London (N) & Manchester Manchester GWR Great Western Railway London (SW) Bristol London (S) Brighton London (SE) Dover* LBSCR SECR London, Brighton and South Coast Railway South Eastern & Chatham Railway CR Caledonian Railway Glasgow Carlisle MR Midland Railway Derby York L&YR Lancashire & Yorkshire Railway Liverpool Manchester NBR North British Railway Edinburgh Aberdeen SWR South Wales Railway Gloucester Fishguard NER North Eastern Railway York Edinburgh *In addition to its destination station in Dover, the South Eastern & Chatham Railway (SECR) may place an available station token in an open token space in the English Channel, free of charge. The SECR must be able to trace a route to the English Channel to utilise this power, which counts as its standard token laying step. index 1822+ Expansion, 12 overview of, 12.1.1 certificate limit, 4.2 and bidding, 4.2.5, 4.10.8 earnings calculation, 5.11.25 Holyhead, 1.4.9 earnings distribution, 5.12 home cities and buying shares, 4.5.7–8 dividend payments, 5.12.3 LP-train, 5.11.15, 12.5 and concessions, 3.4.3 minor company, 5.12.1 setup, 12.3 exceeding, 4.4.7 options for, 5.12.2 identifying, 1.4.3 variants, 12.6 and minor company share price station tokens, placing, 5.9.7 bid box filling, 12.4 acquisitions, 5.17.3 the bank pool overview of, 1.5 and private companies, 3.1.5 special trains, 5.12.4–6 and yellow area, stock emergency money market, 4.2.3, 4.5.8 raising, 5.15 buying shares from, 4.5 limit on stock in, 4.4.1 movement, 5.12.7–14 end game conditions, 10 cities purchasing trains overview of, 1.4.2 the English Channel, 8 from, 5.13.4 on routes, 5.4.3, France connection, 8.2, 8.4"
+ }
+]
