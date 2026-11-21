@@ -19,3 +19,13 @@ Findings: (1) contract-diff patching (C) matched the oracle 3/3 with 6-17x fewer
 
 ## Follow-up: alias conventions added to graph (arm B2)
 Added 5 test-facing aliases as graph attrs (bidding._face_value, certificates.certificate_count/certificate_limit, round_manager.start_operating_round_set, turn_order.compute_operating_order) and regenerated contracts. Arm B (regenerate affected modules from contract only) then: M1 107/115 (no match), M2 112/114 (no match), M3 115/115 (match). Collection errors disappeared, so the missing conventions were the cause of the total failure; the rest is regeneration drift (nondeterministic whole-module rewrites). Conclusion: patch mode (C) is reliable 3/3; regeneration is 1/3 and needs the test/repair loop.
+
+## S1: a new mechanic (5% brokerage fee on share purchases and winning bids; new function shares.brokerage_fee; 3 new graph nodes + ruling R20)
+Graph diff: +4 nodes, +6 edges, 2 action nodes edited; contract diff 49 lines in 2 modules (+2-line BINDING/COMMON). Oracle: 114 pass, 3 old tests flip (they assume no fee), 3 new tests pass.
+| arm | modules | tokens in | tokens out | cost $ | oracle match |
+|---|---|---|---|---|---|
+| B regenerate from contract | 2 | 108,103 | 12,991 | 0.0020 | YES |
+| C contract-diff patch | 2 | 7,995 | 7,531 | 0.0027 | YES |
+| D conventional (full source + request) | 8 | 126,478 | 26,197 | 0.0107 | YES |
+Observation: after alias conventions were in the graph, regeneration also succeeded here. C used 16x fewer input tokens than D. Caveat: D uploads all 8 modules; an agentic tool that retrieves only relevant files would send less (not tested). Dollar cost is similar order for all arms at this scale; the saving is tokens in, source not uploaded, and modules touched computed locally.
+Overall (4 changes): C 4/4 match; B 2/4 (after aliases); D 4/4.

@@ -6,7 +6,7 @@ MODS=['shares','certificates','company_formation','bidding','turn_order','trains
 BASE='/home/claude/maint/base'; ENG='backend/app/engine'
 REQ={'M1':"Rule change: loan interest is now 25% of the loans (rounded up to a whole unit) instead of 50%.",
  'M2':"Rule change: the bank pool may hold up to 6 share units (previously 5).",
- 'M3':"Rule change: in phase 3 and later a minor company's starting treasury is half of the winning bid (rounded down) instead of the full bid."}[CH]
+ 'S1':"Rule change: a 5% brokerage fee (rounded up) is charged to the buyer on every share purchase and on every winning bid on a bid-box item, and is paid to the bank. Add a function shares.brokerage_fee(amount) returning it.",'M3':"Rule change: in phase 3 and later a minor company's starting treasury is half of the winning bid (rounded down) instead of the full bid."}[CH]
 GIVEN=['models.py','setup.py','stock_positions.py','actions.py','operating.py']
 def rd(p): return open(p).read()
 given="\n\n".join(f"### FILE {ENG}/{g}\n```python\n{rd(f'{BASE}/{ENG}/{g}')}\n```" for g in GIVEN)
@@ -20,6 +20,7 @@ bind_changed=rd(f'{CB}/BINDING.md')!=rd(f'{CN}/BINDING.md')
 tgt = MODS if ARM in 'AD' else changed
 if ARM=='D': tgt=MODS
 OUT=f'/home/claude/maint/run2_{ARM}_{CH}'; shutil.rmtree(OUT,ignore_errors=True); shutil.copytree(BASE,OUT)
+if CH=='S1': shutil.copy('/home/claude/maint/tests/test_maint.py',OUT+'/verification/rule-tests/test_maint.py')
 TAIL="Reply with the COMPLETE updated file in a single ```python code block and nothing else."
 def prompt(m):
     old=rd(f'{BASE}/{ENG}/{m}.py')

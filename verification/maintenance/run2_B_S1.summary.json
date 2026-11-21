@@ -1,0 +1,17 @@
+{
+ "arm": "B",
+ "change": "S1",
+ "modules": [
+  "shares",
+  "bidding"
+ ],
+ "bind_changed": true,
+ "tokens_in": 108103,
+ "tokens_out": 12991,
+ "cost": 0.002,
+ "secs_max": 61,
+ "oracle_match": true,
+ "pass_n": 114,
+ "oracle_pass": 114,
+ "diff_vs_oracle": []
+}
