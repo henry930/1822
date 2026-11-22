@@ -1,0 +1,35 @@
+--- round 1 smoke:
+Traceback (most recent call last):
+  File "/home/claude/work/ds/smoke.py", line 4, in <module>
+    from app.engine import actions
+  File "/home/claude/conv/run_A/backend/app/engine/actions.py", line 12, in <module>
+    from .bidding import BidError, place_or_move_bid, resolve_stock_round
+ImportError: cannot import name 'BidError' from 'app.engine.bidding' (/home/claude/conv/run_A/backend/app/engine/bidding.py)
+
+patched bidding
+patched company_formation
+patched round_manager
+patched scoring
+patched shares
+patched trains
+--- round 2 smoke:
+[B convert+buy] ActionError: Player p2 does not hold the GWR concession.
+    actions.apply_action(s, a, {"type": "convert_concession", "abbr": "GWR", "start_price": 80})
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/claude/conv/run_A/backend/app/engine/actions.py", line 48, in apply_action
+    _apply_convert_concession(state, player_id, action)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/claude/conv/run_A/backend/app/engine/actions.py", line 123, in _apply_convert_concession
+    raise ActionError(str(e)) from e
+app.engine.actions.ActionError: Player p2 does not hold the GWR concession.
+
+patched bidding
+patched company_formation
+patched trains
+patched round_manager
+--- round 3 smoke:
+SMOKE OK
+
+final smoke: SMOKE OK
+
+{"prompt": 22070, "completion": 19286, "cost": 0.012169389999999999, "calls": 2}

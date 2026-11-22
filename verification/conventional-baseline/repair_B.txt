@@ -1,0 +1,86 @@
+--- round 1 smoke:
+Traceback (most recent call last):
+  File "/home/claude/work/ds/smoke.py", line 4, in <module>
+    from app.engine import actions
+  File "/home/claude/conv/run_B/backend/app/engine/actions.py", line 12, in <module>
+    from .bidding import BidError, place_or_move_bid, resolve_stock_round
+  File "/home/claude/conv/run_B/backend/app/engine/bidding.py", line 13, in <module>
+    from .shares import SOURCE_BANK
+  File "/home/claude/conv/run_B/backend/app/engine/shares.py", line 10, in <module>
+    from . import certificates
+  File "/home/claude/conv/run_B/backend/app/engine/certificates.py", line 11, in <module>
+    from .turn_order import next_player
+ImportError: cannot import name 'next_player' from 'app.engine.turn_order' (/home/claude/conv/run_B/backend/app/engine/turn_order.py)
+
+patched certificates
+--- round 2 smoke:
+Traceback (most recent call last):
+  File "/home/claude/work/ds/smoke.py", line 4, in <module>
+    from app.engine import actions
+  File "/home/claude/conv/run_B/backend/app/engine/actions.py", line 12, in <module>
+    from .bidding import BidError, place_or_move_bid, resolve_stock_round
+  File "/home/claude/conv/run_B/backend/app/engine/bidding.py", line 13, in <module>
+    from .shares import SOURCE_BANK
+  File "/home/claude/conv/run_B/backend/app/engine/shares.py", line 10, in <module>
+    from . import certificates
+  File "/home/claude/conv/run_B/backend/app/engine/certificates.py", line 12, in <module>
+    from .round_manager import next_player
+  File "/home/claude/conv/run_B/backend/app/engine/round_manager.py", line 13, in <module>
+    from . import (
+    ...<8 lines>...
+    )
+  File "/home/claude/conv/run_B/backend/app/engine/company_formation.py", line 7, in <module>
+    from .bidding import FACE_VALUES
+ImportError: cannot import name 'FACE_VALUES' from partially initialized module 'app.engine.bidding' (most likely due to a circular import) (/home/claude/conv/run_B/backend/app/engine/bidding.py)
+
+patched company_formation
+--- round 3 smoke:
+Traceback (most recent call last):
+  File "/home/claude/work/ds/smoke.py", line 4, in <module>
+    from app.engine import actions
+  File "/home/claude/conv/run_B/backend/app/engine/actions.py", line 12, in <module>
+    from .bidding import BidError, place_or_move_bid, resolve_stock_round
+  File "/home/claude/conv/run_B/backend/app/engine/bidding.py", line 35, in <module>
+    from .scoring import (
+    ...<3 lines>...
+    )
+ImportError: cannot import name 'charge_interest' from 'app.engine.scoring' (/home/claude/conv/run_B/backend/app/engine/scoring.py)
+
+patched bidding
+--- round 4 smoke:
+[A bids+passes+resolve] TypeError: bad operand type for unary -: 'str'
+    return sorted(
+        pending,
+        key=lambda t: (-t[3], t[0]),
+    )
+  File "/home/claude/conv/run_B/backend/app/engine/company_formation.py", line 71, in <lambda>
+    key=lambda t: (-t[3], t[0]),
+                   ^^^^^
+TypeError: bad operand type for unary -: 'str'
+
+[B convert+buy] CertificateError: New director does not have enough ordinary shares to exchange.
+    buy_share(state, player_id, action["company_id"], action.get("source"))
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/claude/conv/run_B/backend/app/engine/shares.py", line 111, in buy_share
+    certificates.swap_director(state, company_id, player_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/claude/conv/run_B/backend/app/engine/certificates.py", line 296, in swap_director
+    raise CertificateError("New director does not have enough ordinary shares to exchange.")
+app.engine.certificates.CertificateError: New director does not have enough ordinary shares to exchange.
+
+patched company_formation
+--- round 5 smoke:
+[A bids+passes+resolve] ValueError: Minor company M50 not found
+    bidding.resolve_stock_round(state)   # pays for items, sets minor owners, floats
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/claude/conv/run_B/backend/app/engine/bidding.py", line 429, in resolve_stock_round
+    float_minors(state, minor_pending)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/claude/conv/run_B/backend/app/engine/company_formation.py", line 120, in float_minors
+    raise ValueError(f"Minor company {minor_id} not found")
+ValueError: Minor company M50 not found
+
+patched bidding
+final smoke: SMOKE OK
+
+{"prompt": 117012, "completion": 34205, "cost": 0.01523457848, "calls": 5}

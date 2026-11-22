@@ -1,0 +1,4 @@
+ERROR verification/rule-tests/test_ch2_3_rules.py
+ERROR verification/rule-tests/test_ch4_rules.py
+ERROR verification/rule-tests/test_ch4b_rules.py
+ERROR verification/rule-tests/test_ch5a_rules.py

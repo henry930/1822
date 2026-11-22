@@ -1,0 +1,58 @@
+{
+ "shares": {
+  "secs": 35,
+  "prompt": 58993,
+  "completion": 7657,
+  "cost": 0.01667645,
+  "lines": 444
+ },
+ "certificates": {
+  "secs": 109,
+  "prompt": 58993,
+  "completion": 5038,
+  "cost": 0.00793562,
+  "lines": 137
+ },
+ "company_formation": {
+  "secs": 58,
+  "prompt": 58994,
+  "completion": 8815,
+  "cost": 0.01034424,
+  "lines": 627
+ },
+ "bidding": {
+  "secs": 463,
+  "prompt": 58992,
+  "completion": 40000,
+  "cost": 0.00972944,
+  "lines": 0
+ },
+ "turn_order": {
+  "secs": 36,
+  "prompt": 58993,
+  "completion": 4296,
+  "cost": 0.009123975,
+  "lines": 83
+ },
+ "trains": {
+  "secs": 60,
+  "prompt": 58992,
+  "completion": 7804,
+  "cost": 0.00840572,
+  "lines": 478
+ },
+ "scoring": {
+  "secs": 75,
+  "prompt": 58992,
+  "completion": 4481,
+  "cost": 0.00475678,
+  "lines": 120
+ },
+ "round_manager": {
+  "secs": 111,
+  "prompt": 58993,
+  "completion": 7374,
+  "cost": 0.00663669,
+  "lines": 354
+ }
+}

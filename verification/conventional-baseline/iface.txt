@@ -1,0 +1,124 @@
+bidding.BID_MULTIPLE = 5
+bidding.FACE_VALUES = {'concession': 100, 'minor': 100, 'private': 0}
+bidding.ITEM_KINDS = ('minor', 'concession', 'private')
+bidding.MAX_BIDS_PER_TURN = 3
+bidding.bid_amount_error(state: GameState, player_id: str, item: BidBoxItem, amount: int) -> str | None
+bidding.bid_amount_valid(state: GameState, player_id: str, item: BidBoxItem, amount: int) -> bool
+bidding.class BidError(Exception)
+bidding.clear_concession_boxes(state: GameState) -> None
+bidding.committed_money(state: GameState, player_id: str) -> int
+bidding.face_value(kind: str) -> int
+bidding.highest_bid(item: BidBoxItem) -> int | None
+bidding.highest_bidder(item: BidBoxItem) -> str | None
+bidding.item_resolution_order(state: GameState) -> list[tuple[str, int]]
+bidding.items_led(state: GameState, player_id: str) -> int
+bidding.min_legal_bid(item: BidBoxItem) -> int
+bidding.place_or_move_bid(state: GameState, player_id: str, kind: str, box_index: int, amount: int) -> None aliases: place_bid, move_bid
+bidding.refill_boxes(state: GameState) -> None
+bidding.remove_box1_minor_and_export(state: GameState) -> None
+bidding.resolve_bids(state: GameState) -> tuple[set[tuple[str, int]], list[tuple[int, int, int, str]]]
+bidding.resolve_stock_round(state: GameState) -> None
+bidding.shift_boxes(state: GameState) -> None
+bidding.tokens_total(state: GameState) -> int
+bidding.tokens_used(state: GameState, player_id: str) -> int
+bidding.unsold_minor_exports(state: GameState, items_with_bids: Iterable[tuple[str, int]] = ()) -> None
+bidding.vacate_box_item(state: GameState, kind: str, box_index: int, disposition: str, player_id: str | None = None) -> None
+certificates.HOLD_CAP_UNITS = 6
+certificates.POOL_CAP_UNITS = 5
+certificates.TOTAL_UNITS = 10
+certificates.can_sell_any(state: GameState, player_id: str) -> bool
+certificates.cert_count(state: GameState, player_id: str) -> int
+certificates.cert_count_holdings(state: GameState, player_id: str) -> int
+certificates.cert_limit(state: GameState) -> int
+certificates.cert_units(company_id: str) -> int
+certificates.certs_held(state: GameState, player_id: str, company_id: str) -> int
+certificates.class CertificateError(Exception)
+certificates.class SaleCheck(NamedTuple)
+certificates.fully_sold(state: GameState, company_id: str) -> bool
+certificates.must_sell(state: GameState, player_id: str) -> bool
+certificates.ordinary_certs(state: GameState, player_id: str, company_id: str) -> int
+certificates.over_limit(state: GameState, player_id: str) -> bool
+certificates.sale_legal(state: GameState, player_id: str, company_id: str, count: int = 1) -> SaleCheck
+certificates.successor(state: GameState, company_id: str, director_id: str, remaining_units: int) -> str | None
+certificates.swap_director(state: GameState, company_id: str, new_director_id: str) -> None
+certificates.units_held(state: GameState, player_id: str, company_id: str) -> int
+company_formation.MAJOR_START_PRICES = (60, 70, 80, 90, 100)
+company_formation.MINOR_START_PRICES = (50, 60, 70, 80, 90, 100)
+company_formation.class ConcessionError(Exception)
+company_formation.convert_concession(state: GameState, player_id: str, abbr: str, start_price: int) -> None aliases: convert_concession_to_director
+company_formation.float_minors(state: GameState, pending: Iterable[tuple[int, int, int, str]] | None = None) -> None aliases: float_minor_companies
+company_formation.minor_float_order(pending: Iterable[tuple[int, int, int, str]]) -> list[tuple[int, int, int, str]]
+company_formation.minor_start_price(phase: int, bid: int) -> int aliases: start_price_for_minor
+company_formation.minor_start_treasury(phase: int, bid: int, price: int | None = None) -> int
+round_manager.active_company_id(state: GameState) -> str | None aliases: active_company
+round_manager.advance_company(state: GameState) -> None
+round_manager.advance_stock_player(state: GameState) -> None aliases: end_turn
+round_manager.begin_operating_round(state: GameState) -> None aliases: start_operating_set_round
+round_manager.begin_turn(state: GameState, player_id: str) -> None
+round_manager.class RoundError(Exception)
+round_manager.end_operating_round(state: GameState) -> None
+round_manager.end_stock_round(state: GameState) -> None
+round_manager.next_player(state: GameState, player_id: str) -> str
+round_manager.operating_rounds_for_next_set(state: GameState, phase_before: int | None = None) -> int
+round_manager.sr_over(state: GameState) -> bool
+round_manager.start_operating_round(state: GameState, phase_before: int | None = None) -> None
+round_manager.start_stock_round(state: GameState) -> None
+scoring.CONCESSION_DIVIDEND = 10
+scoring.CONTEXT_AFTER_BANK_PAYMENT = 'after_bank_payment'
+scoring.CONTEXT_AFTER_TOKEN_MOVE = 'after_token_move'
+scoring.CONTEXT_END_OF_STOCK_ROUND = 'end_of_stock_round'
+scoring.TRIGGER_NEXT_OR = 'next_or'
+scoring.TRIGGER_OR_END = 'or_end'
+scoring.TRIGGER_OR_SET_END = 'or_set_end'
+scoring.bank_broken(state: GameState) -> bool
+scoring.check_game_end_triggers(state: GameState, context: str | None = None) -> None
+scoring.class ScoringError(Exception)
+scoring.final_ranking(state: GameState) -> list[tuple[str, int]] aliases: ranking
+scoring.pay_concession_dividends(state: GameState) -> None aliases: pay_concession_revenue
+scoring.pay_private_revenues(state: GameState) -> None aliases: pay_private_revenue
+scoring.player_wealth(state: GameState, player_id: str) -> int
+scoring.private_revenue(private_number: int, phase: int) -> int
+shares.SOURCE_BANK = 'bank'
+shares.SOURCE_POOL = 'pool'
+shares.SOURCE_TREASURY = 'treasury'
+shares.buy_share(state: GameState, player_id: str, company_id: str, source: str | None = None) -> None aliases: buy_certificate
+shares.charge_interest(state: GameState) -> None aliases: apply_interest
+shares.class ShareError(Exception)
+shares.interest_amount(loans: int) -> int aliases: loan_interest
+shares.repay_loans(state: GameState, player_id: str, amount: int | None = None) -> None aliases: repay_loan
+shares.sell_shares(state: GameState, player_id: str, company_id: str, count: int = 1) -> None aliases: sell_share
+trains.EXPORT_L_ONLY = 'L_only'
+trains.EXPORT_NEXT_WITH_PHASE = 'next_with_phase'
+trains.MAX_E_TRAINS_PER_COMPANY = 1
+trains.SCAN_ORDER = ('L', '2', '3', '4', '5', '6', '7', 'E')
+trains.TRAIN_GROUPS = (('L', '2'), ('3',), ('4',), ('5',), ('6',), ('7', 'E'))
+trains.TRAIN_PHASE = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, 'E': 7}
+trains.buy_train_from_bank(state: GameState, company_id: str, kind: str, code: str, source: str | None = None) -> None
+trains.class TrainError(Exception)
+trains.deck_remaining(state: GameState, group: tuple[str, ...]) -> int
+trains.discard_excess_trains(state: GameState) -> None aliases: enforce_train_limit
+trains.export_train(state: GameState, mode: str) -> None
+trains.front_group(state: GameState) -> tuple[str, ...] | None aliases: next_train_group
+trains.front_train(state: GameState) -> str | None
+trains.phase_check(state: GameState, code: str) -> None aliases: advance_phase, check_phase
+trains.phase_of_train(code: str) -> int | None
+trains.rust_trains(state: GameState, code: str) -> None aliases: rust
+trains.train_cost(code: str) -> int
+trains.train_group(code: str) -> tuple[str, ...]
+trains.train_limit(kind: str, phase: int) -> int
+trains.upgrade_l_train(state: GameState, company_id: str, kind: str) -> None aliases: upgrade_l_to_2
+turn_order.class MarketError(Exception)
+turn_order.compute_stock_round_order(cash: dict[str, int], previous_order: list[str]) -> list[str] aliases: next_player_order
+turn_order.current_price(state: GameState, company_id: str) -> int aliases: share_price
+turn_order.descending_order(state: GameState, company_ids: Iterable[str]) -> list[str] aliases: descending_share_price_order
+turn_order.in_yellow(state: GameState, company_id: str) -> bool
+turn_order.is_game_end_cell(state: GameState, company_id: str) -> bool
+turn_order.move_token_down(state: GameState, company_id: str, steps: int = 1) -> None
+turn_order.move_token_up(state: GameState, company_id: str) -> None
+turn_order.next_operating_company(state: GameState, done: Iterable[str] = ()) -> str | None
+turn_order.operating_order(state: GameState) -> list[str]
+turn_order.place_start_token(state: GameState, company_id: str, price: int, kind: str = 'major') -> None
+turn_order.raise_sold_out_prices(state: GameState) -> None
+turn_order.reorder_players_by_cash(state: GameState) -> None aliases: reorder_players
+turn_order.start_cell(price: int, kind: str = 'major') -> tuple[int, int]
+turn_order.token_cell(state: GameState, company_id: str) -> tuple[int, int] | None aliases: market_cell
