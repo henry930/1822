@@ -1,0 +1,22 @@
+{
+ "arm": "E",
+ "change": "M2",
+ "modules": [
+  "shares",
+  "trains"
+ ],
+ "bind_changed": false,
+ "tokens_in": 42619,
+ "tokens_out": 5041,
+ "cost": 0.004,
+ "secs_max": 29,
+ "oracle_match": false,
+ "pass_n": 114,
+ "oracle_pass": 114,
+ "diff_vs_oracle": [
+  "FAILED verification/rule-tests/test_ch4_rules.py::test_r4_4_1_bank_pool_cap_50_percent",
+  "FAILED verification/rule-tests/test_maint.py::test_M2_pool_may_reach_6_units",
+  "PASSED verification/rule-tests/test_ch4_rules.py::test_r4_4_1_bank_pool_cap_50_percent",
+  "PASSED verification/rule-tests/test_maint.py::test_M2_pool_may_reach_6_units"
+ ]
+}
